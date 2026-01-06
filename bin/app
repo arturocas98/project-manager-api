@@ -1,0 +1,484 @@
+#!/bin/bash
+
+# Determine if stdout is a terminal...
+if test -t 1; then
+    # Determine if colors are supported...
+    ncolors=$(tput colors)
+
+    if test -n "$ncolors" && test "$ncolors" -ge 8; then
+        BOLD="$(tput bold)"
+        YELLOW="$(tput setaf 3)"
+        GREEN="$(tput setaf 2)"
+        NC="$(tput sgr0)"
+    fi
+fi
+
+# Function that prints the available commands...
+function display_help {
+    echo "Laravel Starter Kit"
+    echo
+    echo "${YELLOW}Usage:${NC}" >&2
+    echo "  app COMMAND [options] [arguments]"
+    echo
+    echo "Unknown commands are passed to the docker-compose binary."
+    echo
+    echo "${YELLOW}Settings Commands:${NC}"
+    echo "  ${GREEN}app copy${NC}      Copy the environment files"
+    echo "  ${GREEN}app install${NC}   Install composer and npm dependencies"
+    echo
+    echo "${YELLOW}docker-compose Commands:${NC}"
+    echo "  ${GREEN}app up${NC}        Start the application"
+    echo "  ${GREEN}app up -d${NC}     Start the application in the background"
+    echo "  ${GREEN}app stop${NC}      Stop the application"
+    echo "  ${GREEN}app restart${NC}   Restart the application"
+    echo "  ${GREEN}app ps${NC}        Display the status of all containers"
+    echo
+    echo "${YELLOW}Artisan Commands:${NC}"
+    echo "  ${GREEN}app artisan ...${NC}          Run an Artisan command"
+    echo "  ${GREEN}app artisan queue:work${NC}"
+    echo
+    echo "${YELLOW}PHP Commands:${NC}"
+    echo "  ${GREEN}app php ...${NC}   Run a snippet of PHP code"
+    echo "  ${GREEN}app php -v${NC}"
+    echo
+    echo "${YELLOW}Composer Commands:${NC}"
+    echo "  ${GREEN}app composer ...${NC}                       Run a Composer command"
+    echo "  ${GREEN}app composer require laravel/sanctum${NC}"
+    echo
+    echo "${YELLOW}Node Commands:${NC}"
+    echo "  ${GREEN}app node ...${NC}         Run a Node command"
+    echo "  ${GREEN}app node --version${NC}"
+    echo
+    echo "${YELLOW}NPM Commands:${NC}"
+    echo "  ${GREEN}app npm ...${NC}        Run a npm command"
+    echo "  ${GREEN}app npm run build${NC}"
+    echo
+    echo "${YELLOW}Database Commands:${NC}"
+    echo "  ${GREEN}app mysql${NC}     Start a MySQL CLI session within the 'mysql' container"
+    echo "  ${GREEN}app redis${NC}     Start a Redis CLI session within the 'redis' container"
+    echo
+    echo "${YELLOW}Debugging:${NC}"
+    echo "  ${GREEN}app debug ...${NC}          Run an Artisan command in debug mode"
+    echo "  ${GREEN}app debug queue:work${NC}"
+    echo
+    echo "${YELLOW}Running Tests:${NC}"
+    echo "  ${GREEN}app test${NC}          Run the PHPUnit tests via the Artisan test command"
+    echo "  ${GREEN}app pest ...${NC}      Run Pest"
+    echo "  ${GREEN}app pint ...${NC}      Run Pint"
+    echo "  ${GREEN}app dusk${NC}          Run the Dusk tests (Requires the laravel/dusk package)"
+    echo "  ${GREEN}app dusk:fails${NC}    Re-run previously failed Dusk tests (Requires the laravel/dusk package)"
+    echo
+    echo "${YELLOW}Container CLI:${NC}"
+    echo "  ${GREEN}app shell${NC}        Start a shell session within the application container"
+    echo "  ${GREEN}app bash${NC}         Alias for 'app shell'"
+    echo "  ${GREEN}app root-shell${NC}   Start a root shell session within the application container"
+    echo "  ${GREEN}app root-bash${NC}    Alias for 'app root-shell'"
+    echo "  ${GREEN}app tinker${NC}       Start a new Laravel Tinker session"
+    echo
+    echo "${YELLOW}Sharing:${NC}"
+    echo "  ${GREEN}app share${NC}   Share the application publicly via a temporary URL"
+    echo
+    echo "${YELLOW}Binaries:${NC}"
+    echo "  ${GREEN}app bin ...${NC}   Run Composer binary scripts from the vendor/bin directory"
+
+    exit 1
+}
+
+# Proxy the "help" command...
+if [ $# -gt 0 ]; then
+    if [ "$1" == "help" ] || [ "$1" == "-h" ] || [ "$1" == "-help" ] || [ "$1" == "--help" ]; then
+        display_help
+    fi
+else
+    display_help
+fi
+
+# Proxy the "copy" environment files to application...
+if [ "$1" == "copy" ]; then
+    if [ ! -e .env ]; then
+        cp .env.example .env
+
+        sed -i "s/^WWWUSER=.*/WWWUSER=$(id -u)/" .env
+        sed -i "s/^WWWGROUP=.*/WWWGROUP=$(id -g)/" .env
+
+        echo "${GREEN}✔ The .env file has been created!${NC}"
+    fi
+
+    exit 1
+fi
+
+# Load environment variables
+source .env
+
+# Define environment variables...
+export APP_ENV=${APP_ENV:-"local"}
+export APP_PORT=${APP_PORT:-80}
+export APP_SERVICE=${APP_SERVICE:-"app"}
+export DB_PORT=${DB_PORT:-3306}
+export WWWUSER=${WWWUSER:-$(id -u)}
+export WWWGROUP=${WWWGROUP:-$(id -g)}
+
+export APP_FILE=${APP_FILE:-""}
+export APP_SHARE_DASHBOARD=${APP_SHARE_DASHBOARD:-4040}
+export APP_SHARE_SERVER_HOST=${APP_SHARE_SERVER_HOST:-"laravel-sail.site"}
+export APP_SHARE_SERVER_PORT=${APP_SHARE_SERVER_PORT:-8080}
+export APP_SHARE_SUBDOMAIN=${APP_SHARE_SUBDOMAIN:-""}
+export APP_SHARE_DOMAIN=${APP_SHARE_DOMAIN:-"$APP_SHARE_SERVER_HOST"}
+export APP_SHARE_SERVER=${APP_SHARE_SERVER:-""}
+
+# Proxy the "install" dependencies on application...
+if [ "$1" == "install" ]; then
+    if [ ! -d vendor ]; then
+        docker run --rm \
+            -u "$WWWUSER:$WWWGROUP" \
+            -v "$(pwd):/var/www/html" \
+            -w /var/www/html \
+            composer:latest \
+            composer install --ignore-platform-reqs
+    fi
+
+    if [ ! -d node_modules ]; then
+        docker run --rm \
+            -u "$WWWUSER:$WWWGROUP" \
+            -v "$(pwd):/var/www/html" \
+            -w /var/www/html \
+            node:current-alpine \
+            sh -c "npm install && npm run build"
+    fi
+
+    exit 1
+fi
+
+# Function that outputs app is not running...
+function docker_is_not_running {
+    echo "${BOLD}Docker is not running.${NC}" >&2
+    echo "" >&2
+    echo "${BOLD}You may play using the following commands:${NC} './bin/app up' or './bin/app up -d'" >&2
+
+    exit 1
+}
+
+# Define Docker Compose command prefix...
+if docker compose &> /dev/null; then
+    DOCKER_COMPOSE=(docker compose)
+else
+    DOCKER_COMPOSE=(docker-compose)
+fi
+
+if [ -e "docker-compose.$APP_ENV.yml" ]; then
+    DOCKER_COMPOSE+=(-f "docker-compose.$APP_ENV.yml")
+elif [[ -n "$APP_FILE" && -f "$APP_FILE" ]]; then
+    DOCKER_COMPOSE+=(-f "$APP_FILE")
+fi
+
+echo "Running environment ${APP_ENV}"
+
+EXEC="yes"
+
+if [ -z "$APP_SKIP_CHECKS" ]; then
+    # Ensure that Docker is running...
+    if ! docker info >/dev/null 2>&1; then
+        echo "${BOLD}Docker is not running.${NC}" >&2
+
+        exit 1
+    fi
+
+    # Determine if app is currently up...
+    if "${DOCKER_COMPOSE[@]}" ps "$APP_SERVICE" 2>&1 | grep 'Exit\|exited'; then
+        echo "${BOLD}Shutting down old app processes...${NC}" >&2
+
+        "${DOCKER_COMPOSE[@]}" down >/dev/null 2>&1
+
+        EXEC="no"
+    elif [ -z "$("${DOCKER_COMPOSE[@]}" ps -q)" ]; then
+        EXEC="no"
+    fi
+fi
+
+ARGS=()
+
+# Proxy PHP commands to the "php" binary on the application container...
+if [ "$1" == "php" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" "php" "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy vendor binary commands on the application container...
+elif [ "$1" == "bin" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" ./vendor/bin/"$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy docker-compose commands to the docker-compose binary on the application container...
+elif [ "$1" == "docker-compose" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" "${DOCKER_COMPOSE[@]}")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy Composer commands to the "composer" binary on the application container...
+elif [ "$1" == "composer" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" "composer" "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy Artisan commands to the "artisan" binary on the application container...
+elif [ "$1" == "artisan" ] || [ "$1" == "art" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php artisan "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "debug" command to the "php artisan" binary on the application container with xdebug enabled...
+elif [ "$1" == "debug" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -e XDEBUG_SESSION=1)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php artisan "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "test" command to the "php artisan test" Artisan command...
+elif [ "$1" == "test" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php artisan test "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "phpunit" command to "php vendor/bin/phpunit"...
+elif [ "$1" == "phpunit" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php vendor/bin/phpunit "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "pest" command to "php vendor/bin/pest"...
+elif [ "$1" == "pest" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php vendor/bin/pest "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "pint" command to "php vendor/bin/pint"...
+elif [ "$1" == "pint" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php vendor/bin/pint "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "dusk" command to the "php artisan dusk" Artisan command...
+elif [ "$1" == "dusk" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(-e "APP_URL=http://${APP_SERVICE}")
+        ARGS+=(-e "DUSK_DRIVER_URL=http://selenium:4444/wd/hub")
+        ARGS+=("$APP_SERVICE" php artisan dusk "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy the "dusk:fails" command to the "php artisan dusk:fails" Artisan command...
+elif [ "$1" == "dusk:fails" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(-e "APP_URL=http://${APP_SERVICE}")
+        ARGS+=(-e "DUSK_DRIVER_URL=http://selenium:4444/wd/hub")
+        ARGS+=("$APP_SERVICE" php artisan dusk:fails "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a Laravel Tinker session within the application container...
+elif [ "$1" == "tinker" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" php artisan tinker)
+    else
+        docker_is_not_running
+    fi
+
+# Proxy Node commands to the "node" binary on the application container...
+elif [ "$1" == "node" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" node "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Proxy NPM commands to the "npm" binary on the application container...
+elif [ "$1" == "npm" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" npm "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a MySQL CLI terminal session within the "mysql" container...
+elif [ "$1" == "mysql" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(mysql bash -c)
+        ARGS+=("MYSQL_PWD=\${MYSQL_PASSWORD} mysql -u \${MYSQL_USER} \${MYSQL_DATABASE}")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a MySQL CLI terminal session within the "mariadb" container...
+elif [ "$1" == "mariadb" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(mariadb bash -c)
+        ARGS+=("MYSQL_PWD=\${MYSQL_PASSWORD} mysql -u \${MYSQL_USER} \${MYSQL_DATABASE}")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a PostgreSQL CLI terminal session within the "pgsql" container...
+elif [ "$1" == "psql" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(pgsql bash -c)
+        ARGS+=("PGPASSWORD=\${PGPASSWORD} psql -U \${POSTGRES_USER} \${POSTGRES_DB}")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a Bash shell within the application container...
+elif [ "$1" == "shell" ] || [ "$1" == "bash" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" bash "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a root user Bash shell within the application container...
+elif [ "$1" == "root-shell" ] || [ "$1" == "root-bash" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u root)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=("$APP_SERVICE" bash "$@")
+    else
+        docker_is_not_running
+    fi
+
+# Initiate a Redis CLI terminal session within the "redis" container...
+elif [ "$1" == "redis" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        ARGS+=(exec -u $WWWUSER)
+        [ ! -t 0 ] && ARGS+=(-T)
+        ARGS+=(redis redis-cli)
+    else
+        docker_is_not_running
+    fi
+
+# Share the site...
+elif [ "$1" == "share" ]; then
+    shift 1
+
+    if [ "$EXEC" == "yes" ]; then
+        docker run --init --rm -p "$APP_SHARE_DASHBOARD":4040 -t beyondcodegmbh/expose-server:latest share http://host.docker.internal:"$APP_PORT" \
+            --server-host="$APP_SHARE_SERVER_HOST" \
+            --server-port="$APP_SHARE_SERVER_PORT" \
+            --auth="$APP_SHARE_TOKEN" \
+            --server="$APP_SHARE_SERVER" \
+            --subdomain="$APP_SHARE_SUBDOMAIN" \
+            --domain="$APP_SHARE_DOMAIN" \
+            "$@"
+
+        exit
+    else
+        docker_is_not_running
+    fi
+
+# Pass unknown commands to the "docker-compose" binary...
+else
+    ARGS+=("$@")
+fi
+
+# Run Docker Compose with the defined arguments...
+"${DOCKER_COMPOSE[@]}" "${ARGS[@]}"
