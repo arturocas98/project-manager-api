@@ -33,4 +33,8 @@ return new class extends Migration
             $table->index('batch');
         });
     }
+    public function down(): void
+    {
+        Schema::dropIfExists('health_check_result_history_items');
+    }
 };
