@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest:api'])->group(function () {
     Route::post('/login', [Auth\AuthenticationController::class, 'login']);
+    Route::post('/register', [Auth\AuthenticationController::class, 'register']);
     Route::post('/two-factor-challenge', [Auth\TwoFactorAuthenticatedTokenController::class, 'store'])
         ->middleware(['throttle:3,1']);
 

@@ -4,7 +4,9 @@ namespace App\Http\Requests\Auth;
 
 use App\Models\User;
 use Illuminate\Auth\Events\Lockout;
+use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Http\Exceptions\HttpResponseException;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\RateLimiter;
 use Illuminate\Support\Str;
@@ -33,6 +35,38 @@ class LoginRequest extends FormRequest
         ];
     }
 
+
+    public function messages(): array{
+        return [
+            'email.required' => 'El campo Email es obligatorio',
+            'email.email' => 'El campo Email debe ser un email',
+            'password.required' => 'El campo Password es obligatorio',
+            'password.min' => 'La contraseña debe tener al menos 6 caracteres',
+        ];
+    }
+
+    public function withValidator($validator): void{
+        $validator->after(function ($validators){
+            if ($this->email){
+                $user = User::where('email', $this->email)->first();
+                if (!$user) {
+                    $validators->errors()->add("email", "El email ingresado no existe");
+                }elseif(!Hash::check($this->password, $user->password)){
+                    $validators->errors()->add("password", "El password ingresado es incorrecto");
+                }
+            }
+        });
+    }
+
+    protected function failedValidation(Validator $validator)
+    {
+        throw new HttpResponseException(
+            response()->json([
+                'message' => 'Login error',
+                'errors' => $validator->errors(),
+            ],status: 422)
+        );
+    }
     /**
      * Attempt to obtain a user with the credentials provided.
      *

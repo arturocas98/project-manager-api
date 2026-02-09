@@ -9,7 +9,7 @@ use App\Http\Resources\App\ProjectResource;
 use App\Models\Project;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-use Illuminate\Http\Response;
+    use Illuminate\Http\Response;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\ResponseFromApiResource;
@@ -48,6 +48,14 @@ class ProjectController extends Controller
 
         return new ProjectResource($project);
     }
+
+    public function addParticipant(ProjectRequest $request, SaveProjectAction $save): ProjectResource
+    {
+        $project = $save($request->validated());
+
+        return new ProjectResource($project);
+    }
+
 
 
     /**
