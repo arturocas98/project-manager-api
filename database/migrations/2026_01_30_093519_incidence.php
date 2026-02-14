@@ -18,6 +18,8 @@ return new class extends Migration
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('Cascade');
             $table->unsignedBigInteger('incidence_type_id');
             $table->foreign('incidence_type_id')->references('id')->on('incidence_type')->onDelete('Cascade');
+            $table->unsignedBigInteger('incidence_priority_id');
+            $table->foreign('incidence_priority_id')->references('id')->on('incidence_priority')->onDelete('Cascade');
             $table->unsignedBigInteger('incidence_state_id');
             $table->foreign('incidence_state_id')->references('id')->on('incidence_state')->onDelete('Cascade');
             $table->unsignedBigInteger('parent_incidence_id');
