@@ -5,15 +5,13 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\SoftDeletes;
 
-class ProjectUser extends Model
+class project_role extends Model
 {
-    use HasFactory, SoftDeletes;
-
+    use HasFactory;
     protected $fillable = [
-        'project_role_id',
-        'user_id',
+        'project_id',
+        'type',
     ];
 
     public function user():BelongsTo
@@ -21,8 +19,8 @@ class ProjectUser extends Model
         return $this->belongsTo(User::class);
     }
 
-    public function project_role(): BelongsTo
+    public function project(): BelongsTo
     {
-        return $this->belongsTo(project_role::class);
+        return $this->belongsTo(Project::class);
     }
 }

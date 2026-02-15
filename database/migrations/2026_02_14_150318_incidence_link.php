@@ -11,12 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::table('incidence_link', function (Blueprint $table) {
+        Schema::create('incidence_link', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('source_incidences_id');
             $table->foreign('source_incidences_id')->references('id')->on('incidences')->onDelete('Cascade');
             $table->unsignedBigInteger('target_incidences_id');
-            $table->foreign('target_incidence_id')->references('id')->on('incidences')->onDelete('Cascade');
+            $table->foreign('target_incidences_id')->references('id')->on('incidences')->onDelete('Cascade');
             $table->enum('type', ['blocks', 'relates_to', 'duplicates', 'clones', 'Causes', 'Depends', 'Implements', 'Tests']);
         });
     }
