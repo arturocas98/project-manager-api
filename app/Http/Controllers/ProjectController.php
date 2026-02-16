@@ -44,8 +44,8 @@ class ProjectController extends Controller
      */
     public function store(ProjectRequest $request, SaveProjectAction $save): ProjectResource
     {
+    
         $project = $save($request->validated());
-
         return new ProjectResource($project);
     }
 

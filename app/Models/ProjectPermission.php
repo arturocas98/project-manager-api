@@ -5,12 +5,11 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class project_permission extends Model
+class ProjectPermission extends Model
 {
     use HasFactory;
-
     protected $fillable = [
         'key',
-        'description',
     ];
+
 }

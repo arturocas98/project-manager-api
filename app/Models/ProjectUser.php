@@ -16,13 +16,12 @@ class ProjectUser extends Model
         'user_id',
     ];
 
+    public function projectRole(): BelongsTo
+    {
+        return $this->belongsTo(ProjectRole::class);
+    }
     public function user():BelongsTo
     {
         return $this->belongsTo(User::class);
-    }
-
-    public function project_role(): BelongsTo
-    {
-        return $this->belongsTo(project_role::class);
     }
 }

@@ -11,13 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('Friend', function (Blueprint $table) {
+        Schema::create('boards', function (Blueprint $table) {
             $table->id();
+            $table->string('name');
             $table->unsignedBigInteger('user_id');
             $table->foreign('user_id')->references('id')->on('users')->onDelete('Cascade');
-            $table->unsignedBigInteger('friend_id');
-            $table->foreign('friend_id')->references('id')->on('users')->onDelete('Cascade');
-            $table->enum('state', ['Aceptado', 'Rechazado', 'Bloqueado', 'Pendiente']);
+            $table->timestamps();
         });
     }
 
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('Friend');
+        Schema::dropIfExists('boards');
     }
 };

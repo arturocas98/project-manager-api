@@ -11,11 +11,12 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('project_permission_scheme', function (Blueprint $table) {
+        schema::create('teams', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('project_id');
-            $table->foreign('project_id')->references('id')->on('projects')->onDelete('Cascade');
             $table->string('name');
+            $table->unsignedBigInteger('created_by_id');
+            $table->foreign('created_by_id')->references('id')->on('users')->onDelete('Cascade');
+            $table->enum('type', ['team', 'team oficial']);
             $table->timestamps();
         });
     }
@@ -25,6 +26,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('project_permission_scheme');
+        Schema::dropIfExists('teams');
     }
 };

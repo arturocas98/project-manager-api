@@ -11,12 +11,11 @@ return new class extends Migration
      */
     public function up(): void
     {
-        schema::create('team', function (Blueprint $table) {
+        Schema::create('project_roles', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->unsignedBigInteger('created_by_id');
-            $table->foreign('created_by_id')->references('id')->on('users')->onDelete('Cascade');
-            $table->enum('type', ['team', 'team oficial']);
+            $table->unsignedBigInteger('project_id');
+            $table->foreign('project_id')->references('id')->on('projects')->onDelete('Cascade');
+            $table->enum('type', ['Administrators', 'Developers', 'Users', 'bug', 'subtask']);
             $table->timestamps();
         });
     }
@@ -26,6 +25,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('team');
+        Schema::dropIfExists('project_roles');
     }
 };
