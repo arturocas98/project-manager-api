@@ -3,10 +3,17 @@
 namespace App\Http\Controllers;
 
 use App\Actions\App\SaveProjectAction;
+use App\Exceptions\ProjectException;
 use App\Http\Queries\App\ProjectQuery;
 use App\Http\Requests\App\ProjectRequest;
+use App\Http\Requests\App\UpdateProjectRequest;
+use App\Http\Resources\App\OneProjectResource;
+use App\Http\Resources\App\ProjectCreatedResource;
 use App\Http\Resources\App\ProjectResource;
 use App\Models\Project;
+use App\Services\ProjectCreationService;
+use App\Services\ProjectDeleteService;
+use App\Services\ProjectUpdateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
     use Illuminate\Http\Response;
@@ -20,21 +27,37 @@ use Knuckles\Scribe\Attributes\Subgroup;
 #[Authenticated]
 class ProjectController extends Controller
 {
+    public function __construct(
+        private ProjectCreationService $projectCreationService,
+        private ProjectUpdateService $projectUpdateService,
+        private ProjectDeleteService $projectDeleteService,
+    ) {}
     /**
      * Display a listing of the resource.
      */
     #[ResponseFromApiResource(ProjectResource::class, Project::class, collection: true)]
     public function index(ProjectQuery $query): AnonymousResourceCollection
     {
-        return ProjectResource::collection($query->result());
+        $projects = $query->paginate();
+        return ProjectResource::collection($projects);
     }
 
     /**
      * Display the specified resource.
      */
-    public function show(Project $project): ProjectResource
+    public function show(ProjectQuery $query, int $id)
     {
-        return new ProjectResource($project);
+        $project = $query->findForShow($id);
+
+        if (!$project) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Proyecto no encontrado o no tienes acceso',
+                'error_code' => 'PROJECT_NOT_FOUND'
+            ], 404);
+        }
+
+        return new OneProjectResource($project);
     }
 
 
@@ -42,11 +65,17 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(ProjectRequest $request, SaveProjectAction $save): ProjectResource
+    public function store(ProjectRequest $request): ProjectCreatedResource
     {
-    
-        $project = $save($request->validated());
-        return new ProjectResource($project);
+        try {
+            $result = $this->projectCreationService->create($request->validated());
+            return new ProjectCreatedResource((object) $result);
+
+        } catch (ProjectException $e) {
+            throw $e;
+        } catch (\Exception $e) {
+            throw new ProjectException('Error inesperado al crear proyecto', 500);
+        }
     }
 
     public function addParticipant(ProjectRequest $request, SaveProjectAction $save): ProjectResource
@@ -56,25 +85,41 @@ class ProjectController extends Controller
         return new ProjectResource($project);
     }
 
-
-
     /**
      * Update the specified resource in storage.
      */
-    public function update(ProjectRequest $request, Project $project, SaveProjectAction $save): ProjectResource
+    public function update(UpdateProjectRequest $request, int $id)
     {
-        $project = $save($request->validated(), $project);
+        $project = Project::findOrFail($id);
 
-        return new ProjectResource($project);
+        $updatedProject = $this->projectUpdateService->update(
+            $project,
+            $request->validated()
+        );
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Proyecto actualizado exitosamente',
+            'data' => new ProjectResource($updatedProject)
+        ], 200);
     }
 
     /**
      * Remove the specified resource from storage.
      */
-    public function destroy(Project $project): JsonResponse
+    public function destroy(int $id): JsonResponse
     {
-        $project->delete();
+        $project = Project::findOrFail($id);
 
-        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        $this->projectDeleteService->delete($project);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Proyecto eliminado exitosamente',
+            'data' => [
+                'id' => $project->id,
+                'deleted_at' => now()->toDateTimeString()
+            ]
+        ]);
     }
 }

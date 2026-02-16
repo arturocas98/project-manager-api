@@ -8,19 +8,25 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectRolePermission extends Model
 {
-    use HasFactory;
+    protected $table = 'project_role_permissions';
 
     protected $fillable = [
         'permission_scheme_id',
-        'project_role_id',
+        'project_role_id'
     ];
 
-    public function permissionScheme(): BelongsTo
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+    public function role(): BelongsTo
     {
-        return $this->belongsTo(ProjectPermissionScheme::class);
+        return $this->belongsTo(ProjectRole::class, 'project_role_id');
     }
-    public function projectRole(): BelongsTo
+
+    public function scheme(): BelongsTo
     {
-        return $this->belongsTo(ProjectRole::class);
+        return $this->belongsTo(ProjectPermissionScheme::class, 'permission_scheme_id');
     }
 }

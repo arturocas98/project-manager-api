@@ -17,6 +17,7 @@ return new class extends Migration
             $table->foreign('permission_scheme_id')->references('id')->on('project_permission_schemes')->onDelete('Cascade');
             $table->unsignedBigInteger('project_role_id');
             $table->foreign('project_role_id')->references('id')->on('project_roles')->onDelete('Cascade');
+            $table->timestamps();
         });
     }
 

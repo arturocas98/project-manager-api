@@ -10,7 +10,7 @@ class ProjectPermissionSchemeSeeder extends Seeder
     public function run(): void
     {
         $schemes = [
-            'Administrador',
+            'Administrators',
             'Gestor de Proyecto',
             'Miembro del Equipo',
             'Invitado',

@@ -12,4 +12,14 @@ class ProjectPermission extends Model
         'key',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+    public function schemePermissions(): HasMany
+    {
+        return $this->hasMany(SchemePermission::class, 'project_permission_id');
+    }
+
 }

@@ -9,18 +9,25 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class ProjectUser extends Model
 {
-    use HasFactory, SoftDeletes;
+    use SoftDeletes;
 
     protected $fillable = [
         'project_role_id',
-        'user_id',
+        'user_id'
     ];
 
-    public function projectRole(): BelongsTo
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
+    ];
+
+    public function role()
     {
-        return $this->belongsTo(ProjectRole::class);
+        return $this->belongsTo(ProjectRole::class, 'project_role_id');
     }
-    public function user():BelongsTo
+
+    public function user()
     {
         return $this->belongsTo(User::class);
     }

@@ -76,4 +76,55 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         return 'api';
     }
+
+    public function projectRoles()
+    {
+        return $this->belongsToMany(ProjectRole::class, 'project_users')
+            ->withTimestamps()
+            ->withPivot('deleted_at');
+    }
+
+    public function projects()
+    {
+        return Project::whereHas('roles.users', fn($q) => $q->where('user_id', $this->id));
+    }
+
+    /**
+     * Verificar si tiene acceso a un proyecto
+     */
+    public function hasProjectAccess(int $projectId): bool
+    {
+        return $this->projectRoles()
+            ->whereHas('project', fn($q) => $q->where('id', $projectId))
+            ->exists();
+    }
+
+    /**
+     * Obtener el rol en un proyecto específico
+     */
+    public function getProjectRole(int $projectId): ?ProjectRole
+    {
+        return $this->projectRoles()
+            ->whereHas('project', fn($q) => $q->where('id', $projectId))
+            ->first();
+    }
+
+    /**
+     * Verificar si tiene un permiso específico en un proyecto
+     */
+    public function hasProjectPermission(int $projectId, string $permissionKey): bool
+    {
+        $role = $this->getProjectRole($projectId);
+
+        if (!$role) {
+            return false;
+        }
+
+        // Cargar la relación si no está cargada
+        if (!$role->relationLoaded('permissionScheme')) {
+            $role->load('permissionScheme.scheme.permissions');
+        }
+
+        return $role->hasPermission($permissionKey);
+    }
 }

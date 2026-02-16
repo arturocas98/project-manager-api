@@ -14,7 +14,10 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('name');
+            $table->string('key')->unique();
             $table->text('description')->nullable();
+            $table->unsignedBigInteger('created_by');
+            $table->foreign('created_by')->references('id')->on('users')->onDelete('Cascade');
             $table->timestamps();
             $table->softDeletes();
         });
