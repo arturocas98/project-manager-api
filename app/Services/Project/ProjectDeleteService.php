@@ -1,11 +1,11 @@
 <?php
 
 
-namespace App\Services;
+namespace App\Services\Project;
 
 use App\Actions\App\Project\DeleteProjectAction;
-use App\Models\Project;
 use App\Exceptions\ProjectException;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 
 class ProjectDeleteService

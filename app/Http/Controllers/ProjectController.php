@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\App\SaveProjectAction;
 use App\Exceptions\ProjectException;
 use App\Http\Queries\App\ProjectQuery;
 use App\Http\Requests\App\ProjectRequest;
@@ -11,12 +10,11 @@ use App\Http\Resources\App\OneProjectResource;
 use App\Http\Resources\App\ProjectCreatedResource;
 use App\Http\Resources\App\ProjectResource;
 use App\Models\Project;
-use App\Services\ProjectCreationService;
-use App\Services\ProjectDeleteService;
-use App\Services\ProjectUpdateService;
+use App\Services\Project\ProjectCreationService;
+use App\Services\Project\ProjectDeleteService;
+use App\Services\Project\ProjectUpdateService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
-    use Illuminate\Http\Response;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\ResponseFromApiResource;
@@ -76,13 +74,6 @@ class ProjectController extends Controller
         } catch (\Exception $e) {
             throw new ProjectException('Error inesperado al crear proyecto', 500);
         }
-    }
-
-    public function addParticipant(ProjectRequest $request, SaveProjectAction $save): ProjectResource
-    {
-        $project = $save($request->validated());
-
-        return new ProjectResource($project);
     }
 
     /**

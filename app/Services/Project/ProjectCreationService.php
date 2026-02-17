@@ -1,11 +1,11 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Project;
 
-use App\Actions\App\Project\CreateProjectAction;
-use App\Actions\App\Project\CreateProjectRoleAction;
 use App\Actions\App\Project\AssignPermissionSchemeAction;
 use App\Actions\App\Project\AssignUserToRoleAction;
+use App\Actions\App\Project\CreateProjectAction;
+use App\Actions\App\Project\CreateProjectRoleAction;
 use App\Exceptions\ProjectException;
 use Illuminate\Support\Facades\DB;
 

@@ -15,7 +15,7 @@ return new class extends Migration
             $table->id();
             $table->unsignedBigInteger('project_id');
             $table->foreign('project_id')->references('id')->on('projects')->onDelete('Cascade');
-            $table->enum('type', ['Administrators', 'Developers', 'Users', 'bug', 'subtask']);
+            $table->enum('type', ['Administrators', 'Developers', 'Users']);
             $table->timestamps();
         });
     }
