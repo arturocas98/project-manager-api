@@ -122,7 +122,7 @@ class DeletProjectMemberService
     private function getAssignment(Project $project, int $assignmentId): ProjectUser
     {
         $assignment = ProjectUser::with(['user', 'role'])
-            ->where('id', $assignmentId)
+                ->where('id', $assignmentId)
             ->whereHas('role', fn($q) => $q->where('project_id', $project->id))
             ->first();
 

@@ -29,7 +29,7 @@ class ProjectCreationService
                 $adminRole = $this->createRole->execute($project->id, 'Administrators');
 
                 // 3. Asignar esquema de permisos admin
-                $this->assignPermissions->execute($adminRole->id, 'Administrador');
+                $this->assignPermissions->execute($adminRole->id, 'Administrators');
 
                 // 4. Asignar usuario creador al rol admin
                 $assignment = $this->assignUser->execute($adminRole->id, auth()->id());

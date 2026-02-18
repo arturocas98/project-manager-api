@@ -29,14 +29,6 @@ class ProjectMemberResource extends JsonResource
                 'type' => $this->role->type,
                 'permissions' => $this->getRolePermissions($this->role)
             ],
-            'links' => [
-                'project' => route('projects.show', $this->project->id),
-                'user' => route('users.show', $this->user->id),
-                'remove' => route('projects.members.destroy', [
-                    'project' => $this->project->id,
-                    'member' => $this->assignment->id
-                ])
-            ]
         ];
     }
 

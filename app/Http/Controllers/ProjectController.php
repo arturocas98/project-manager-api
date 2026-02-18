@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\App\Recent\CreateRecentAction;
 use App\Exceptions\ProjectException;
 use App\Http\Queries\App\ProjectQuery;
 use App\Http\Requests\App\ProjectRequest;
@@ -29,6 +30,7 @@ class ProjectController extends Controller
         private ProjectCreationService $projectCreationService,
         private ProjectUpdateService $projectUpdateService,
         private ProjectDeleteService $projectDeleteService,
+        private CreateRecentAction $createRecent,
     ) {}
     /**
      * Display a listing of the resource.
@@ -54,6 +56,14 @@ class ProjectController extends Controller
                 'error_code' => 'PROJECT_NOT_FOUND'
             ], 404);
         }
+
+        $data = [
+            'title' => $project->name,
+            'link' => "project/$project->id",
+            'project_id' => $project->id,
+            'icon' => "ph ph-rocket",
+        ];
+        $this->createRecent->execute($data);
 
         return new OneProjectResource($project);
     }

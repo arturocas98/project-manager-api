@@ -19,6 +19,7 @@ class ProjectQuery
         $this->userId = auth()->id(); // <-- ID del usuario autenticado
         $this->query = Project::query();
         $this->applyUserFilter(); // <-- Filtro aplicado SIEMPRE
+
     }
 
     /**
@@ -123,6 +124,8 @@ class ProjectQuery
         $this->applyFilters()
             ->applySorting()
             ->applyEagerLoading();
+
+        $this->createProject->execute($data);
 
         return $this->query->get();
     }

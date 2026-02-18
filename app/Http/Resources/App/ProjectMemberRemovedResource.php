@@ -40,7 +40,6 @@ class ProjectMemberRemovedResource extends JsonResource
             ],
             'links' => [
                 'project' => route('projects.show', $this['project']->id),
-                'members' => route('projects.members.index', $this['project']->id)
             ]
         ];
     }

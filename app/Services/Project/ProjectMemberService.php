@@ -133,25 +133,30 @@ class ProjectMemberService
      * ✅ Obtener el rol específico del proyecto por su tipo
      * (ASUMIMOS que solo hay UNO por tipo)
      */
+    /**
+     * ✅ Obtener el rol específico del proyecto por su tipo
+     * Si no existe, lo crea automáticamente
+     */
     private function getProjectRole(Project $project, string $roleType): ProjectRole
     {
+        // Buscar si existe el rol en el proyecto
         $role = $project->roles()
             ->where('type', $roleType)
             ->first();
 
+        // Si no existe, lo creamos
         if (!$role) {
-            $availableRoles = $project->roles()->pluck('type')->toArray();
+            $role = ProjectRole::create([
+                'project_id' => $project->id,
+                'type' => $roleType
+            ]);
 
-            throw new ProjectException(
-                json_encode([
-                    'error' => 'Rol no disponible',
-                    'reason' => 'El rol especificado no existe en este proyecto',
-                    'requested_role' => $roleType,
-                    'project_id' => $project->id,
-                    'available_roles' => $availableRoles
-                ]),
-                404
-            );
+            // Opcional: Log o evento para tracking
+            \Log::info('Project role created automatically', [
+                'project_id' => $project->id,
+                'role_type' => $roleType,
+                'created_by' => auth()->id()
+            ]);
         }
 
         return $role;

@@ -25,6 +25,11 @@ class ProjectMemberController extends Controller
         private UpdateProjectMemberService $updateprojectMemberService,
     ) {}
 
+    public function show(Request $request, Project $project)
+    {
+
+    }
+
     public function index(Request $request, int $projectId)
     {
         $project = Project::findOrFail($projectId);
