@@ -11,9 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('incidence_state', function (Blueprint $table) {
+        Schema::create('incidence_states', function (Blueprint $table) {
             $table->id();
-            $table->enum('state', ['Progreso', 'Revision', 'Cerrado', 'Bloqueado', 'Terminado']);
+            $table->String('state');//'Progress', 'Review', 'Closed', 'Locked', 'Finished'
+            $table->timestamps();
         });
     }
 
@@ -22,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('incidence_state');
+        Schema::dropIfExists('incidence_states');
     }
 };

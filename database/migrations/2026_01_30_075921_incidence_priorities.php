@@ -11,10 +11,10 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('incidence_priority', function (Blueprint $table) {
+        Schema::create('incidence_priorities', function (Blueprint $table) {
             $table->id();
-            $table->String('name');
-            $table->integer('level');
+            $table->String('priority');//Low, Medium, High, Critical
+            $table->timestamps();
         });
     }
 
@@ -23,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('incidence_priority');
+        Schema::dropIfExists('incidence_priorities');
     }
 };

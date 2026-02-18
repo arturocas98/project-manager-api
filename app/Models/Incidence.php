@@ -11,10 +11,13 @@ class Incidence extends Model
 {
     use HasFactory;
 
+    protected $table = 'incidences';
+
     protected $fillable = [
         'title',
         'project_id',
         'incidence_type_id',
+        'incidence_priority_id',
         'incidence_state_id',
         'parent_incidence_id',
         'created_by_id',
@@ -38,11 +41,11 @@ class Incidence extends Model
     }
     public function incidenceType():BelongsTo
     {
-        return $this->belongsTo(Incidence_type::class,  'incidence_type_id');
+        return $this->belongsTo(IncidenceType::class,  'incidence_type_id');
     }
     public function incidenceState():BelongsTo
     {
-        return $this->belongsTo(Incidence_state::class, 'incidence_state_id');
+        return $this->belongsTo(IncidenceState::class, 'incidence_state_id');
     }
     public function parentIncidence():BelongsTo
     {
