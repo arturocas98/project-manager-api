@@ -10,24 +10,38 @@ class ProjectMemberResource extends JsonResource
     public function toArray($request)
     {
         return [
-            'assignment' => [
-                'id' => $this->assignment->id,
-                'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
+            'data' => [
+                'assignment' => [
+                    'id' => $this->assignment->id,
+                    'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
+                ],
+                'project' => [
+                    'id' => $this->project->id,
+                    'name' => $this->project->name,
+                    'key' => $this->project->key
+                ],
+                'user' => [
+                    'id' => $this->user->id,
+                    'name' => $this->user->name,
+                    'email' => $this->user->email
+                ],
+                'role' => [
+                    'id' => $this->role->id,
+                    'type' => $this->role->type,
+                    'permissions' => $this->getRolePermissions($this->role)
+                ],
             ],
-            'project' => [
-                'id' => $this->project->id,
-                'name' => $this->project->name,
-                'key' => $this->project->key
+            'meta' => [
+                'api_version' => '1.0.0',
+                'timestamp' => now()->toIso8601String(),
+                'resource_type' => 'project_member',
             ],
-            'user' => [
-                'id' => $this->user->id,
-                'name' => $this->user->name,
-                'email' => $this->user->email
-            ],
-            'role' => [
-                'id' => $this->role->id,
-                'type' => $this->role->type,
-                'permissions' => $this->getRolePermissions($this->role)
+            'links' => [
+                'self' => route('projects.members.show', [
+                    'project' => $this->project->id,
+                    'member' => $this->assignment->id
+                ]),
+                'parent' => route('projects.members.index', ['project' => $this->project->id]),
             ],
         ];
     }

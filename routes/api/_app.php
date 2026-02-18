@@ -8,27 +8,51 @@ use App\Http\Middleware\CheckProjectAdmin;
 use App\Http\Controllers\IncidenciaAssignedController;
 
 Route::middleware(['auth:api'])->group(function () {
-    Route::apiResource('/projects', ProjectController::class)->except(['update','destroy']);
-    Route::middleware([CheckProjectAdmin::class])->group(function () {
-        Route::put('/projects/{project}', [ProjectController::class, 'update']);
-        Route::patch('/projects/{project}', [ProjectController::class, 'update']); // Para PATCH
-        Route::delete('/projects/{project}', [ProjectController::class, 'destroy']);
+    Route::apiResource('projects', ProjectController::class)->except(['update', 'destroy']);
 
-        Route::get('/projects/{project}/members', [ProjectMemberController::class, 'index']);
-        Route::get('/projects/{project}/members/{member}', [ProjectMemberController::class, 'show']);
-        Route::post('/projects/{project}/members', [ProjectMemberController::class, 'store']);
-        Route::patch('/projects/{project}/members/{member}/role', [ProjectMemberController::class, 'updateRole']);
-        Route::delete('/projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy']);
+    Route::middleware([CheckProjectAdmin::class])->group(function () {
+        Route::put('projects/{project}', [ProjectController::class, 'update'])
+            ->name('projects.update');
+        Route::patch('projects/{project}', [ProjectController::class, 'update'])
+            ->name('projects.patch');
+        Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
+            ->name('projects.destroy');
+
+        Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
+            ->name('projects.members.index');
+        Route::get('projects/{project}/members/{member}', [ProjectMemberController::class, 'show'])
+            ->name('projects.members.show');
+        Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
+            ->name('projects.members.store');
+        Route::patch('projects/{project}/members/{member}/role', [ProjectMemberController::class, 'updateRole'])
+            ->name('projects.members.updateRole');
+        Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])
+            ->name('projects.members.destroy');
     });
+
+
     Route::middleware([CheckRole::class])->group(function () {
-        Route::get('projects/incidences/{project}', [IncidenciaController::class, 'index']);
-        Route::post('projects/incidences/{project}', [IncidenciaController::class, 'store']);
-        Route::put('projects/incidences/{incidences}', [IncidenciaController::class, 'update']);
-        Route::delete('projects/incidences/{incidences}', [IncidenciaController::class, 'destroy']);
-        Route::get('/incidences/assigment/{incidences}', [IncidenciaAssignedController::class, 'show']);
-        Route::post('/incidences/assigment/{incidences}', [IncidenciaAssignedController::class, 'store']);
-        Route::put('/incidences/assigment/{incidences}/update', [IncidenciaAssignedController::class, 'update']);
-        Route::delete('/incidences/assigment/{incidences}', [IncidenciaAssignedController::class, 'destroy']);
+        Route::get('projects/{project}/incidences', [IncidenciaController::class, 'index'])
+            ->name('projects.incidences.index');
+        Route::post('projects/{project}/incidences', [IncidenciaController::class, 'store'])
+            ->name('projects.incidences.store');
+        Route::put('projects/{project}/incidences/{incidence}', [IncidenciaController::class, 'update'])
+            ->name('projects.incidences.update');
+        Route::delete('projects/{project}/incidences/{incidence}', [IncidenciaController::class, 'destroy'])
+            ->name('projects.incidences.destroy');
+
+        Route::get('incidences/{incidence}/assignment', [IncidenciaAssignedController::class, 'show'])
+            ->name('incidences.assignment.show');
+
+        Route::post('incidences/{incidence}/assignment', [IncidenciaAssignedController::class, 'store'])
+            ->name('incidences.assignment.store');
+
+        Route::put('incidences/{incidence}/assignment', [IncidenciaAssignedController::class, 'update'])
+            ->name('incidences.assignment.update');
+
+        Route::delete('incidences/{incidence}/assignment', [IncidenciaAssignedController::class, 'destroy'])
+            ->name('incidences.assignment.destroy');
     });
-    Route::apiResource('/teams', App\Http\Controllers\ProjectController::class);
+
+    Route::apiResource('teams', App\Http\Controllers\ProjectController::class);
 });

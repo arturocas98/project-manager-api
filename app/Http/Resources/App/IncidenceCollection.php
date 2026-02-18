@@ -66,6 +66,11 @@ class IncidenceCollection extends ResourceCollection
                     'name' => $this->projectName,
                 ],
             ],
+            'links' => [
+                'self' => route('projects.incidences.index', ['project' => $this->projectId]),
+                'parent' => route('projects.show', ['project' => $this->projectId]),
+                'create' => route('projects.incidences.store', ['project' => $this->projectId]),
+            ],
         ];
     }
 }
