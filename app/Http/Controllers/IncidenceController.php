@@ -9,7 +9,7 @@ use App\Services\Incidence\CreateIndiceService;
 use App\Services\Incidence\IncidenceService;
 use Illuminate\Http\Request;
 
-class IncidenciaController extends Controller
+class IncidenceController extends Controller
 {
 
     public function __construct(

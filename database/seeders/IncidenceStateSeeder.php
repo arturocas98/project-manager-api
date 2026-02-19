@@ -10,12 +10,12 @@ class IncidenceStateSeeder extends Seeder
     public function run(): void
     {
         $states = [
-            'Open',
-            'Progress',
-            'Review',
-            'Closed',
-            'Locked',
-            'Finished',
+            'open',
+            'progress',
+            'review',
+            'closed',
+            'locked',
+            'finished',
         ];
 
         foreach ($states as $state) {

@@ -11,10 +11,10 @@ class IncidencePrioritySeeder extends Seeder
     public function run(): void
     {
         $states = [
-            'Low',
-            'Medium',
-            'High',
-            'Critical',
+            'low',
+            'medium',
+            'high',
+            'critical',
         ];
 
         foreach ($states as $state) {

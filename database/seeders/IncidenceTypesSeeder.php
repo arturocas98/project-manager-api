@@ -10,9 +10,8 @@ class IncidenceTypesSeeder extends Seeder
     public function run(): void
     {
         $types = [
-            'Epic',
+            'epic',
             'history_user',
-            'Miembro del Equipo',
             'task',
             'bug',
             'subtask',

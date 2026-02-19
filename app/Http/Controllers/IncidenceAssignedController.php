@@ -5,7 +5,7 @@ namespace App\Http\Controllers;
 use App\Http\Resources\App\IncidenceCollection;
 use Illuminate\Http\Request;
 
-class IncidenciaAssignedController extends Controller
+class IncidenceAssignedController extends Controller
 {
     public function __construct(){}
 
