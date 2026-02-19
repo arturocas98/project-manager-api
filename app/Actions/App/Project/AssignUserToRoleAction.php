@@ -3,7 +3,6 @@
 namespace App\Actions\App\Project;
 
 use App\Exceptions\ProjectException;
-use App\Models\ProjectRole;
 use App\Models\ProjectUser;
 
 class AssignUserToRoleAction
@@ -22,7 +21,7 @@ class AssignUserToRoleAction
                         'error' => 'Usuario ya asignado',
                         'reason' => 'El usuario ya tiene este rol en el proyecto',
                         'user_id' => $userId,
-                        'project_role_id' => $projectRoleId
+                        'project_role_id' => $projectRoleId,
                     ]),
                     400
                 );
@@ -31,7 +30,7 @@ class AssignUserToRoleAction
             // Crear la asignación
             $assignment = ProjectUser::create([
                 'project_role_id' => $projectRoleId,
-                'user_id' => $userId
+                'user_id' => $userId,
             ]);
 
             return $assignment;
@@ -42,7 +41,7 @@ class AssignUserToRoleAction
             throw new ProjectException(
                 json_encode([
                     'error' => 'Error inesperado',
-                    'reason' => 'Error al asignar usuario al rol: ' . $e->getMessage()
+                    'reason' => 'Error al asignar usuario al rol: '.$e->getMessage(),
                 ]),
                 500
             );

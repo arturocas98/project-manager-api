@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -16,14 +15,15 @@ class Project extends Model
         'name',
         'key',
         'description',
-        'created_by'
+        'created_by',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
         'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
+        'deleted_at' => 'datetime',
     ];
+
     public function roles(): HasMany
     {
         return $this->hasMany(ProjectRole::class);
@@ -52,7 +52,7 @@ class Project extends Model
     public function hasUserAccess(int $userId): bool
     {
         return $this->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
     }
 
@@ -62,7 +62,7 @@ class Project extends Model
     public function getUserRole(int $userId): ?ProjectRole
     {
         return $this->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->with('permissionScheme.scheme.permissions')
             ->first();
     }
@@ -73,7 +73,7 @@ class Project extends Model
     public function getUserRoles(int $userId)
     {
         return $this->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->with('permissionScheme.scheme.permissions')
             ->get();
     }
@@ -83,6 +83,6 @@ class Project extends Model
      */
     public function scopeForUser($query, int $userId)
     {
-        return $query->whereHas('roles.users', fn($q) => $q->where('user_id', $userId));
+        return $query->whereHas('roles.users', fn ($q) => $q->where('user_id', $userId));
     }
 }

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Queries\App;
 
 use App\Models\Incidence;
@@ -19,6 +18,7 @@ class IncidenceQuery
     public function byProject(int $projectId): self
     {
         $this->query->where('project_id', $projectId);
+
         return $this;
     }
 
@@ -29,14 +29,16 @@ class IncidenceQuery
             'incidenceState',
             'createdBy:id,name,email',
             'assignedUser:id,name,email',
-            'parentIncidence:id,title'
+            'parentIncidence:id,title',
         ]);
+
         return $this;
     }
 
     public function orderByLatest(): self
     {
         $this->query->orderBy('created_at', 'desc');
+
         return $this;
     }
 
@@ -49,6 +51,7 @@ class IncidenceQuery
     {
         return $this->query->paginate($perPage);
     }
+
     /**/
     public function create(array $data): Incidence
     {

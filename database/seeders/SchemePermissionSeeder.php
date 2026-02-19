@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProjectPermissionScheme;
 use App\Models\ProjectPermission;
+use App\Models\ProjectPermissionScheme;
 use App\Models\SchemePermission;
 use Illuminate\Database\Seeder;
 
@@ -27,7 +27,7 @@ class SchemePermissionSeeder extends Seeder
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('Administrators: ' . $permissions->count() . ' permisos asignados');
+            $this->command->info('Administrators: '.$permissions->count().' permisos asignados');
         }
 
         // 2. Gestor de Proyecto
@@ -51,7 +51,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Gestor de Proyecto: ' . $count . ' permisos asignados');
+            $this->command->info('Gestor de Proyecto: '.$count.' permisos asignados');
         }
 
         // 3. Miembro del Equipo
@@ -73,7 +73,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Miembro del Equipo: ' . $count . ' permisos asignados');
+            $this->command->info('Miembro del Equipo: '.$count.' permisos asignados');
         }
 
         // 4. Invitado
@@ -95,7 +95,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Invitado: ' . $count . ' permisos asignados');
+            $this->command->info('Invitado: '.$count.' permisos asignados');
         }
 
         // 5. Supervisor
@@ -117,7 +117,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Supervisor: ' . $count . ' permisos asignados');
+            $this->command->info('Supervisor: '.$count.' permisos asignados');
         }
 
         // 6. Colaborador Externo
@@ -138,7 +138,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Colaborador Externo: ' . $count . ' permisos asignados');
+            $this->command->info('Colaborador Externo: '.$count.' permisos asignados');
         }
 
         // 7. Propietario (dueño del proyecto) - mismos permisos que admin
@@ -149,7 +149,7 @@ class SchemePermissionSeeder extends Seeder
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('Propietario: ' . $permissions->count() . ' permisos asignados');
+            $this->command->info('Propietario: '.$permissions->count().' permisos asignados');
         }
 
         // 8. Desarrollador
@@ -171,7 +171,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Desarrollador: ' . $count . ' permisos asignados');
+            $this->command->info('Desarrollador: '.$count.' permisos asignados');
         }
 
         // 9. Tester
@@ -193,7 +193,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Tester: ' . $count . ' permisos asignados');
+            $this->command->info('Tester: '.$count.' permisos asignados');
         }
 
         // 10. Cliente
@@ -215,7 +215,7 @@ class SchemePermissionSeeder extends Seeder
                     $count++;
                 }
             }
-            $this->command->info('Cliente: ' . $count . ' permisos asignados');
+            $this->command->info('Cliente: '.$count.' permisos asignados');
         }
 
         $this->command->info('====================================');

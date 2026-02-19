@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\App;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProjectMemberResource extends JsonResource
@@ -13,22 +12,22 @@ class ProjectMemberResource extends JsonResource
             'data' => [
                 'assignment' => [
                     'id' => $this->assignment->id,
-                    'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
+                    'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s'),
                 ],
                 'project' => [
                     'id' => $this->project->id,
                     'name' => $this->project->name,
-                    'key' => $this->project->key
+                    'key' => $this->project->key,
                 ],
                 'user' => [
                     'id' => $this->user->id,
                     'name' => $this->user->name,
-                    'email' => $this->user->email
+                    'email' => $this->user->email,
                 ],
                 'role' => [
                     'id' => $this->role->id,
                     'type' => $this->role->type,
-                    'permissions' => $this->getRolePermissions($this->role)
+                    'permissions' => $this->getRolePermissions($this->role),
                 ],
             ],
             'meta' => [
@@ -39,7 +38,7 @@ class ProjectMemberResource extends JsonResource
             'links' => [
                 'self' => route('projects.members.show', [
                     'project' => $this->project->id,
-                    'member' => $this->assignment->id
+                    'member' => $this->assignment->id,
                 ]),
                 'parent' => route('projects.members.index', ['project' => $this->project->id]),
             ],
@@ -48,13 +47,13 @@ class ProjectMemberResource extends JsonResource
 
     private function getRolePermissions($role): array
     {
-        if (!$role->relationLoaded('permissionScheme')) {
+        if (! $role->relationLoaded('permissionScheme')) {
             return [];
         }
 
         $scheme = $role->permissionScheme?->scheme;
 
-        if (!$scheme || !$scheme->relationLoaded('permissions')) {
+        if (! $scheme || ! $scheme->relationLoaded('permissions')) {
             return [];
         }
 

@@ -19,5 +19,4 @@ class SaveTeamUserAction
             return $teamUser->team()->first();
         });
     }
-
 }

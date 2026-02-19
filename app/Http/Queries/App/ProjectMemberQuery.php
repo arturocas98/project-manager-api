@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Queries\App;
 
 use App\Models\Project;
@@ -11,7 +10,9 @@ use Illuminate\Support\Facades\DB;
 class ProjectMemberQuery
 {
     private Project $project;
+
     private Request $request;
+
     private Builder $query;
 
     public function __construct(Project $project, Request $request)
@@ -40,7 +41,7 @@ class ProjectMemberQuery
                 'users.id as user_id',
                 'users.name as user_name',
                 'users.email as user_email',
-                'users.created_at as user_joined_at'
+                'users.created_at as user_joined_at',
             ]);
     }
 
@@ -57,8 +58,8 @@ class ProjectMemberQuery
         // Filtrar por nombre de usuario
         if ($this->request->has('search')) {
             $this->query->where(function ($q) {
-                $q->where('users.name', 'like', '%' . $this->request->search . '%')
-                    ->orWhere('users.email', 'like', '%' . $this->request->search . '%');
+                $q->where('users.name', 'like', '%'.$this->request->search.'%')
+                    ->orWhere('users.email', 'like', '%'.$this->request->search.'%');
             });
         }
 
@@ -86,7 +87,7 @@ class ProjectMemberQuery
             'assigned_at' => 'project_users.created_at',
             'user_name' => 'users.name',
             'role_type' => 'project_roles.type',
-            'updated_at' => 'project_users.updated_at'
+            'updated_at' => 'project_users.updated_at',
         ];
 
         if (array_key_exists($sortField, $allowedFields)) {
@@ -133,7 +134,7 @@ class ProjectMemberQuery
             ->select([
                 'project_roles.id as role_id',
                 'project_roles.type as role_type',
-                \DB::raw('COUNT(project_users.id) as members_count')
+                \DB::raw('COUNT(project_users.id) as members_count'),
             ])
             ->get()
             ->toArray();

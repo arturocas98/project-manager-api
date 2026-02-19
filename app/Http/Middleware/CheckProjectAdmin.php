@@ -25,18 +25,18 @@ class CheckProjectAdmin
             ->where('project_users.user_id', $userId)
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             return response()->json([
                 'success' => false,
                 'message' => 'Acción no permitida. Se requiere rol de Administrador.',
-                'error_code' => 'ADMIN_REQUIRED'
+                'error_code' => 'ADMIN_REQUIRED',
             ], 403);
         }
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             return response()->json([
                 'success' => false,
                 'message' => 'Acción no permitida. Se requiere rol de Administrador.',
-                'error_code' => 'ADMIN_REQUIRED'
+                'error_code' => 'ADMIN_REQUIRED',
             ], 403);
         }
 

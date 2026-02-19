@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Queries\App;
 
 use App\Models\Project;
@@ -10,7 +9,9 @@ use Illuminate\Http\Request;
 class ProjectQuery
 {
     private Builder $query;
+
     private Request $request;
+
     private int $userId;
 
     public function __construct(Request $request)
@@ -40,9 +41,9 @@ class ProjectQuery
         // Búsqueda por nombre, key o descripción
         if ($this->request->has('search')) {
             $this->query->where(function ($q) {
-                $q->where('name', 'like', '%' . $this->request->search . '%')
-                    ->orWhere('key', 'like', '%' . $this->request->search . '%')
-                    ->orWhere('description', 'like', '%' . $this->request->search . '%');
+                $q->where('name', 'like', '%'.$this->request->search.'%')
+                    ->orWhere('key', 'like', '%'.$this->request->search.'%')
+                    ->orWhere('description', 'like', '%'.$this->request->search.'%');
             });
         }
 
@@ -50,7 +51,7 @@ class ProjectQuery
         if ($this->request->has('role')) {
             $this->query->whereHas('roles', function ($q) {
                 $q->where('type', $this->request->role)
-                    ->whereHas('users', fn($q) => $q->where('user_id', $this->userId));
+                    ->whereHas('users', fn ($q) => $q->where('user_id', $this->userId));
             });
         }
 
@@ -93,10 +94,10 @@ class ProjectQuery
         $this->query->with([
             'roles' => function ($q) {
                 // SOLO el rol del usuario autenticado
-                $q->whereHas('users', fn($q) => $q->where('user_id', $this->userId))
+                $q->whereHas('users', fn ($q) => $q->where('user_id', $this->userId))
                     ->with(['permissionScheme.scheme.permissions']);
             },
-            'createdBy'
+            'createdBy',
         ]);
 
         return $this;
@@ -139,13 +140,14 @@ class ProjectQuery
             ->where('id', $id)
             ->with([
                 'roles' => function ($q) {
-                    $q->whereHas('users', fn($q) => $q->where('user_id', $this->userId))
+                    $q->whereHas('users', fn ($q) => $q->where('user_id', $this->userId))
                         ->with(['permissionScheme.scheme.permissions']);
                 },
-                'createdBy'
+                'createdBy',
             ])
             ->first();
     }
+
     /*
      Metodos para show
     */
@@ -160,12 +162,13 @@ class ProjectQuery
         // Buscar el proyecto
         return $this->query->where('id', $id)->first();
     }
+
     private function applyShowEagerLoading(): void
     {
         $this->query->with([
             // Rol del usuario autenticado
             'roles' => function ($q) {
-                $q->whereHas('users', fn($q) => $q->where('user_id', $this->userId))
+                $q->whereHas('users', fn ($q) => $q->where('user_id', $this->userId))
                     ->with(['permissionScheme.scheme.permissions']);
             },
             // Creador del proyecto
@@ -173,8 +176,7 @@ class ProjectQuery
             // Todos los roles del proyecto (para stats)
             'roles.users' => function ($q) {
                 $q->select('users.id', 'users.name', 'users.email');
-            }
+            },
         ]);
     }
-
 }

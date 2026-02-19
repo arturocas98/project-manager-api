@@ -2,8 +2,8 @@
 
 namespace App\Actions\App\Project;
 
-use App\Models\ProjectUser;
 use App\Exceptions\ProjectException;
+use App\Models\ProjectUser;
 use Illuminate\Support\Facades\DB;
 
 class UpdateMemberRoleAction
@@ -20,12 +20,12 @@ class UpdateMemberRoleAction
                     ->lockForUpdate()
                     ->first();
 
-                if (!$assignment) {
+                if (! $assignment) {
                     throw new ProjectException(
                         json_encode([
                             'error' => 'Asignación no encontrada',
                             'reason' => 'El registro de asignación no existe',
-                            'assignment_id' => $assignmentId
+                            'assignment_id' => $assignmentId,
                         ]),
                         404
                     );
@@ -50,7 +50,7 @@ class UpdateMemberRoleAction
             throw new ProjectException(
                 json_encode([
                     'error' => 'Error inesperado',
-                    'reason' => 'Error al cambiar el rol: ' . $e->getMessage()
+                    'reason' => 'Error al cambiar el rol: '.$e->getMessage(),
                 ]),
                 500
             );

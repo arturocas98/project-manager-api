@@ -14,6 +14,7 @@ use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\ResponseFromFile;
 use Knuckles\Scribe\Attributes\Unauthenticated;
+
 #[Group('Auth')]
 class AuthenticationController
 {
@@ -26,7 +27,7 @@ class AuthenticationController
     #[Response(content: ['access_token' => '...'], description: 'With 2FA disabled')]
     #[Response(content: ['two_factor_authentication' => true], description: 'With 2FA enabled')]
     #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function login(LoginRequest $request, Generate2FACache $generate2FACache): JsonResource | JsonResponse
+    public function login(LoginRequest $request, Generate2FACache $generate2FACache): JsonResource|JsonResponse
     {
         $user = $request->getAuthenticatedUser();
 
@@ -37,6 +38,7 @@ class AuthenticationController
                 'two_factor_authentication' => true,
             ]);
         }
+
         return new JsonResource([
             'access_token' => $user->createToken("users:{$user->getKey()}")->accessToken,
         ]);
@@ -50,11 +52,13 @@ class AuthenticationController
     #[Unauthenticated]
     #[Response(content: ['user' => '...'], status: JsonResponse::HTTP_CREATED, description: 'Registered')]
     #[Response(content: ['message' => 'Email already exists'], status: JsonResponse::HTTP_CONFLICT, description: 'Duplicate email')]
-    #[ResponseFromFile(file: 'responses/422.json',status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function Register(RegisterRequest $request, UserCreateAction $action): JsonResponse{
+    #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
+    public function Register(RegisterRequest $request, UserCreateAction $action): JsonResponse
+    {
         $data = $request->validated();
         $user = $action->execute($data);
-        return response()->json(['User' => new JsonResource($user)],status: JsonResponse::HTTP_CREATED);
+
+        return response()->json(['User' => new JsonResource($user)], status: JsonResponse::HTTP_CREATED);
     }
 
     /**
@@ -71,6 +75,4 @@ class AuthenticationController
 
         return new JsonResponse(status: JsonResponse::HTTP_NO_CONTENT);
     }
-
-
 }

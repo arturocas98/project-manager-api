@@ -2,7 +2,6 @@
 
 namespace App\Http\Resources\App;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProjectResource extends JsonResource
@@ -20,11 +19,11 @@ class ProjectResource extends JsonResource
             'created_at' => $this->created_at->format('Y-m-d H:i:s'),
 
             // Usuario que creó el proyecto
-            'created_by' => $this->whenLoaded('createdBy', function() {
+            'created_by' => $this->whenLoaded('createdBy', function () {
                 return [
                     'id' => $this->createdBy->id,
                     'name' => $this->createdBy->name,
-                    'email' => $this->createdBy->email
+                    'email' => $this->createdBy->email,
                 ];
             }),
 
@@ -36,11 +35,11 @@ class ProjectResource extends JsonResource
 
             // Estadísticas rápidas (opcional)
             'stats' => [
-                'members_count' => $this->whenLoaded('roles', function() {
-                    return $this->roles->sum(function($role) {
+                'members_count' => $this->whenLoaded('roles', function () {
+                    return $this->roles->sum(function ($role) {
                         return $role->users->count();
                     });
-                }, 0)
+                }, 0),
             ],
         ];
     }
@@ -50,13 +49,13 @@ class ProjectResource extends JsonResource
      */
     private function getPermissions($role): array
     {
-        if (!$role->relationLoaded('permissionScheme')) {
+        if (! $role->relationLoaded('permissionScheme')) {
             return [];
         }
 
         $scheme = $role->permissionScheme?->scheme;
 
-        if (!$scheme || !$scheme->relationLoaded('permissions')) {
+        if (! $scheme || ! $scheme->relationLoaded('permissions')) {
             return [];
         }
 

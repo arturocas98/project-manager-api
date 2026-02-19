@@ -3,6 +3,7 @@
 namespace App\Actions\App\Recent;
 
 use App\Models\Recent;
+
 class CreateRecentAction
 {
     public function execute(array $data): ?Recent
@@ -25,14 +26,14 @@ class CreateRecentAction
                 'icon' => $data['icon'],
             ]);
 
-            if (!$recent) {
+            if (! $recent) {
                 throw new \Exception('No se pudo crear el registro recent');
             }
 
             return $recent;
 
         } catch (\Exception $e) {
-            throw new \Exception('Error al crear el registro recent: ' . $e->getMessage());
+            throw new \Exception('Error al crear el registro recent: '.$e->getMessage());
         }
     }
 }

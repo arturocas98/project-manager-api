@@ -86,7 +86,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function projects()
     {
-        return Project::whereHas('roles.users', fn($q) => $q->where('user_id', $this->id));
+        return Project::whereHas('roles.users', fn ($q) => $q->where('user_id', $this->id));
     }
 
     /**
@@ -95,7 +95,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasProjectAccess(int $projectId): bool
     {
         return $this->projectRoles()
-            ->whereHas('project', fn($q) => $q->where('id', $projectId))
+            ->whereHas('project', fn ($q) => $q->where('id', $projectId))
             ->exists();
     }
 
@@ -105,7 +105,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getProjectRole(int $projectId): ?ProjectRole
     {
         return $this->projectRoles()
-            ->whereHas('project', fn($q) => $q->where('id', $projectId))
+            ->whereHas('project', fn ($q) => $q->where('id', $projectId))
             ->first();
     }
 
@@ -116,12 +116,12 @@ class User extends Authenticatable implements MustVerifyEmail
     {
         $role = $this->getProjectRole($projectId);
 
-        if (!$role) {
+        if (! $role) {
             return false;
         }
 
         // Cargar la relación si no está cargada
-        if (!$role->relationLoaded('permissionScheme')) {
+        if (! $role->relationLoaded('permissionScheme')) {
             $role->load('permissionScheme.scheme.permissions');
         }
 

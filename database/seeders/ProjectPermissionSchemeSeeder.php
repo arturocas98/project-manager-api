@@ -30,6 +30,6 @@ class ProjectPermissionSchemeSeeder extends Seeder
         }
 
         $this->command->info('Project permission schemes created successfully!');
-        $this->command->info('Total schemes: ' . count($schemes));
+        $this->command->info('Total schemes: '.count($schemes));
     }
 }

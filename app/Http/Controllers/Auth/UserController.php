@@ -10,10 +10,10 @@ use App\Http\Resources\Auth\UserResource;
 use App\Models\User;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
+use Illuminate\Http\Response;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
 use Knuckles\Scribe\Attributes\Subgroup;
-use Illuminate\Http\Response;
 
 #[Group('Auth')]
 #[Subgroup('User')]
@@ -34,9 +34,9 @@ class UserController extends Controller
     public function show($id): UserResource
     {
         $user = User::withTrashed()->findOrFail($id);
+
         return new UserResource($user);
     }
-
 
     /**
      * Store a newly created resource in storage.
@@ -44,9 +44,9 @@ class UserController extends Controller
     public function store(UserRequest $request, SaveUserAction $action): UserResource
     {
         $user = $action->execute($request->safe()->collect());
+
         return new UserResource($user->refresh());
     }
-
 
     /**
      * Update the specified resource in storage.
@@ -58,10 +58,12 @@ class UserController extends Controller
     ): UserResource|JsonResponse {
         $user = User::withTrashed()->findOrFail($id);
         $user = $action->execute($request->safe()->collect(), $user);
-        if (!$user->deleted_at) return new UserResource($user);
-        else return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        if (! $user->deleted_at) {
+            return new UserResource($user);
+        } else {
+            return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        }
     }
-
 
     /**
      * Remove the specified resource from storage.

@@ -3,12 +3,12 @@
 namespace App\Http\Resources\App;
 
 use Illuminate\Http\Request;
-use Illuminate\Http\Resources\Json\JsonResource;
 use Illuminate\Http\Resources\Json\ResourceCollection;
 
 class IncidenceCollection extends ResourceCollection
 {
     private int $projectId;
+
     private string $projectName;
 
     public function __construct($resource, int $projectId, string $projectName)

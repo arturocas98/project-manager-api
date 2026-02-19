@@ -4,7 +4,6 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\App\AddProjectMemberRequest;
 use App\Http\Requests\App\UpdateMemberRoleRequest;
-use App\Http\Resources\App\ProjectMemberCollection;
 use App\Http\Resources\App\ProjectMemberRemovedResource;
 use App\Http\Resources\App\ProjectMemberResource;
 use App\Http\Resources\App\ProjectMemberRoleUpdatedResource;
@@ -25,10 +24,7 @@ class ProjectMemberController extends Controller
         private UpdateProjectMemberService $updateprojectMemberService,
     ) {}
 
-    public function show(Request $request, Project $project)
-    {
-
-    }
+    public function show(Request $request, Project $project) {}
 
     public function index(Request $request, int $projectId)
     {
@@ -40,7 +36,7 @@ class ProjectMemberController extends Controller
             'success' => true,
             'data' => new ProjectMembersResource($result['members']),
             'stats' => $result['stats'],
-            'filters' => $result['filters']
+            'filters' => $result['filters'],
         ]);
     }
 
@@ -57,7 +53,7 @@ class ProjectMemberController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Miembro añadido exitosamente al proyecto',
-            'data' => new ProjectMemberResource((object) $result)
+            'data' => new ProjectMemberResource((object) $result),
         ], 201);
     }
 

@@ -15,7 +15,6 @@ class ProjectMemberService
         private AssignUserToRoleAction $assignUserToRole,
     ) {}
 
-
     public function addMember(Project $project, int $userId, string $roleType): array
     {
         // VALIDACIONES
@@ -36,7 +35,7 @@ class ProjectMemberService
                 'assignment' => $assignment,
                 'project' => $project,
                 'role' => $projectRole,
-                'user' => $assignment->user
+                'user' => $assignment->user,
             ];
         });
     }
@@ -49,7 +48,7 @@ class ProjectMemberService
                     'error' => 'Proyecto no disponible',
                     'reason' => 'No se pueden añadir miembros a un proyecto eliminado',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -60,11 +59,11 @@ class ProjectMemberService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -72,12 +71,12 @@ class ProjectMemberService
 
         $isAdmin = $project->roles()
             ->where('type', 'Administrators')
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $userRole = $project->roles()
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
                 ->first();
 
             $roleName = $userRole?->type ?? 'Sin rol asignado';
@@ -89,7 +88,7 @@ class ProjectMemberService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'Administrators',
                 ]),
                 403
             );
@@ -120,9 +119,9 @@ class ProjectMemberService
                     'current_role' => [
                         'id' => $existingAssignment->project_role_id,
                         'type' => $existingAssignment->role->type,
-                        'assignment_id' => $existingAssignment->id
+                        'assignment_id' => $existingAssignment->id,
                     ],
-                    'suggestion' => 'Solo se permite un rol por usuario en el proyecto'
+                    'suggestion' => 'Solo se permite un rol por usuario en el proyecto',
                 ]),
                 400
             );
@@ -145,17 +144,17 @@ class ProjectMemberService
             ->first();
 
         // Si no existe, lo creamos
-        if (!$role) {
+        if (! $role) {
             $role = ProjectRole::create([
                 'project_id' => $project->id,
-                'type' => $roleType
+                'type' => $roleType,
             ]);
 
             // Opcional: Log o evento para tracking
             \Log::info('Project role created automatically', [
                 'project_id' => $project->id,
                 'role_type' => $roleType,
-                'created_by' => auth()->id()
+                'created_by' => auth()->id(),
             ]);
         }
 

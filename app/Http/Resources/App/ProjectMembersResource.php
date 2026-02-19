@@ -3,6 +3,7 @@
 namespace App\Http\Resources\App;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+
 class ProjectMembersResource extends JsonResource
 {
     public function toArray($request)
@@ -23,11 +24,11 @@ class ProjectMembersResource extends JsonResource
                         'last_page' => $this->resource->lastPage(),
                         'per_page' => $this->resource->perPage(),
                         'to' => $this->resource->lastItem(),
-                        'total' => $this->resource->total()
+                        'total' => $this->resource->total(),
                     ],
                     'project' => [
-                        'id' => $projectId
-                    ]
+                        'id' => $projectId,
+                    ],
                 ],
                 'links' => [
                     'self' => $this->resource->url($this->resource->currentPage()),
@@ -36,8 +37,8 @@ class ProjectMembersResource extends JsonResource
                     'prev' => $this->resource->previousPageUrl(),
                     'next' => $this->resource->nextPageUrl(),
                     'parent' => route('projects.show', ['project' => $projectId]),
-                    'create' => route('projects.members.store', ['project' => $projectId])
-                ]
+                    'create' => route('projects.members.store', ['project' => $projectId]),
+                ],
             ];
         }
 
@@ -48,16 +49,16 @@ class ProjectMembersResource extends JsonResource
                 'api_version' => '1.0.0',
                 'timestamp' => now()->toIso8601String(),
                 'resource_type' => 'project_member',
-                'project_id' => $projectId
+                'project_id' => $projectId,
             ],
             'links' => [
                 'self' => route('projects.members.show', [
                     'project' => $projectId,
-                    'member' => $this->resource->assignment_id ?? $this->resource['assignment']['id'] ?? null
+                    'member' => $this->resource->assignment_id ?? $this->resource['assignment']['id'] ?? null,
                 ]),
                 'parent' => route('projects.members.index', ['project' => $projectId]),
-                'project' => route('projects.show', ['project' => $projectId])
-            ]
+                'project' => route('projects.show', ['project' => $projectId]),
+            ],
         ];
     }
 
@@ -66,7 +67,7 @@ class ProjectMembersResource extends JsonResource
      */
     private function mapMembers(array $members): array
     {
-        return array_map(fn($member) => $this->mapMember($member), $members);
+        return array_map(fn ($member) => $this->mapMember($member), $members);
     }
 
     /**
@@ -85,13 +86,13 @@ class ProjectMembersResource extends JsonResource
                 'links' => $assignmentId ? [
                     'self' => route('projects.members.show', [
                         'project' => $projectId,
-                        'member' => $assignmentId
+                        'member' => $assignmentId,
                     ]),
                     'delete' => route('projects.members.destroy', [
                         'project' => $projectId,
-                        'member' => $assignmentId
-                    ])
-                ] : []
+                        'member' => $assignmentId,
+                    ]),
+                ] : [],
             ],
             'user' => [
                 'id' => $member->user_id ?? $member['user']['id'] ?? null,
@@ -112,7 +113,7 @@ class ProjectMembersResource extends JsonResource
      */
     private function getRolePermissions($roleId): array
     {
-        if (!$roleId) {
+        if (! $roleId) {
             return [];
         }
 

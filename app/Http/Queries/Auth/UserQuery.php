@@ -2,11 +2,9 @@
 
 namespace App\Http\Queries\Auth;
 
-use App\Enums\RoleEnum;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\AllowedFilter;
-use Illuminate\Database\Eloquent\Builder;
 use TeamQ\Datatables\Filters\GlobalFilter;
 use TeamQ\Datatables\QueryBuilder;
 
@@ -24,7 +22,7 @@ class UserQuery extends QueryBuilder
                     'agreement_id',
                     'university_id',
                     'email',
-                    'roles.name'
+                    'roles.name',
                 ])),
                 'name',
                 'agreement_id',
@@ -33,7 +31,7 @@ class UserQuery extends QueryBuilder
                 AllowedFilter::exact('agreement.institution_id'),
                 'roles.name',
                 AllowedFilter::exact('id'),
-                'email'
+                'email',
             ])
             ->allowedSorts([
                 'name',
@@ -42,7 +40,7 @@ class UserQuery extends QueryBuilder
             ->allowedIncludes([
                 'familyApplication',
                 'agreement',
-                'university'
+                'university',
             ])
             ->defaultSort('-created_at');
     }

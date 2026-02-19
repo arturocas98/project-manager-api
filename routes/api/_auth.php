@@ -19,7 +19,7 @@ Route::middleware(['guest:api'])->group(function () {
         ->name('api.email-verification.verify');
 });
 
-Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(function () {
+Route::middleware(['auth:api', 'role:'.RoleName::Admin->value])->group(function () {
     Route::get('/user/{id}', [UserController::class, 'show'])->whereNumber(['id']);
     Route::post('/user', [UserController::class, 'store']);
     Route::put('/user/{id}', [UserController::class, 'update'])->whereNumber(['id']);

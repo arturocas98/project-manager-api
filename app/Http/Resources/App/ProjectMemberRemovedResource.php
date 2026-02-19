@@ -29,20 +29,20 @@ class ProjectMemberRemovedResource extends JsonResource
                         'type' => $this['removed_member']['role_type'],
                     ],
                     'assigned_at' => $this['removed_member']['assigned_at'],
-                    'removed_at' => $this['timestamp']
+                    'removed_at' => $this['timestamp'],
                 ],
                 'project' => [
                     'id' => $project->id,
                     'name' => $project->name,
                     'key' => $project->key,
                     'links' => [
-                        'self' => route('projects.show', ['project' => $project->id])
-                    ]
+                        'self' => route('projects.show', ['project' => $project->id]),
+                    ],
                 ],
                 'stats' => [
                     'remaining_members' => $remainingMembers,
-                    'roles_breakdown' => $this->getRolesBreakdown($project)
-                ]
+                    'roles_breakdown' => $this->getRolesBreakdown($project),
+                ],
             ],
             'meta' => [
                 'api_version' => '1.0.0',

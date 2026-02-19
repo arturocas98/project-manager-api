@@ -24,6 +24,6 @@ class IncidenceTypesSeeder extends Seeder
         }
 
         $this->command->info('Types of incidence created successfully!');
-        $this->command->info('Total types: ' . count($types));
+        $this->command->info('Total types: '.count($types));
     }
 }

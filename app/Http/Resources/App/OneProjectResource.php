@@ -3,6 +3,7 @@
 namespace App\Http\Resources\App;
 
 use Illuminate\Http\Resources\Json\JsonResource;
+
 class OneProjectResource extends JsonResource
 {
     public function toArray($request)
@@ -46,7 +47,7 @@ class OneProjectResource extends JsonResource
             'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
 
             // Usuario que creó el proyecto
-            'created_by' => $this->whenLoaded('createdBy', function() {
+            'created_by' => $this->whenLoaded('createdBy', function () {
                 return [
                     'id' => $this->createdBy->id,
                     'name' => $this->createdBy->name,
@@ -72,14 +73,14 @@ class OneProjectResource extends JsonResource
                 'stats' => [
                     'total_members' => $this->getTotalMembersCount(),
                     'total_roles' => $this->roles->count(),
-                    'roles_breakdown' => $this->getRolesBreakdown()
+                    'roles_breakdown' => $this->getRolesBreakdown(),
                 ],
 
                 // Configuración del proyecto (si aplica)
                 'settings' => $this->settings ?? [
-                        'is_private' => false,
-                        'default_assignee' => 'unassigned'
-                    ]
+                    'is_private' => false,
+                    'default_assignee' => 'unassigned',
+                ],
             ];
         }
 
@@ -91,13 +92,13 @@ class OneProjectResource extends JsonResource
      */
     private function getPermissions($role): array
     {
-        if (!$role->relationLoaded('permissionScheme')) {
+        if (! $role->relationLoaded('permissionScheme')) {
             return [];
         }
 
         $scheme = $role->permissionScheme?->scheme;
 
-        if (!$scheme || !$scheme->relationLoaded('permissions')) {
+        if (! $scheme || ! $scheme->relationLoaded('permissions')) {
             return [];
         }
 
@@ -109,7 +110,7 @@ class OneProjectResource extends JsonResource
      */
     private function getAllMembers(): array
     {
-        if (!$this->relationLoaded('roles')) {
+        if (! $this->relationLoaded('roles')) {
             return [];
         }
 
@@ -133,7 +134,7 @@ class OneProjectResource extends JsonResource
         }
 
         // Ordenar por fecha de asignación
-        usort($members, fn($a, $b) => strtotime($b['assigned_at']) - strtotime($a['assigned_at']));
+        usort($members, fn ($a, $b) => strtotime($b['assigned_at']) - strtotime($a['assigned_at']));
 
         return $members;
     }
@@ -143,7 +144,7 @@ class OneProjectResource extends JsonResource
      */
     private function getTotalMembersCount(): int
     {
-        if (!$this->relationLoaded('roles')) {
+        if (! $this->relationLoaded('roles')) {
             return 0;
         }
 
@@ -164,7 +165,7 @@ class OneProjectResource extends JsonResource
      */
     private function getRolesBreakdown(): array
     {
-        if (!$this->relationLoaded('roles')) {
+        if (! $this->relationLoaded('roles')) {
             return [];
         }
 

@@ -3,7 +3,6 @@
 namespace Database\Seeders;
 
 use App\Models\IncidencePriority;
-use App\Models\IncidenceState;
 use Illuminate\Database\Seeder;
 
 class IncidencePrioritySeeder extends Seeder
@@ -24,6 +23,6 @@ class IncidencePrioritySeeder extends Seeder
         }
 
         $this->command->info('priorities of incidence created successfully!');
-        $this->command->info('Total states: ' . count($states));
+        $this->command->info('Total states: '.count($states));
     }
 }

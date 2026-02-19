@@ -3,10 +3,10 @@
 namespace App\Services\Incidence;
 
 use App\Actions\App\Incidence\CreateIncidenceAction;
-use App\Http\Queries\App\IncidenceQuery;
-use App\Models\Project;
-use App\Models\Incidence;
 use App\Exceptions\ProjectException;
+use App\Http\Queries\App\IncidenceQuery;
+use App\Models\Incidence;
+use App\Models\Project;
 use Illuminate\Support\Collection;
 
 class CreateIndiceService
@@ -35,10 +35,10 @@ class CreateIndiceService
         $userId = auth()->id();
 
         $hasAccess = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             throw new ProjectException(
                 'Acceso denegado: No tienes acceso a este proyecto',
                 403
@@ -53,7 +53,7 @@ class CreateIndiceService
             'incidenceState',
             'createdBy:id,name,email',
             'assignedUser:id,name,email',
-            'parentIncidence:id,title'
+            'parentIncidence:id,title',
         ]);
     }
 }

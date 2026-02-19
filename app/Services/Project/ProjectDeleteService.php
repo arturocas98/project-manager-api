@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Services\Project;
 
 use App\Actions\App\Project\DeleteProjectAction;
@@ -35,12 +34,12 @@ class ProjectDeleteService
             $result = $this->deleteProject->execute($project);
 
             // VERIFICAR RESULTADO
-            if (!$result) {
+            if (! $result) {
                 throw new ProjectException(
                     json_encode([
                         'error' => 'Error al eliminar el proyecto',
                         'reason' => 'La acción de eliminación falló',
-                        'project_id' => $project->id
+                        'project_id' => $project->id,
                     ]),
                     500
                 );
@@ -61,7 +60,7 @@ class ProjectDeleteService
                     'error' => 'Proyecto ya eliminado',
                     'reason' => 'El proyecto ya ha sido eliminado anteriormente',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -75,11 +74,11 @@ class ProjectDeleteService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -87,12 +86,12 @@ class ProjectDeleteService
 
         $isAdmin = $project->roles()
             ->where('type', 'Administrators')
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $userRole = $project->roles()
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
                 ->first();
 
             $roleName = $userRole?->type ?? 'Sin rol asignado';
@@ -104,7 +103,7 @@ class ProjectDeleteService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'Administrators',
                 ]),
                 403
             );
@@ -127,7 +126,7 @@ class ProjectDeleteService
             $userId = auth()->id();
             $isTheOnlyAdmin = $project->roles()
                 ->where('type', 'Administrators')
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
                 ->exists();
 
             if ($isTheOnlyAdmin) {
@@ -136,7 +135,7 @@ class ProjectDeleteService
                     ->where('type', '!=', 'Administrators')
                     ->with('users')
                     ->get()
-                    ->map(fn($role) => $role->users)
+                    ->map(fn ($role) => $role->users)
                     ->flatten()
                     ->unique('id')
                     ->values();
@@ -149,12 +148,12 @@ class ProjectDeleteService
                         'project_name' => $project->name,
                         'admin_count' => $adminCount,
                         'suggestion' => 'Antes de eliminar, promueve a otro usuario a Administrador',
-                        'candidates' => $otherAdmins->map(fn($user) => [
+                        'candidates' => $otherAdmins->map(fn ($user) => [
                             'id' => $user->id,
                             'name' => $user->name,
                             'email' => $user->email,
-                            'current_role' => $this->getUserRoleInProject($project, $user->id)
-                        ])
+                            'current_role' => $this->getUserRoleInProject($project, $user->id),
+                        ]),
                     ]),
                     400
                 );
@@ -177,7 +176,7 @@ class ProjectDeleteService
                     'reason' => 'No puedes eliminar un proyecto que tiene issues abiertos',
                     'project_id' => $project->id,
                     'open_issues_count' => $openIssues,
-                    'suggestion' => 'Resuelve o reasigna los issues abiertos antes de eliminar'
+                    'suggestion' => 'Resuelve o reasigna los issues abiertos antes de eliminar',
                 ]),
                 400
             );
@@ -204,7 +203,7 @@ class ProjectDeleteService
     private function getUserRoleInProject(Project $project, int $userId): ?string
     {
         $role = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->first();
 
         return $role?->type;

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('incidence_states', function (Blueprint $table) {
             $table->id();
-            $table->String('state');//'Progress', 'Review', 'Closed', 'Locked', 'Finished'
+            $table->String('state'); //'Progress', 'Review', 'Closed', 'Locked', 'Finished'
             $table->timestamps();
         });
     }

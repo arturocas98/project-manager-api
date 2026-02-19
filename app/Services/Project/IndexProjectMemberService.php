@@ -2,14 +2,10 @@
 
 namespace App\Services\Project;
 
-use App\Actions\App\Project\AssignUserToRoleAction;
 use App\Exceptions\ProjectException;
-use App\Models\Project;
-use App\Models\ProjectRole;
-use App\Models\ProjectUser;
-use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 use App\Http\Queries\App\ProjectMemberQuery;
+use App\Models\Project;
+use Illuminate\Http\Request;
 
 class IndexProjectMemberService
 {
@@ -34,12 +30,12 @@ class IndexProjectMemberService
             'members' => $members,
             'stats' => [
                 'total' => $members->total(),
-                'by_role' => $roleStats
+                'by_role' => $roleStats,
             ],
             'filters' => [
                 'applied' => $request->all(),
-                'available_roles' => $this->getAvailableRoles($project)
-            ]
+                'available_roles' => $this->getAvailableRoles($project),
+            ],
         ];
     }
 
@@ -51,15 +47,15 @@ class IndexProjectMemberService
         $userId = auth()->id();
 
         $hasAccess = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Acceso denegado',
                     'reason' => 'No tienes acceso a este proyecto',
-                    'project_id' => $project->id
+                    'project_id' => $project->id,
                 ]),
                 403
             );
@@ -74,10 +70,10 @@ class IndexProjectMemberService
         return $project->roles()
             ->withCount('users')
             ->get()
-            ->map(fn($role) => [
+            ->map(fn ($role) => [
                 'id' => $role->id,
                 'type' => $role->type,
-                'members_count' => $role->users_count
+                'members_count' => $role->users_count,
             ])
             ->toArray();
     }

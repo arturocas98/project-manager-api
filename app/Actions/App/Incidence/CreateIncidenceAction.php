@@ -2,8 +2,8 @@
 
 namespace App\Actions\App\Incidence;
 
-use App\Models\Incidence;
 use App\Exceptions\IncidenceException;
+use App\Models\Incidence;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
@@ -12,10 +12,6 @@ class CreateIncidenceAction
     /**
      * Create a new incidence
      *
-     * @param int $projectId
-     * @param array $data
-     * @param int $createdById
-     * @return Incidence
      * @throws IncidenceException
      */
     public function execute(int $projectId, array $data, int $createdById): Incidence
@@ -48,7 +44,7 @@ class CreateIncidenceAction
                 'incidence_id' => $incidence->id,
                 'project_id' => $projectId,
                 'created_by' => $createdById,
-                'type_id' => $data['incidence_type_id']
+                'type_id' => $data['incidence_type_id'],
             ]);
 
             DB::commit();
@@ -61,11 +57,11 @@ class CreateIncidenceAction
             Log::error('Error al crear incidencia', [
                 'error' => $e->getMessage(),
                 'project_id' => $projectId,
-                'data' => $data
+                'data' => $data,
             ]);
 
             throw new IncidenceException(
-                'Error al crear la incidencia: ' . $e->getMessage(),
+                'Error al crear la incidencia: '.$e->getMessage(),
                 500
             );
         }
@@ -74,13 +70,12 @@ class CreateIncidenceAction
     /**
      * Validar reglas de negocio adicionales
      *
-     * @param array $data
      * @throws IncidenceException
      */
     private function validateBusinessRules(array $data): void
     {
         // Si es Epic (tipo 1), no puede tener padre
-        if ($data['incidence_type_id'] == 1 && !is_null($data['parent_incidence_id'])) {
+        if ($data['incidence_type_id'] == 1 && ! is_null($data['parent_incidence_id'])) {
             throw new IncidenceException(
                 'Una incidencia de tipo Epic no puede tener una incidencia padre',
                 422
@@ -96,10 +91,10 @@ class CreateIncidenceAction
         }
 
         // Validar que la incidencia padre exista y pertenezca al mismo proyecto
-        if (!is_null($data['parent_incidence_id'])) {
+        if (! is_null($data['parent_incidence_id'])) {
             $parentIncidence = Incidence::find($data['parent_incidence_id']);
 
-            if (!$parentIncidence) {
+            if (! $parentIncidence) {
                 throw new IncidenceException(
                     'La incidencia padre no existe',
                     404

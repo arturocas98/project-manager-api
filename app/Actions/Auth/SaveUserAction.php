@@ -3,10 +3,9 @@
 namespace App\Actions\Auth;
 
 use App\Models\User;
-use App\Notifications\UserNotification;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Hash;
-use Illuminate\Support\Collection;
 
 class SaveUserAction
 {
@@ -21,9 +20,13 @@ class SaveUserAction
             }
             $user->syncRoles([$input->get('rols')]);
             $user->makeHidden('to_show_password');
-            if ($input->has('status') && !$input->get('status')) $user->delete();
-            else $user->deleted_at = null;
+            if ($input->has('status') && ! $input->get('status')) {
+                $user->delete();
+            } else {
+                $user->deleted_at = null;
+            }
             $user->save();
+
             return $user;
         });
     }

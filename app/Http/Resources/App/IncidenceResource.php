@@ -51,10 +51,10 @@ class IncidenceResource extends JsonResource
             'links' => [
                 'self' => route('projects.incidences.store', [
                     'project' => $this->project_id,
-                    'incidence' => $this->id
+                    'incidence' => $this->id,
                 ]),
                 'parent' => route('projects.incidences.index', [
-                    'project' => $this->project_id
+                    'project' => $this->project_id,
                 ]),
             ],
         ];

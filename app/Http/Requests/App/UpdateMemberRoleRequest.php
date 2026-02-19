@@ -14,7 +14,7 @@ class UpdateMemberRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role_type' => 'required|string|in:Administrators,Developers,Users,bug,subtask'
+            'role_type' => 'required|string|in:Administrators,Developers,Users,bug,subtask',
         ];
     }
 
@@ -22,7 +22,7 @@ class UpdateMemberRoleRequest extends FormRequest
     {
         return [
             'role_type.required' => 'El nuevo rol es obligatorio',
-            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask'
+            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask',
         ];
     }
 }

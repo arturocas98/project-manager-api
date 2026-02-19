@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class IncidencePriority extends Model
 {
     use HasFactory;
+
     protected $table = 'incidence_priorities';
 
     protected $fillable = [

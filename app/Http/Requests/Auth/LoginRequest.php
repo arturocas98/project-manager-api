@@ -35,8 +35,8 @@ class LoginRequest extends FormRequest
         ];
     }
 
-
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
             'email.required' => 'El campo Email es obligatorio',
             'email.email' => 'El campo Email debe ser un email',
@@ -45,14 +45,15 @@ class LoginRequest extends FormRequest
         ];
     }
 
-    public function withValidator($validator): void{
-        $validator->after(function ($validators){
-            if ($this->email){
+    public function withValidator($validator): void
+    {
+        $validator->after(function ($validators) {
+            if ($this->email) {
                 $user = User::where('email', $this->email)->first();
-                if (!$user) {
-                    $validators->errors()->add("email", "El email ingresado no existe");
-                }elseif(!Hash::check($this->password, $user->password)){
-                    $validators->errors()->add("password", "El password ingresado es incorrecto");
+                if (! $user) {
+                    $validators->errors()->add('email', 'El email ingresado no existe');
+                } elseif (! Hash::check($this->password, $user->password)) {
+                    $validators->errors()->add('password', 'El password ingresado es incorrecto');
                 }
             }
         });
@@ -64,9 +65,10 @@ class LoginRequest extends FormRequest
             response()->json([
                 'message' => 'Login error',
                 'errors' => $validator->errors(),
-            ],status: 422)
+            ], status: 422)
         );
     }
+
     /**
      * Attempt to obtain a user with the credentials provided.
      *

@@ -41,7 +41,7 @@ class DeletProjectMemberService
                 'user_email' => $assignment->user?->email,
                 'role_id' => $assignment->role?->id,
                 'role_type' => $assignment->role?->type,
-                'assigned_at' => $assignment->created_at->toDateTimeString()
+                'assigned_at' => $assignment->created_at->toDateTimeString(),
             ];
 
             // Eliminar miembro
@@ -50,7 +50,7 @@ class DeletProjectMemberService
             return [
                 'removed_member' => $memberData,
                 'project' => $project,
-                'timestamp' => now()->toDateTimeString()
+                'timestamp' => now()->toDateTimeString(),
             ];
         });
     }
@@ -66,7 +66,7 @@ class DeletProjectMemberService
                     'error' => 'Proyecto no disponible',
                     'reason' => 'No se pueden eliminar miembros de un proyecto eliminado',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -80,11 +80,11 @@ class DeletProjectMemberService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -92,12 +92,12 @@ class DeletProjectMemberService
 
         $isAdmin = $project->roles()
             ->where('type', 'Administrators')
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $userRole = $project->roles()
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
                 ->first();
 
             $roleName = $userRole?->type ?? 'Sin rol asignado';
@@ -109,7 +109,7 @@ class DeletProjectMemberService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'Administrators',
                 ]),
                 403
             );
@@ -122,17 +122,17 @@ class DeletProjectMemberService
     private function getAssignment(Project $project, int $assignmentId): ProjectUser
     {
         $assignment = ProjectUser::with(['user', 'role'])
-                ->where('id', $assignmentId)
-            ->whereHas('role', fn($q) => $q->where('project_id', $project->id))
+            ->where('id', $assignmentId)
+            ->whereHas('role', fn ($q) => $q->where('project_id', $project->id))
             ->first();
 
-        if (!$assignment) {
+        if (! $assignment) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Miembro no encontrado',
                     'reason' => 'El miembro no existe en este proyecto',
                     'assignment_id' => $assignmentId,
-                    'project_id' => $project->id
+                    'project_id' => $project->id,
                 ]),
                 404
             );
@@ -144,7 +144,7 @@ class DeletProjectMemberService
                     'error' => 'Miembro ya eliminado',
                     'reason' => 'Este miembro ya ha sido eliminado del proyecto',
                     'assignment_id' => $assignmentId,
-                    'deleted_at' => $assignment->deleted_at?->toDateTimeString()
+                    'deleted_at' => $assignment->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -180,11 +180,11 @@ class DeletProjectMemberService
                 ->pluck('users')
                 ->flatten()
                 ->unique('id')
-                ->map(fn($user) => [
+                ->map(fn ($user) => [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'current_role' => $this->getUserRoleInProject($project, $user->id)
+                    'current_role' => $this->getUserRoleInProject($project, $user->id),
                 ])
                 ->values()
                 ->toArray();
@@ -198,11 +198,11 @@ class DeletProjectMemberService
                     'user_to_remove' => [
                         'id' => $assignment->user_id,
                         'name' => $assignment->user?->name,
-                        'email' => $assignment->user?->email
+                        'email' => $assignment->user?->email,
                     ],
                     'admin_count' => $adminCount,
                     'suggestion' => 'Antes de eliminar, promueve a otro usuario a Administrador',
-                    'candidates' => $candidates
+                    'candidates' => $candidates,
                 ]),
                 400
             );
@@ -221,7 +221,7 @@ class DeletProjectMemberService
                 json_encode([
                     'error' => 'Auto-eliminación no permitida',
                     'reason' => 'No puedes eliminarte a ti mismo del proyecto',
-                    'suggestion' => 'Pide a otro administrador que te elimine'
+                    'suggestion' => 'Pide a otro administrador que te elimine',
                 ]),
                 400
             );
@@ -234,7 +234,7 @@ class DeletProjectMemberService
     private function getUserRoleInProject(Project $project, int $userId): ?string
     {
         $role = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->first();
 
         return $role?->type;

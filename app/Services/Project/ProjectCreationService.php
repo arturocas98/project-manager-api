@@ -37,11 +37,11 @@ class ProjectCreationService
                 return [
                     'project' => $project,
                     'role' => $adminRole,
-                    'assignment' => $assignment
+                    'assignment' => $assignment,
                 ];
             });
         } catch (\Exception $e) {
-            throw new ProjectException('Error en la creación del proyecto: ' . $e->getMessage());
+            throw new ProjectException('Error en la creación del proyecto: '.$e->getMessage());
         }
     }
 }

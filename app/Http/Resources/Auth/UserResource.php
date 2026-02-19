@@ -2,10 +2,6 @@
 
 namespace App\Http\Resources\Auth;
 
-use App\Http\Resources\Central\AgreementResource;
-use App\Http\Resources\Central\FamilyApplicationResource;
-use App\Http\Resources\Central\InstitutionResource;
-use App\Http\Resources\Central\RoleResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;

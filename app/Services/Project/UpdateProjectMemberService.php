@@ -2,12 +2,12 @@
 
 namespace App\Services\Project;
 
-use App\Models\Project;
-use App\Models\ProjectUser;
-use App\Models\ProjectRole;
-use App\Exceptions\ProjectException;
-use Illuminate\Support\Facades\DB;
 use App\Actions\App\Project\UpdateMemberRoleAction;
+use App\Exceptions\ProjectException;
+use App\Models\Project;
+use App\Models\ProjectRole;
+use App\Models\ProjectUser;
+use Illuminate\Support\Facades\DB;
 
 class UpdateProjectMemberService
 {
@@ -41,7 +41,7 @@ class UpdateProjectMemberService
             // Guardar datos antes del cambio
             $oldRole = [
                 'id' => $assignment->role->id,
-                'type' => $assignment->role->type
+                'type' => $assignment->role->type,
             ];
 
             // Cambiar rol
@@ -57,11 +57,11 @@ class UpdateProjectMemberService
                     'from' => $oldRole,
                     'to' => [
                         'id' => $newRole->id,
-                        'type' => $newRole->type
-                    ]
+                        'type' => $newRole->type,
+                    ],
                 ],
                 'user' => $updatedAssignment->user,
-                'timestamp' => now()->toDateTimeString()
+                'timestamp' => now()->toDateTimeString(),
             ];
         });
     }
@@ -77,7 +77,7 @@ class UpdateProjectMemberService
                     'error' => 'Proyecto no disponible',
                     'reason' => 'No se pueden cambiar roles en un proyecto eliminado',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -91,11 +91,11 @@ class UpdateProjectMemberService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -103,12 +103,12 @@ class UpdateProjectMemberService
 
         $isAdmin = $project->roles()
             ->where('type', 'Administrators')
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $userRole = $project->roles()
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+                ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
                 ->first();
 
             $roleName = $userRole?->type ?? 'Sin rol asignado';
@@ -120,7 +120,7 @@ class UpdateProjectMemberService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'Administrators',
                 ]),
                 403
             );
@@ -134,16 +134,16 @@ class UpdateProjectMemberService
     {
         $assignment = ProjectUser::with(['role', 'user'])
             ->where('id', $assignmentId)
-            ->whereHas('role', fn($q) => $q->where('project_id', $project->id))
+            ->whereHas('role', fn ($q) => $q->where('project_id', $project->id))
             ->first();
 
-        if (!$assignment) {
+        if (! $assignment) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Miembro no encontrado',
                     'reason' => 'El miembro no existe en este proyecto',
                     'assignment_id' => $assignmentId,
-                    'project_id' => $project->id
+                    'project_id' => $project->id,
                 ]),
                 404
             );
@@ -155,7 +155,7 @@ class UpdateProjectMemberService
                     'error' => 'Miembro eliminado',
                     'reason' => 'No se puede cambiar el rol de un miembro eliminado',
                     'assignment_id' => $assignmentId,
-                    'deleted_at' => $assignment->deleted_at?->toDateTimeString()
+                    'deleted_at' => $assignment->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -173,7 +173,7 @@ class UpdateProjectMemberService
             ->where('type', $roleType)
             ->first();
 
-        if (!$role) {
+        if (! $role) {
             $availableRoles = $project->roles()->pluck('type')->toArray();
 
             throw new ProjectException(
@@ -182,7 +182,7 @@ class UpdateProjectMemberService
                     'reason' => 'El rol especificado no existe en este proyecto',
                     'requested_role' => $roleType,
                     'project_id' => $project->id,
-                    'available_roles' => $availableRoles
+                    'available_roles' => $availableRoles,
                 ]),
                 400
             );
@@ -203,7 +203,7 @@ class UpdateProjectMemberService
                     'reason' => 'El miembro ya tiene este rol asignado',
                     'user_id' => $assignment->user_id,
                     'current_role' => $assignment->role->type,
-                    'attempted_role' => $newRole->type
+                    'attempted_role' => $newRole->type,
                 ]),
                 400
             );
@@ -242,11 +242,11 @@ class UpdateProjectMemberService
                 ->pluck('users')
                 ->flatten()
                 ->unique('id')
-                ->map(fn($user) => [
+                ->map(fn ($user) => [
                     'id' => $user->id,
                     'name' => $user->name,
                     'email' => $user->email,
-                    'current_role' => $this->getUserRoleInProject($project, $user->id)
+                    'current_role' => $this->getUserRoleInProject($project, $user->id),
                 ])
                 ->values()
                 ->toArray();
@@ -260,13 +260,13 @@ class UpdateProjectMemberService
                     'user' => [
                         'id' => $assignment->user_id,
                         'name' => $assignment->user?->name,
-                        'email' => $assignment->user?->email
+                        'email' => $assignment->user?->email,
                     ],
                     'current_role' => 'Administrators',
                     'attempted_role' => $newRole->type,
                     'admin_count' => $adminCount,
                     'suggestion' => 'Antes de cambiar, promueve a otro usuario a Administrador',
-                    'candidates' => $candidates
+                    'candidates' => $candidates,
                 ]),
                 400
             );
@@ -285,7 +285,7 @@ class UpdateProjectMemberService
                 json_encode([
                     'error' => 'Auto-cambio no permitido',
                     'reason' => 'No puedes cambiar tu propio rol',
-                    'suggestion' => 'Pide a otro administrador que cambie tu rol'
+                    'suggestion' => 'Pide a otro administrador que cambie tu rol',
                 ]),
                 400
             );
@@ -298,7 +298,7 @@ class UpdateProjectMemberService
     private function getUserRoleInProject(Project $project, int $userId): ?string
     {
         $role = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->first();
 
         return $role?->type;

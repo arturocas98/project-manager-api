@@ -7,6 +7,7 @@ use Exception;
 class IncidenceException extends Exception
 {
     protected $message;
+
     protected $code;
 
     public function __construct(string $message, int $code = 400)
@@ -21,7 +22,7 @@ class IncidenceException extends Exception
         return response()->json([
             'error' => true,
             'message' => $this->message,
-            'code' => $this->code
+            'code' => $this->code,
         ], $this->code);
     }
 }

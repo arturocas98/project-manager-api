@@ -2,12 +2,10 @@
 
 namespace App\Http\Requests\Auth;
 
-use App\Enums\Language;
 use App\Models\User;
+use App\Traits\PasswordRules;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Validation\Rule;
-use Illuminate\Database\Query\Builder;
-use App\Traits\PasswordRules;
 
 class UserRequest extends FormRequest
 {
@@ -25,7 +23,7 @@ class UserRequest extends FormRequest
                 'required',
                 'string',
                 'email',
-                'max:255'
+                'max:255',
             ],
             'reset_password' => [
                 'required',
@@ -37,11 +35,11 @@ class UserRequest extends FormRequest
             ],
             'rols.*.name' => [
                 'required',
-                'string'
+                'string',
             ],
             'status' => [
                 'nullable',
-                'boolean'
+                'boolean',
             ],
             'expires_at' => [
                 'sometimes',
@@ -54,6 +52,7 @@ class UserRequest extends FormRequest
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();
         }
         $rules = array_merge($rules, $this->passwordRules());
+
         return $rules;
     }
 }
