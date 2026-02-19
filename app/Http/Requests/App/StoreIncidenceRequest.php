@@ -63,4 +63,45 @@ class StoreIncidenceRequest extends FormRequest
             ]);
         }
     }
+    public function bodyParameters()
+    {
+        return [
+            'title' => [
+                'description' => 'Incidence title',
+                'example' => 'Error in login form validation',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'description' => [
+                'description' => 'Detailed description of the incidence',
+                'example' => 'The login form does not validate email format correctly',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'date' => [
+                'description' => 'Date when the incidence occurred',
+                'example' => '2024-03-15',
+                'required' => false,
+                'type' => 'date',
+            ],
+            'incidence_priority_id' => [
+                'description' => 'Priority ID of the incidence',
+                'example' => 2,
+                'required' => true,
+                'type' => 'integer',
+            ],
+            'incidence_type_id' => [
+                'description' => 'Type ID of the incidence',
+                'example' => 3,
+                'required' => true,
+                'type' => 'integer',
+            ],
+            'parent_incidence_id' => [
+                'description' => 'Parent incidence ID (required for non-Epic types, must be null for Epic type)',
+                'example' => 5,
+                'required' => false,
+                'type' => 'integer',
+            ],
+        ];
+    }
 }

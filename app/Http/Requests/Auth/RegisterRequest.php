@@ -66,4 +66,28 @@ class RegisterRequest extends FormRequest
         }
         return $user;
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'name' => [
+                'description' => 'User name',
+                'example' => 'john doe',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'email' => [
+                'description' => 'User email address',
+                'example' => 'john.doe@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'password' => [
+                'description' => 'User password (minimum 6 characters)',
+                'example' => 'secret123',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

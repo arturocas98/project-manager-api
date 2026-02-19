@@ -20,4 +20,16 @@ class ForgotPasswordRequest extends FormRequest
             ],
         ];
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'email' => [
+                'description' => 'Email address of the user requesting password reset',
+                'example' => 'john.doe@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('incidences_link', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('source_incidence_id');
-            $table->foreign('source_incidence_id')->references('id')->on('incidences')->onDelete('Cascade');
+            $table->foreign('source_incidence_id')->references('id')->on('incidences')->onDelete('cascade');
             $table->unsignedBigInteger('target_incidence_id');
-            $table->foreign('target_incidence_id')->references('id')->on('incidences')->onDelete('Cascade');
+            $table->foreign('target_incidence_id')->references('id')->on('incidences')->onDelete('cascade');
             $table->string('type');//'blocks', 'relates_to', 'duplicates', 'clones', 'Causes', 'Depends', 'Implements', 'Tests'
         });
     }

@@ -28,4 +28,23 @@ class AddProjectMemberRequest extends FormRequest
             'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask'
         ];
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'user_id' => [
+                'description' => 'ID of the user to be added to the project',
+                'example' => 5,
+                'required' => true,
+                'type' => 'integer',
+            ],
+            'role_type' => [
+                'description' => 'Role that the user will have in the project',
+                'example' => 'Developers',
+                'required' => true,
+                'type' => 'string',
+                'enum' => ['administrators', 'developers', 'users'],
+            ],
+        ];
+    }
 }

@@ -97,4 +97,28 @@ class TwoFactorLoginRequest extends FormRequest
 
         return $this->challengedUser = $user;
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'code' => [
+                'description' => '6-digit verification code from authenticator app',
+                'example' => '123456',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'recovery_code' => [
+                'description' => 'Recovery code for two-factor authentication',
+                'example' => 'recovery-code-12345',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'email' => [
+                'description' => 'Email address of the user',
+                'example' => 'john.doe@example.com',
+                'required' => false,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class ProjectRolePermission extends Model
 {
+    use HasFactory;
     protected $table = 'project_role_permissions';
 
     protected $fillable = [

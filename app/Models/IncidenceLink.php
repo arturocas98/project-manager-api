@@ -16,6 +16,12 @@ class IncidenceLink extends Model
         'type',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
+    ];
+
     public function incidence(): BelongsTo
     {
         return $this->belongsTo(Incidence::class);

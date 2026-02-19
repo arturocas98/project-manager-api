@@ -25,4 +25,17 @@ class UpdateMemberRoleRequest extends FormRequest
             'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask'
         ];
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'role_type' => [
+                'description' => 'New role for the team member',
+                'example' => 'Developers',
+                'required' => true,
+                'type' => 'string',
+                'enum' => ['administrators', 'developers', 'users'],
+            ],
+        ];
+    }
 }

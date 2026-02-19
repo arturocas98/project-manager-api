@@ -61,4 +61,21 @@ class TeamRequest extends FormRequest
         );
     }
 
+    public function bodyParameters()
+    {
+        return [
+            'name' => [
+                'description' => 'Team name',
+                'example' => 'Development Team',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'created_by_id' => [
+                'description' => 'ID of the user who created the team',
+                'example' => 1,
+                'required' => false,
+                'type' => 'integer',
+            ],
+        ];
+    }
 }

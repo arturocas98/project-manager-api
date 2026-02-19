@@ -5,18 +5,23 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class IncidencePriority extends Model
+class Board extends Model
 {
     use HasFactory;
-    protected $table = 'incidence_priorities';
+
+    protected $table = 'boards';
 
     protected $fillable = [
-        'priority',
+        'name',
+        'user_id',
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
+        'updated_at' => 'datetime'
     ];
+
+    public function user(){
+        return $this->belongsTo(User::class);
+    }
 }

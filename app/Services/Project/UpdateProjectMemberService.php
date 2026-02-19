@@ -38,11 +38,6 @@ class UpdateProjectMemberService
         // TRANSACCIÓN
         return DB::transaction(function () use ($assignment, $newRole, $project) {
 
-            // Guardar datos antes del cambio
-            $oldRole = [
-                'id' => $assignment->role->id,
-                'type' => $assignment->role->type
-            ];
 
             // Cambiar rol
             $updatedAssignment = $this->updateMemberRole->execute(
@@ -51,17 +46,9 @@ class UpdateProjectMemberService
             );
 
             return [
-                'assignment' => $updatedAssignment,
                 'project' => $project,
-                'changes' => [
-                    'from' => $oldRole,
-                    'to' => [
-                        'id' => $newRole->id,
-                        'type' => $newRole->type
-                    ]
-                ],
-                'user' => $updatedAssignment->user,
-                'timestamp' => now()->toDateTimeString()
+                'role' => $newRole,
+                'assignment' => $updatedAssignment,
             ];
         });
     }

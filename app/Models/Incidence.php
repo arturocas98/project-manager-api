@@ -27,6 +27,12 @@ class Incidence extends Model
         'priority',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
+    ];
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');

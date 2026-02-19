@@ -36,4 +36,22 @@ class TeamUserRequest extends FormRequest
             'email.exists' => 'The email does not exist.',
         ];
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'email' => [
+                'description' => 'Email of the user to add to the team',
+                'example' => 'john.doe@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'team_id' => [
+                'description' => 'ID of the team',
+                'example' => 3,
+                'required' => true,
+                'type' => 'integer',
+            ],
+        ];
+    }
 }

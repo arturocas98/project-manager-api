@@ -18,7 +18,9 @@ use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
+use Knuckles\Scribe\Attributes\Response;
 use Knuckles\Scribe\Attributes\ResponseFromApiResource;
+use Knuckles\Scribe\Attributes\ResponseFromFile;
 use Knuckles\Scribe\Attributes\Subgroup;
 
 #[Group('App')]
@@ -28,14 +30,19 @@ class ProjectController extends Controller
 {
     public function __construct(
         private ProjectCreationService $projectCreationService,
-        private ProjectUpdateService $projectUpdateService,
+        private ProjectUpdateService  $projectUpdateService,
         private ProjectDeleteService $projectDeleteService,
         private CreateRecentAction $createRecent,
     ) {}
     /**
      * Display a listing of the resource.
      */
-    #[ResponseFromApiResource(ProjectResource::class, Project::class, collection: true)]
+    #[ResponseFromApiResource(
+        ProjectResource::class,
+        Project::class, // AÑADIR modelo explícitamente
+        collection: true,
+    )]
+    #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     public function index(ProjectQuery $query): AnonymousResourceCollection
     {
         $projects = $query->paginate();
@@ -45,6 +52,17 @@ class ProjectController extends Controller
     /**
      * Display the specified resource.
      */
+    #[ResponseFromApiResource(
+        ProjectCreatedResource::class,
+        Project::class, // AÑADIR modelo explícitamente
+        status: JsonResponse::HTTP_CREATED
+    )]
+    #[Response(content: [
+        'success' => false,
+        'message' => 'Proyecto no encontrado o no tienes acceso',
+        'error_code' => 'PROJECT_NOT_FOUND'
+    ], status: JsonResponse::HTTP_NOT_FOUND, description: 'Project not found')]
+    #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     public function show(ProjectQuery $query, int $id)
     {
         $project = $query->findForShow($id);
@@ -73,6 +91,11 @@ class ProjectController extends Controller
     /**
      * Store a newly created resource in storage.
      */
+    #[ResponseFromApiResource(ProjectCreatedResource::class, Project::class)]
+    #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
+    #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
+    #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
+    #[Response(content: ['message' => 'Error inesperado al crear proyecto'], status: JsonResponse::HTTP_INTERNAL_SERVER_ERROR, description: 'Server error')]
     public function store(ProjectRequest $request): ProjectCreatedResource
     {
         try {
@@ -89,6 +112,16 @@ class ProjectController extends Controller
     /**
      * Update the specified resource in storage.
      */
+    #[ResponseFromApiResource(ProjectResource::class, Project::class)]
+    #[Response(content: [
+        'success' => true,
+        'message' => 'Proyecto actualizado exitosamente',
+        'data' => '...'
+    ], status: JsonResponse::HTTP_OK, description: 'Project updated successfully')]
+    #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
+    #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
+    #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
+    #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
     public function update(UpdateProjectRequest $request, int $id)
     {
         $project = Project::findOrFail($id);
@@ -108,6 +141,21 @@ class ProjectController extends Controller
     /**
      * Remove the specified resource from storage.
      */
+    #[Response(
+        content: [
+            'success' => true,
+            'message' => 'Proyecto eliminado exitosamente',
+            'data' => [
+                'id' => 'integer',
+                'deleted_at' => 'datetime'
+            ]
+        ],
+        status: JsonResponse::HTTP_OK,
+        description: 'Project deleted successfully'
+    )]
+    #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
+    #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
+    #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
     public function destroy(int $id): JsonResponse
     {
         $project = Project::findOrFail($id);

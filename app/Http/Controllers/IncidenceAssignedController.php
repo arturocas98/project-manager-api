@@ -4,7 +4,13 @@ namespace App\Http\Controllers;
 
 use App\Http\Resources\App\IncidenceCollection;
 use Illuminate\Http\Request;
+use Knuckles\Scribe\Attributes\Authenticated;
+use Knuckles\Scribe\Attributes\Group;
+use Knuckles\Scribe\Attributes\Subgroup;
 
+#[Group('App')]
+#[Subgroup('Incidence')]
+#[Authenticated]
 class IncidenceAssignedController extends Controller
 {
     public function __construct(){}

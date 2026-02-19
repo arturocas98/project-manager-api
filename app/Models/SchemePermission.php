@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class SchemePermission extends Model
 {
+    use HasFactory;
     protected $table = 'scheme_permissions';
 
     protected $fillable = [

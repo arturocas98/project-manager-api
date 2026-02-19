@@ -121,4 +121,34 @@ class LoginRequest extends FormRequest
     {
         return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'name' => [
+                'description' => 'Nombre completo del usuario',
+                'example' => 'Juan Pérez',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'email' => [
+                'description' => 'Correo electrónico del usuario',
+                'example' => 'usuario@ejemplo.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'password' => [
+                'description' => 'Contraseña (mínimo 8 caracteres)',
+                'example' => 'secreto123',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'password_confirmation' => [
+                'description' => 'Confirmación de contraseña',
+                'example' => 'secreto123',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

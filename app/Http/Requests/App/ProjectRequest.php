@@ -38,7 +38,7 @@ class ProjectRequest extends FormRequest
                 'string',
                 'max:255',
                 Rule::unique('projects', 'name')
-                    ->ignore($this->route('project')), // Ignora el proyecto actual en actualizaciones
+                    ->ignore($this->route('project')?->id), // Esto funciona para store y update
             ],
             'description' => [
                 'nullable',
@@ -117,5 +117,23 @@ class ProjectRequest extends FormRequest
         return array_filter($data, function ($value) {
             return $value !== null && $value !== '';
         });
+    }
+
+    public function bodyParameters()
+    {
+        return [
+            'name' => [
+                'description' => 'Project name',
+                'example' => 'E-commerce Platform',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'description' => [
+                'description' => 'Detailed description of the project',
+                'example' => 'Online store with payment gateway and inventory management',
+                'required' => false,
+                'type' => 'string',
+            ],
+        ];
     }
 }

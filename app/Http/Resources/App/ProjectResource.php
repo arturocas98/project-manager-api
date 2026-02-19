@@ -4,62 +4,48 @@ namespace App\Http\Resources\App;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
 class ProjectResource extends JsonResource
 {
     public function toArray($request)
     {
-        // El rol del usuario autenticado en este proyecto
-        $userRole = $this->roles->first();
+        $userRole = null;
+
+        if ($request->user()) {
+            $userRole = $this->getUserRole($request->user()->id);
+        }
 
         return [
             'id' => $this->id,
             'name' => $this->name,
             'key' => $this->key,
             'description' => $this->description,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
 
-            // Usuario que creó el proyecto
-            'created_by' => $this->whenLoaded('createdBy', function() {
+            'created_at' => optional($this->created_at)
+                ?->format('Y-m-d H:i:s'),
+
+            // Usuario creador
+            'created_by' => $this->whenLoaded('createdBy', function () {
                 return [
                     'id' => $this->createdBy->id,
                     'name' => $this->createdBy->name,
-                    'email' => $this->createdBy->email
+                    'email' => $this->createdBy->email,
                 ];
             }),
 
-            // ROL DEL USUARIO AUTENTICADO EN ESTE PROYECTO
+            // Rol del usuario autenticado
             'user_role' => $userRole ? [
                 'id' => $userRole->id,
                 'type' => $userRole->type,
             ] : null,
 
-            // Estadísticas rápidas (opcional)
+            // Estadísticas
             'stats' => [
-                'members_count' => $this->whenLoaded('roles', function() {
-                    return $this->roles->sum(function($role) {
+                'members_count' => $this->whenLoaded('roles', function () {
+                    return $this->roles->sum(function ($role) {
                         return $role->users->count();
                     });
-                }, 0)
+                }, 0),
             ],
         ];
-    }
-
-    /**
-     * Obtener los permisos del rol
-     */
-    private function getPermissions($role): array
-    {
-        if (!$role->relationLoaded('permissionScheme')) {
-            return [];
-        }
-
-        $scheme = $role->permissionScheme?->scheme;
-
-        if (!$scheme || !$scheme->relationLoaded('permissions')) {
-            return [];
-        }
-
-        return $scheme->permissions->pluck('key')->toArray();
     }
 }

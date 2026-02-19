@@ -53,4 +53,22 @@ class FriendRequest extends FormRequest
             ],status: 422)
         );
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'me_email' => [
+                'description' => 'Email of the current user sending the friend request',
+                'example' => 'john.doe@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'friend_email' => [
+                'description' => 'Email of the user to add as friend',
+                'example' => 'jane.smith@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

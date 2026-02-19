@@ -27,4 +27,16 @@ class ConfirmedTwoFactorRequest extends FormRequest
     {
         throw new HttpException(Response::HTTP_FORBIDDEN, __('2fa.already-confirmed'));
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'code' => [
+                'description' => '6-digit verification code for two-factor authentication',
+                'example' => '123456',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

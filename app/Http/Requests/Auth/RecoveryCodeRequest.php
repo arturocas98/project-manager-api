@@ -17,4 +17,16 @@ class RecoveryCodeRequest extends FormRequest
     {
         throw new HttpException(Response::HTTP_FORBIDDEN, __('2fa.not-enabled'));
     }
+
+    public function rules(): array
+    {
+        return [
+            // No hay reglas porque es una petición GET
+        ];
+    }
+
+    public function bodyParameters()
+    {
+        return [];
+    }
 }

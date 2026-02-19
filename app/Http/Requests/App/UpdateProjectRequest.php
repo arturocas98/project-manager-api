@@ -47,4 +47,28 @@ class UpdateProjectRequest extends FormRequest
             ]);
         }
     }
+
+    public function bodyParameters()
+    {
+        return [
+            'name' => [
+                'description' => 'Project name',
+                'example' => 'E-commerce Platform',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'description' => [
+                'description' => 'Detailed description of the project',
+                'example' => 'Online store with payment gateway and inventory management',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'key' => [
+                'description' => 'Unique project key (max 10 characters)',
+                'example' => 'ECOMM',
+                'required' => false,
+                'type' => 'string',
+            ],
+        ];
+    }
 }

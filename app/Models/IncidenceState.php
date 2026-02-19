@@ -13,4 +13,10 @@ class IncidenceState extends Model
     protected $fillable = [
         'state',
     ];
+
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime',
+        'deleted_at' => 'datetime'
+    ];
 }

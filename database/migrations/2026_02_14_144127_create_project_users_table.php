@@ -14,10 +14,10 @@ return new class extends Migration
         Schema::create('project_users', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('project_role_id');
-            $table->foreign('project_role_id')->references('id')->on('project_roles')->onDelete('Cascade');
+            $table->foreign('project_role_id')->references('id')->on('project_roles')->onDelete('cascade');
 
             $table->unsignedBigInteger('user_id');
-            $table->foreign('user_id')->references('id')->on('users')->onDelete('Cascade');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
 
             $table->timestamps();
             $table->softDeletes();

@@ -22,26 +22,19 @@ class ProjectMemberQuery
     }
 
     /**
-     * Construir query base
+     * Construir query base usando Eloquent
      */
     private function buildBaseQuery(): Builder
     {
-        return DB::table('project_users')
-            ->join('project_roles', 'project_roles.id', '=', 'project_users.project_role_id')
-            ->join('users', 'users.id', '=', 'project_users.user_id')
-            ->where('project_roles.project_id', $this->project->id)
-            ->whereNull('project_users.deleted_at')
-            ->select([
-                'project_users.id as assignment_id',
-                'project_users.created_at as assigned_at',
-                'project_users.updated_at as updated_at',
-                'project_roles.id as role_id',
-                'project_roles.type as role_type',
-                'users.id as user_id',
-                'users.name as user_name',
-                'users.email as user_email',
-                'users.created_at as user_joined_at'
-            ]);
+        return ProjectUser::with([
+            'role',
+            'user',
+            'role.permissionScheme.scheme.permissions'
+        ])
+            ->whereHas('role', function ($q) {
+                $q->where('project_id', $this->project->id);
+            })
+            ->whereNull('deleted_at');
     }
 
     /**
@@ -50,25 +43,27 @@ class ProjectMemberQuery
     public function applyFilters(): self
     {
         // Filtrar por rol
-        if ($this->request->has('role')) {
-            $this->query->where('project_roles.type', $this->request->role);
-        }
-
-        // Filtrar por nombre de usuario
-        if ($this->request->has('search')) {
-            $this->query->where(function ($q) {
-                $q->where('users.name', 'like', '%' . $this->request->search . '%')
-                    ->orWhere('users.email', 'like', '%' . $this->request->search . '%');
+        if ($this->request->filled('role')) {
+            $this->query->whereHas('role', function ($q) {
+                $q->where('type', $this->request->role);
             });
         }
 
-        // Filtrar por fecha de asignación
-        if ($this->request->has('assigned_from')) {
-            $this->query->whereDate('project_users.created_at', '>=', $this->request->assigned_from);
+        // Buscar por nombre o email
+        if ($this->request->filled('search')) {
+            $this->query->whereHas('user', function ($q) {
+                $q->where('name', 'like', '%' . $this->request->search . '%')
+                    ->orWhere('email', 'like', '%' . $this->request->search . '%');
+            });
         }
 
-        if ($this->request->has('assigned_to')) {
-            $this->query->whereDate('project_users.created_at', '<=', $this->request->assigned_to);
+        // Filtrar por fecha asignación
+        if ($this->request->filled('assigned_from')) {
+            $this->query->whereDate('created_at', '>=', $this->request->assigned_from);
+        }
+
+        if ($this->request->filled('assigned_to')) {
+            $this->query->whereDate('created_at', '<=', $this->request->assigned_to);
         }
 
         return $this;
@@ -79,20 +74,18 @@ class ProjectMemberQuery
      */
     public function applySorting(): self
     {
-        $sortField = $this->request->get('sort_by', 'assigned_at');
+        $sortField = $this->request->get('sort_by', 'created_at');
         $sortDirection = $this->request->get('sort_direction', 'desc');
 
         $allowedFields = [
-            'assigned_at' => 'project_users.created_at',
-            'user_name' => 'users.name',
-            'role_type' => 'project_roles.type',
-            'updated_at' => 'project_users.updated_at'
+            'assigned_at' => 'created_at',
+            'updated_at' => 'updated_at'
         ];
 
         if (array_key_exists($sortField, $allowedFields)) {
             $this->query->orderBy($allowedFields[$sortField], $sortDirection);
         } else {
-            $this->query->orderBy('project_users.created_at', 'desc');
+            $this->query->orderBy('created_at', 'desc');
         }
 
         return $this;
@@ -111,31 +104,18 @@ class ProjectMemberQuery
     }
 
     /**
-     * Obtener todos los resultados
-     */
-    public function get()
-    {
-        $this->applyFilters()->applySorting();
-
-        return $this->query->get();
-    }
-
-    /**
      * Obtener estadísticas por rol
      */
     public function getRoleStats(): array
     {
-        return \DB::table('project_roles')
-            ->leftJoin('project_users', 'project_roles.id', '=', 'project_users.project_role_id')
-            ->where('project_roles.project_id', $this->project->id)
-            ->whereNull('project_users.deleted_at')
-            ->groupBy('project_roles.id', 'project_roles.type')
-            ->select([
-                'project_roles.id as role_id',
-                'project_roles.type as role_type',
-                \DB::raw('COUNT(project_users.id) as members_count')
-            ])
+        return $this->project->roles()
+            ->withCount('users')
             ->get()
+            ->map(fn ($role) => [
+                'role_id' => $role->id,
+                'role_type' => $role->type,
+                'members_count' => $role->users_count,
+            ])
             ->toArray();
     }
 }

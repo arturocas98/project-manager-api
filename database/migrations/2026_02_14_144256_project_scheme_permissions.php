@@ -14,9 +14,9 @@ return new class extends Migration
         Schema::create('scheme_permissions', function (Blueprint $table) {
             $table->id();
             $table->unsignedBigInteger('permission_scheme_id');
-            $table->foreign('permission_scheme_id')->references('id')->on('project_permission_schemes')->onDelete('Cascade');
+            $table->foreign('permission_scheme_id')->references('id')->on('project_permission_schemes')->onDelete('cascade');
             $table->unsignedBigInteger('project_permission_id');
-            $table->foreign('project_permission_id')->references('id')->on('project_permissions')->onDelete('Cascade');
+            $table->foreign('project_permission_id')->references('id')->on('project_permissions')->onDelete('cascade');
             $table->timestamps();
         });
     }

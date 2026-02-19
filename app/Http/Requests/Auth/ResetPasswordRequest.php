@@ -36,4 +36,33 @@ class ResetPasswordRequest extends FormRequest
             ],
         ];
     }
+    public function bodyParameters()
+    {
+        return [
+            'token' => [
+                'description' => 'Password reset token received via email',
+                'example' => 'reset_token_123456',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'email' => [
+                'description' => 'Email address of the user',
+                'example' => 'john.doe@example.com',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'password' => [
+                'description' => 'New password (minimum 8 characters, must contain mixed case, numbers, symbols, and letters)',
+                'example' => 'NewSecurePass123!',
+                'required' => true,
+                'type' => 'string',
+            ],
+            'password_confirmation' => [
+                'description' => 'Password confirmation (must match password)',
+                'example' => 'NewSecurePass123!',
+                'required' => true,
+                'type' => 'string',
+            ],
+        ];
+    }
 }
