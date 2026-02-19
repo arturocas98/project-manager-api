@@ -11,9 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('incidence_type', function (Blueprint $table) {
+        Schema::create("recents", function (Blueprint $table) {
             $table->id();
-            $table->enum('type', ['Epic', 'history_user', 'task', 'bug', 'subtask']);
+            $table->string("title");
+            $table->unsignedBigInteger('user_id');
+            $table->foreign('user_id')->references('id')->on('users')->onDelete('Cascade');
+            $table->string("icon");
+            $table->string("link");
+            $table->timestamps();
         });
     }
 
@@ -22,6 +27,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('incidence_type');
+        Schema::dropIfExists("recents");
     }
 };

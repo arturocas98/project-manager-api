@@ -32,6 +32,13 @@ class CheckProjectAdmin
                 'error_code' => 'ADMIN_REQUIRED'
             ], 403);
         }
+        if (!$isAdmin) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Acción no permitida. Se requiere rol de Administrador.',
+                'error_code' => 'ADMIN_REQUIRED'
+            ], 403);
+        }
 
         return $next($request);
     }

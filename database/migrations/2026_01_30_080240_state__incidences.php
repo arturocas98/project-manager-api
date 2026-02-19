@@ -11,12 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        schema::create('teams', function (Blueprint $table) {
+        Schema::create('incidence_states', function (Blueprint $table) {
             $table->id();
-            $table->string('name');
-            $table->unsignedBigInteger('created_by_id');
-            $table->foreign('created_by_id')->references('id')->on('users')->onDelete('Cascade');
-            $table->string('type');//'team', 'team oficial'
+            $table->String('state');//'Progress', 'Review', 'Closed', 'Locked', 'Finished'
             $table->timestamps();
         });
     }
@@ -26,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('teams');
+        Schema::dropIfExists('incidence_states');
     }
 };

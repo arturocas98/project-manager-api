@@ -3,7 +3,6 @@
 namespace App\Http\Resources\App;
 
 use Illuminate\Http\Resources\Json\JsonResource;
-
 class OneProjectResource extends JsonResource
 {
     public function toArray($request)
@@ -11,6 +10,33 @@ class OneProjectResource extends JsonResource
         $userRole = $this->roles->first();
         $isDetailed = $request->route()->named('projects.show');
 
+        return [
+            'data' => $this->getData($userRole, $isDetailed),
+            'meta' => [
+                'api_version' => '1.0.0',
+                'timestamp' => now()->toIso8601String(),
+                'resource_type' => 'project',
+                'response_type' => $isDetailed ? 'detailed' : 'summary',
+                'available_relations' => $this->getAvailableRelations(),
+            ],
+            'links' => [
+                'self' => route('projects.show', ['project' => $this->id]),
+                'parent' => route('projects.index'),
+                'incidences' => route('projects.incidences.index', ['project' => $this->id]),
+                'members' => route('projects.members.index', ['project' => $this->id]),
+                ...($isDetailed ? [
+                    'update' => route('projects.update', ['project' => $this->id]),
+                    'delete' => route('projects.destroy', ['project' => $this->id]),
+                ] : []),
+            ],
+        ];
+    }
+
+    /**
+     * Obtener los datos del proyecto
+     */
+    private function getData($userRole, $isDetailed): array
+    {
         $data = [
             'id' => $this->id,
             'name' => $this->name,
@@ -24,7 +50,7 @@ class OneProjectResource extends JsonResource
                 return [
                     'id' => $this->createdBy->id,
                     'name' => $this->createdBy->name,
-                    'email' => $this->createdBy->email
+                    'email' => $this->createdBy->email,
                 ];
             }),
 
@@ -32,7 +58,7 @@ class OneProjectResource extends JsonResource
             'user_role' => $userRole ? [
                 'id' => $userRole->id,
                 'type' => $userRole->type,
-                'permissions' => $this->getPermissions($userRole)
+                'permissions' => $this->getPermissions($userRole),
             ] : null,
         ];
 
@@ -98,9 +124,9 @@ class OneProjectResource extends JsonResource
                         'email' => $user->email,
                         'role' => [
                             'id' => $role->id,
-                            'type' => $role->type
+                            'type' => $role->type,
                         ],
-                        'assigned_at' => $user->pivot?->created_at?->format('Y-m-d H:i:s')
+                        'assigned_at' => $user->pivot?->created_at?->format('Y-m-d H:i:s'),
                     ];
                 }
             }
@@ -148,10 +174,32 @@ class OneProjectResource extends JsonResource
             $breakdown[] = [
                 'role_id' => $role->id,
                 'role_type' => $role->type,
-                'members_count' => $role->relationLoaded('users') ? $role->users->count() : 0
+                'members_count' => $role->relationLoaded('users') ? $role->users->count() : 0,
             ];
         }
 
         return $breakdown;
+    }
+
+    /**
+     * Obtener relaciones disponibles
+     */
+    private function getAvailableRelations(): array
+    {
+        $relations = [];
+
+        if ($this->relationLoaded('createdBy')) {
+            $relations[] = 'created_by';
+        }
+
+        if ($this->relationLoaded('roles')) {
+            $relations[] = 'roles';
+
+            if ($this->roles->isNotEmpty() && $this->roles->first()->relationLoaded('users')) {
+                $relations[] = 'members';
+            }
+        }
+
+        return $relations;
     }
 }

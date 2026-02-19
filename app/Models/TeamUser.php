@@ -6,9 +6,11 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Team_User extends Model
+class TeamUser extends Model
 {
     use HasFactory;
+    protected $table = 'team_user';
+
     protected $fillable = [
         'team_id',
         'user_id',

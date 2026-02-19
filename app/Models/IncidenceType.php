@@ -4,11 +4,16 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
-class Incidence_state extends Model
+class IncidenceType extends Model
 {
     use HasFactory;
+
+    protected $table = 'incidence_types';
+
     protected $fillable = [
-        'state',
+        'type',
     ];
+
 }

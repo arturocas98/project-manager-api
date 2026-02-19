@@ -17,6 +17,9 @@ class DatabaseSeeder extends Seeder
             ProjectPermissionSeeder::class,
             ProjectPermissionSchemeSeeder::class,
             SchemePermissionSeeder::class,
+            IncidenceTypesSeeder::class,
+            IncidenceStateSeeder::class,
+            IncidencePrioritySeeder::class,
         ]);
     }
 }

@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Services;
+namespace App\Services\Project;
 
 use App\Actions\App\Project\UpdateProjectAction;
-use App\Models\Project;
 use App\Exceptions\ProjectException;
+use App\Models\Project;
 use Illuminate\Support\Facades\DB;
 
 class ProjectUpdateService
@@ -196,7 +196,7 @@ class ProjectUpdateService
                 throw new ProjectException(
                     json_encode([
                         'error' => 'Clave duplicada',
-                        'reason' => 'Ya existe otro proyecto con esta clave',
+                        'reason' => 'Ya existe otro proyecto con esta clave o la key es la misma a la anterior',
                         'key' => $data['key'],
                         'existing_project' => [
                             'id' => $existingProject->id,

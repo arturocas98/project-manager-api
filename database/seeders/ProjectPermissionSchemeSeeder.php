@@ -10,16 +10,16 @@ class ProjectPermissionSchemeSeeder extends Seeder
     public function run(): void
     {
         $schemes = [
-            'Administrators',
-            'Gestor de Proyecto',
-            'Miembro del Equipo',
-            'Invitado',
-            'Supervisor',
-            'Colaborador Externo',
-            'Propietario',
-            'Desarrollador',
-            'Tester',
-            'Cliente',
+            'administrators',
+            'gestor de Proyecto',
+            'miembro del Equipo',
+            'invitado',
+            'supervisor',
+            'colaborador Externo',
+            'propietario',
+            'desarrollador',
+            'tester',
+            'cliente',
         ];
 
         foreach ($schemes as $scheme) {
