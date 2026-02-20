@@ -16,28 +16,18 @@ class ProjectMemberService
     ) {}
 
 
-    public function addMember(Project $project, int $userId, string $roleType): array
+    public function addMember(Project $project, int $userId, string $roleType): ProjectUser
     {
-        // VALIDACIONES
+        // VALIDACIONES (igual)
         $this->validateProject($project);
         $this->validateAdminPermissions($project);
-
         $this->validateUserNotInProject($project, $userId);
-
         $projectRole = $this->getProjectRole($project, $roleType);
 
-        // TRANSACCIÓN
-        return DB::transaction(function () use ($project, $userId, $projectRole) {
-
+        // TRANSACCIÓN - Retorna SOLO el modelo
+        return DB::transaction(function () use ($projectRole, $userId) {
             $assignment = $this->assignUserToRole->execute($projectRole->id, $userId);
-            $assignment->load(['role', 'user']);
-
-            return [
-                'assignment' => $assignment,
-                'project' => $project,
-                'role' => $projectRole,
-                'user' => $assignment->user
-            ];
+            return $assignment->load(['role', 'user']);
         });
     }
 

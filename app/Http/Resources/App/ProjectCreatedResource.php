@@ -8,11 +8,8 @@ class ProjectCreatedResource extends JsonResource
 {
     public function toArray($request)
     {
-        $project = $this->resource['project'] ?? null;
-        $role = $this->resource['role'] ?? null;
-        $assignment = $this->resource['assignment'] ?? null;
-
         $availableRoles = [
+            ['type' => 'administrator', 'description' => 'Pueden crear, borrar, editar todo a su antojo'],
             ['type' => 'developers', 'description' => 'Pueden crear y editar issues, gestionar versiones'],
             ['type' => 'users', 'description' => 'Pueden crear issues y comentar'],
             ['type' => 'bug', 'description' => 'Pueden reportar bugs'],
@@ -23,20 +20,17 @@ class ProjectCreatedResource extends JsonResource
             'data' => [
                 'message' => 'Proyecto creado exitosamente',
                 'project' => [
-                    'id' => $project?->id,
-                    'name' => $project?->name,
-                    'key' => $project?->key,
-                    'description' => $project?->description,
-                    'created_at' => optional($project?->created_at)
-                        ?->format('Y-m-d H:i:s'),
-
-                    'user_role' => $role ? [
-                        'id' => $role->id,
-                        'type' => $role->type,
-                        'user_id' => $assignment?->user_id,
-                        'assigned_at' => optional($assignment?->created_at)
-                            ?->format('Y-m-d H:i:s'),
-                    ] : null,
+                    'id' => $this->project->id,
+                    'name' => $this->project->name,
+                    'key' => $this->project->key,
+                    'description' => $this->project->description,
+                    'created_at' => $this->project->created_at->format('Y-m-d H:i:s'),
+                    'user_role' => [
+                        'id' => $this->role->id,
+                        'type' => $this->role->type,
+                        'user_id' => $this->assignment->user_id,
+                        'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
+                    ]
                 ],
 
                 'available_roles' => collect($availableRoles)->map(function ($role) {
@@ -55,12 +49,12 @@ class ProjectCreatedResource extends JsonResource
                 'status' => 'success',
             ],
 
-            'links' => $project ? [
-                'self' => route('projects.show', ['project' => $project->id]),
+            'links' => $this ? [
+                'self' => route('projects.show', ['project' => $this->project->id,]),
                 'parent' => route('projects.index'),
-                'project' => route('projects.show', ['project' => $project->id]),
-                'incidences' => route('projects.incidences.index', ['project' => $project->id]),
-                'members' => route('projects.members.index', ['project' => $project->id]),
+                'project' => route('projects.show', ['project' =>  $this->project->id,]),
+                'incidences' => route('projects.incidences.index', ['project' =>  $this->project->id,]),
+                'members' => route('projects.members.index', ['project' =>  $this->project->id,]),
             ] : [],
         ];
     }

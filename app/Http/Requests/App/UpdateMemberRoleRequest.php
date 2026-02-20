@@ -14,7 +14,7 @@ class UpdateMemberRoleRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'role_type' => 'required|string|in:Administrators,Developers,Users,bug,subtask'
+            'role_type' => 'required|string|in:administrators,developers,users,bug,subtask,Desarrollador'
         ];
     }
 

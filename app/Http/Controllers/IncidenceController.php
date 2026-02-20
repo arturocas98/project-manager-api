@@ -2,14 +2,20 @@
 
 namespace App\Http\Controllers;
 use App\Http\Requests\App\StoreIncidenceRequest;
+use App\Http\Requests\App\UpdateIncidenceRequest;
 use App\Http\Resources\App\IncidenceCollection;
 use App\Http\Resources\App\IncidenceResource;
+use App\Models\Incidence;
 use App\Models\Project;
 use App\Services\Incidence\CreateIndiceService;
 use App\Services\Incidence\IncidenceService;
+use App\Services\Incidence\UpdateIncidenceService;
+use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
+use Knuckles\Scribe\Attributes\ResponseFromApiResource;
+use Knuckles\Scribe\Attributes\ResponseFromFile;
 use Knuckles\Scribe\Attributes\Subgroup;
 
 
@@ -22,6 +28,7 @@ class IncidenceController extends Controller
     public function __construct(
         private IncidenceService $incidenceService,
         private CreateIndiceService $createIndiceService,
+        private UpdateIncidenceService $updateIncidenceService,
     ){}
     #[ResponseFromApiResource(IncidenceCollection::class, Incidence::class, collection: true)]
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
@@ -60,6 +67,21 @@ class IncidenceController extends Controller
         return new IncidenceResource($incidence);
     }
     public function show($id){}
-    public function update(Request $request, $id){}
+    public function update(UpdateIncidenceRequest $request, int $projectId, int $incidenceId): IncidenceResource
+    {
+        $project = Project::findOrFail($projectId);
+
+        $this->createIndiceService->validateProjectAccess($project);
+
+        $incidence = $this->updateIncidenceService->update(
+            $incidenceId,
+            $request->validated(),
+            auth()->id()
+        );
+
+        $incidence = $this->createIndiceService->loadIncidenceRelations($incidence);
+
+        return new IncidenceResource($incidence);
+    }
     public function destroy($id){}
 }

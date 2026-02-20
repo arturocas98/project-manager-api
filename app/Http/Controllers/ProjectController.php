@@ -163,8 +163,6 @@ class ProjectController extends Controller
         $this->projectDeleteService->delete($project);
 
         return response()->json([
-            'success' => true,
-            'message' => 'Proyecto eliminado exitosamente',
             'data' => [
                 'id' => $project->id,
                 'deleted_at' => now()->toDateTimeString()

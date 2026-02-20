@@ -27,11 +27,11 @@ class SchemePermissionSeeder extends Seeder
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('Administrators: ' . $permissions->count() . ' permisos asignados');
+            $this->command->info('Administrators: ' . $permissions->count() . 'permissions');
         }
 
-        // 2. Gestor de Proyecto
-        if (isset($schemes['Gestor de Proyecto'])) {
+        // 2. project manager
+        if (isset($schemes['project manager'])) {
             $managerPermissions = [
                 'view_projects', 'create_projects', 'edit_projects', 'delete_projects',
                 'manage_members', 'invite_users', 'remove_users',
@@ -45,17 +45,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($managerPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Gestor de Proyecto']->id,
+                        'permission_scheme_id' => $schemes['project manager']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Gestor de Proyecto: ' . $count . ' permisos asignados');
+            $this->command->info('project manager: ' . $count . 'permissions');
         }
 
-        // 3. Miembro del Equipo
-        if (isset($schemes['Miembro del Equipo'])) {
+        // 3. team member
+        if (isset($schemes['team member'])) {
             $memberPermissions = [
                 'view_projects',
                 'view_tasks', 'create_tasks', 'edit_tasks', 'assign_tasks', 'comment_tasks',
@@ -67,17 +67,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($memberPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Miembro del Equipo']->id,
+                        'permission_scheme_id' => $schemes['team member']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Miembro del Equipo: ' . $count . ' permisos asignados');
+            $this->command->info('team member: ' . $count . 'permissions');
         }
 
-        // 4. Invitado
-        if (isset($schemes['Invitado'])) {
+        // 4. guest
+        if (isset($schemes['guest'])) {
             $guestPermissions = [
                 'view_projects',
                 'view_tasks', 'comment_tasks',
@@ -89,17 +89,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($guestPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Invitado']->id,
+                        'permission_scheme_id' => $schemes['guest']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Invitado: ' . $count . ' permisos asignados');
+            $this->command->info('guest: ' . $count . 'permissions');
         }
 
-        // 5. Supervisor
-        if (isset($schemes['Supervisor'])) {
+        // 5. supervisor
+        if (isset($schemes['supervisor'])) {
             $supervisorPermissions = [
                 'view_projects',
                 'view_tasks', 'assign_tasks', 'comment_tasks',
@@ -111,17 +111,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($supervisorPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Supervisor']->id,
+                        'permission_scheme_id' => $schemes['supervisor']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Supervisor: ' . $count . ' permisos asignados');
+            $this->command->info('supervisor: ' . $count . 'permissions');
         }
 
-        // 6. Colaborador Externo
-        if (isset($schemes['Colaborador Externo'])) {
+        // 6. external contributor
+        if (isset($schemes['external contributor'])) {
             $externalPermissions = [
                 'view_projects',
                 'view_tasks', 'comment_tasks',
@@ -132,28 +132,28 @@ class SchemePermissionSeeder extends Seeder
             foreach ($externalPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Colaborador Externo']->id,
+                        'permission_scheme_id' => $schemes['external contributor']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Colaborador Externo: ' . $count . ' permisos asignados');
+            $this->command->info('external contributor: ' . $count . 'permissions');
         }
 
-        // 7. Propietario (dueño del proyecto) - mismos permisos que admin
-        if (isset($schemes['Propietario'])) {
+        // 7. owner (dueño del proyecto) - mismos permisos que admin
+        if (isset($schemes['owner'])) {
             foreach ($permissions as $permission) {
                 SchemePermission::create([
-                    'permission_scheme_id' => $schemes['Propietario']->id,
+                    'permission_scheme_id' => $schemes['owner']->id,
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('Propietario: ' . $permissions->count() . ' permisos asignados');
+            $this->command->info('owner: ' . $permissions->count() . 'permissions');
         }
 
-        // 8. Desarrollador
-        if (isset($schemes['Desarrollador'])) {
+        // 8. developer
+        if (isset($schemes['developer'])) {
             $developerPermissions = [
                 'view_projects',
                 'view_tasks', 'create_tasks', 'edit_tasks', 'assign_tasks', 'comment_tasks',
@@ -165,17 +165,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($developerPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Desarrollador']->id,
+                        'permission_scheme_id' => $schemes['developer']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Desarrollador: ' . $count . ' permisos asignados');
+            $this->command->info('developer: ' . $count . 'permissions');
         }
 
-        // 9. Tester
-        if (isset($schemes['Tester'])) {
+        // 9. tester
+        if (isset($schemes['tester'])) {
             $testerPermissions = [
                 'view_projects',
                 'view_tasks', 'comment_tasks',
@@ -187,17 +187,17 @@ class SchemePermissionSeeder extends Seeder
             foreach ($testerPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Tester']->id,
+                        'permission_scheme_id' => $schemes['tester']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Tester: ' . $count . ' permisos asignados');
+            $this->command->info('tester: ' . $count . 'permissions');
         }
 
-        // 10. Cliente
-        if (isset($schemes['Cliente'])) {
+        // 10. client
+        if (isset($schemes['client'])) {
             $clientPermissions = [
                 'view_projects',
                 'view_tasks', 'comment_tasks',
@@ -209,13 +209,13 @@ class SchemePermissionSeeder extends Seeder
             foreach ($clientPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['Cliente']->id,
+                        'permission_scheme_id' => $schemes['client']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('Cliente: ' . $count . ' permisos asignados');
+            $this->command->info('client: ' . $count . 'permissions');
         }
 
         $this->command->info('====================================');
@@ -229,7 +229,7 @@ class SchemePermissionSeeder extends Seeder
         }
 
         $this->command->table(
-            ['Esquema', 'Cantidad de Permisos'],
+            ['Esquema', 'permissions count'],
             $summary
         );
     }

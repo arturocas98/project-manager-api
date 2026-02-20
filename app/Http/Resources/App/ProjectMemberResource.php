@@ -12,8 +12,8 @@ class ProjectMemberResource extends JsonResource
             'assignment' => $this->whenLoaded('assignment', function () {
                 return [
                     'id' => $this->assignment->id,
-                    'assigned_at' => optional($this->assignment->created_at)
-                        ->format('Y-m-d H:i:s'),
+                    'assigned_at' => $this->assignment->created_at?->format('Y-m-d H:i:s'),
+                    'updated_at' => $this->assignment->updated_at?->format('Y-m-d H:i:s'), // Añadir
                 ];
             }),
 

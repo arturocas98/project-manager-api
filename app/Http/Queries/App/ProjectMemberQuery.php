@@ -4,9 +4,9 @@
 namespace App\Http\Queries\App;
 
 use App\Models\Project;
-use Illuminate\Database\Query\Builder;
+use App\Models\ProjectUser;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\DB;
 
 class ProjectMemberQuery
 {

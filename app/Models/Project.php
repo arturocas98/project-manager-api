@@ -30,6 +30,11 @@ class Project extends Model
         return $this->hasMany(ProjectRole::class);
     }
 
+    public function projectUsers()
+    {
+        return $this->hasMany(ProjectUser::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by');
@@ -60,12 +65,14 @@ class Project extends Model
     /**
      * Obtener rol de usuario en este proyecto
      */
-    public function getUserRole(int $userId): ?ProjectRole
+    public function getUserRoleType(int $userId): ?string
     {
-        return $this->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
-            ->with('permissionScheme.scheme.permissions')
+        $projectUser = $this->projectUsers()
+            ->where('user_id', $userId)
+            ->with('role')
             ->first();
+
+        return $projectUser?->role?->type;
     }
 
     /**

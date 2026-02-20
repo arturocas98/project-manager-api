@@ -28,7 +28,7 @@ class CreateIncidenceAction
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
                 'date' => $data['date'] ?? now()->toDateString(),
-                'priority' => $data['priority'] ?? 'media',
+                'incidence_priority_id' => $data['incidence_priority_id'],
                 'project_id' => $projectId,
                 'incidence_type_id' => $data['incidence_type_id'],
                 'incidence_state_id' => 1, // Estado predeterminado: 1 (ej: "Abierto" o "Nuevo")
