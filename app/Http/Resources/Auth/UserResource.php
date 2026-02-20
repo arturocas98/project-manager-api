@@ -18,15 +18,11 @@ class UserResource extends JsonResource
             'reset_password' => $this->reset_password,
             'lang' => $this->lang,
             'rols' => $this->roles,
-            'program' => $this->program,
-            'university_id' => $this->university_id,
-            'institutions' => $this->institutions,
-            'agreement_id' => $this->agreement_id,
             'policies_accepted_at' => $this->policies_accepted_at?->toDateTimeLocalString(),
             'expires_at' => $this->expires_at?->toDateString(),
-            'created_at' => $this->created_at ? $this->created_at->format(config('resources.date_time_format')) : '',
-            'deleted_at' => $this->deleted_at ? $this->deleted_at->format(config('resources.date_time_format')) : '',
-            'desactive_at' => $this->desactive_at ? $this->desactive_at->format(config('resources.date_time_format')) : '',
+            'created_at' => $this->created_at ? $this->created_at?->format(config('resources.date_time_format')) : '',
+            'deleted_at' => $this->deleted_at ? $this->deleted_at?->format(config('resources.date_time_format')) : '',
+            'desactive_at' => $this->desactive_at ? $this->desactive_at?->format(config('resources.date_time_format')) : '',
         ];
     }
 }

@@ -19,11 +19,13 @@ Route::middleware(['guest:api'])->group(function () {
         ->name('api.email-verification.verify');
 });
 
-Route::middleware(['auth:api', 'role:'.RoleName::Admin->value])->group(function () {
-    Route::get('/user/{id}', [UserController::class, 'show'])->whereNumber(['id']);
-    Route::post('/user', [UserController::class, 'store']);
-    Route::put('/user/{id}', [UserController::class, 'update'])->whereNumber(['id']);
-    Route::delete('/user/{user}', [UserController::class, 'destroy'])->whereNumber(['user']);
+Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(function () {
+    Route::get('/users', [UserController::class, 'index']);
+
+    Route::get('/users/{id}', [UserController::class, 'show'])->whereNumber(['id']);
+    Route::post('/users', [UserController::class, 'store']);
+    Route::put('/users/{id}', [UserController::class, 'update'])->whereNumber(['id']);
+    Route::delete('/users/{user}', [UserController::class, 'destroy'])->whereNumber(['user']);
 });
 
 Route::middleware(['auth:api'])->group(function () {
