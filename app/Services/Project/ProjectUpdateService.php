@@ -90,7 +90,7 @@ class ProjectUpdateService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
@@ -109,7 +109,7 @@ class ProjectUpdateService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'administrators'
                 ]),
                 403
             );

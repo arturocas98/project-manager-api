@@ -23,8 +23,6 @@ class Incidence extends Model
         'created_by_id',
         'assigned_user_id',
         'description',
-        'date',
-        'priority',
     ];
 
     protected $casts = [
@@ -60,5 +58,10 @@ class Incidence extends Model
     public function childIncidences(): HasMany
     {
         return $this->hasMany(Incidence::class, 'parent_incidence_id');
+    }
+
+    public function incidencePriority(): BelongsTo
+    {
+        return $this->belongsTo(IncidencePriority::class, 'incidence_priority_id');
     }
 }

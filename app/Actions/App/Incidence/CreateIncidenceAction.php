@@ -27,7 +27,6 @@ class CreateIncidenceAction
             $incidenceData = [
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
-                'date' => $data['date'] ?? now()->toDateString(),
                 'incidence_priority_id' => $data['incidence_priority_id'],
                 'project_id' => $projectId,
                 'incidence_type_id' => $data['incidence_type_id'],

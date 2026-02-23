@@ -86,7 +86,7 @@ class ProjectDeleteService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
@@ -104,7 +104,7 @@ class ProjectDeleteService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'administrators'
                 ]),
                 403
             );
@@ -117,7 +117,7 @@ class ProjectDeleteService
     private function validateNotLastAdmin(Project $project): void
     {
         $adminCount = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->withCount('users')
             ->get()
             ->sum('users_count');
@@ -126,14 +126,14 @@ class ProjectDeleteService
             // Verificar que el usuario actual es ese único admin
             $userId = auth()->id();
             $isTheOnlyAdmin = $project->roles()
-                ->where('type', 'Administrators')
+                ->where('type', 'administrators')
                 ->whereHas('users', fn($q) => $q->where('user_id', $userId))
                 ->exists();
 
             if ($isTheOnlyAdmin) {
                 // Buscar otros admins potenciales (otros roles con capacidad de ser admin)
                 $otherAdmins = $project->roles()
-                    ->where('type', '!=', 'Administrators')
+                    ->where('type', '!=', 'administrators')
                     ->with('users')
                     ->get()
                     ->map(fn($role) => $role->users)

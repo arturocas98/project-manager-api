@@ -10,11 +10,14 @@ use App\Http\Requests\App\UpdateProjectRequest;
 use App\Http\Resources\App\OneProjectResource;
 use App\Http\Resources\App\ProjectCreatedResource;
 use App\Http\Resources\App\ProjectResource;
+use App\Http\Resources\App\ProjectSummaryResource;
 use App\Models\Project;
 use App\Services\Project\ProjectCreationService;
 use App\Services\Project\ProjectDeleteService;
+use App\Services\Project\ProjectSummaryService;
 use App\Services\Project\ProjectUpdateService;
 use Illuminate\Http\JsonResponse;
+use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
@@ -33,6 +36,7 @@ class ProjectController extends Controller
         private ProjectUpdateService  $projectUpdateService,
         private ProjectDeleteService $projectDeleteService,
         private CreateRecentAction $createRecent,
+        private ProjectSummaryService $summaryService,
     ) {}
     /**
      * Display a listing of the resource.
@@ -47,6 +51,13 @@ class ProjectController extends Controller
     {
         $projects = $query->paginate();
         return ProjectResource::collection($projects);
+    }
+
+    public function summary(int $projectId, Request $request)
+    {
+        $summaryData = $this->summaryService->getSummary($projectId);
+
+        return new ProjectSummaryResource($summaryData);
     }
 
     /**

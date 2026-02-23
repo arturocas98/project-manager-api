@@ -19,15 +19,15 @@ class SchemePermissionSeeder extends Seeder
 
         SchemePermission::truncate();
 
-        // 1. Administrators - todos los permisos
-        if (isset($schemes['Administrators'])) {
+        // 1. administrators - todos los permisos
+        if (isset($schemes['administrators'])) {
             foreach ($permissions as $permission) {
                 SchemePermission::create([
-                    'permission_scheme_id' => $schemes['Administrators']->id,
+                    'permission_scheme_id' => $schemes['administrators']->id,
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('Administrators: ' . $permissions->count() . 'permissions');
+            $this->command->info('administrators: ' . $permissions->count() . 'permissions');
         }
 
         // 2. project manager

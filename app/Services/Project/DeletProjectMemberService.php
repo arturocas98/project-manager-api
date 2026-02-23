@@ -91,7 +91,7 @@ class DeletProjectMemberService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
@@ -109,7 +109,7 @@ class DeletProjectMemberService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'administrators'
                 ]),
                 403
             );
@@ -159,13 +159,13 @@ class DeletProjectMemberService
     private function validateNotLastAdmin(Project $project, ProjectUser $assignment): void
     {
         // Si el usuario a eliminar no es admin, no hay problema
-        if ($assignment->role->type !== 'Administrators') {
+        if ($assignment->role->type !== 'administrators') {
             return;
         }
 
         // Contar administradores actuales
         $adminCount = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->withCount('users')
             ->get()
             ->sum('users_count');
@@ -174,7 +174,7 @@ class DeletProjectMemberService
         if ($adminCount === 1) {
             // Buscar candidatos para sugerir
             $candidates = $project->roles()
-                ->where('type', '!=', 'Administrators')
+                ->where('type', '!=', 'administrators')
                 ->with('users')
                 ->get()
                 ->pluck('users')

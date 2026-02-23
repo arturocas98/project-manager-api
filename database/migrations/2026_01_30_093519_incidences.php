@@ -29,8 +29,6 @@ return new class extends Migration
             $table->unsignedBigInteger('assigned_user_id')->nullable();
             $table->foreign('assigned_user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('description');
-            $table->date('date');
-            $table->enum('priority', ['alta', 'media', 'baja']);
             $table->timestamps();
             $table->softDeletes();
         });

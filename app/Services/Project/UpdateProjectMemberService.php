@@ -148,7 +148,7 @@ class UpdateProjectMemberService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
@@ -166,7 +166,7 @@ class UpdateProjectMemberService
                     'user_id' => $userId,
                     'user_role' => $roleName,
                     'project_id' => $project->id,
-                    'required_role' => 'Administrators'
+                    'required_role' => 'administrators'
                 ]),
                 403
             );
@@ -224,18 +224,18 @@ class UpdateProjectMemberService
     private function validateNotLastAdminChange(Project $project, ProjectUser $assignment, string $newRoleType): void
     {
         // Si el usuario no es admin actualmente, no hay problema
-        if ($assignment->role->type !== 'Administrators') {
+        if ($assignment->role->type !== 'administrators') {
             return;
         }
 
         // Si el nuevo rol también es admin, no hay problema
-        if ($newRoleType === 'Administrators') {
+        if ($newRoleType === 'administrators') {
             return;
         }
 
         // Contar administradores actuales
         $adminCount = $project->roles()
-            ->where('type', 'Administrators')
+            ->where('type', 'administrators')
             ->withCount('users')
             ->get()
             ->sum('users_count');
@@ -245,7 +245,7 @@ class UpdateProjectMemberService
             // Buscar otros miembros que podrían ser administradores
             $candidates = ProjectUser::whereHas('role', function($q) use ($project) {
                 $q->where('project_id', $project->id)
-                    ->where('type', '!=', 'Administrators');
+                    ->where('type', '!=', 'administrators');
             })
                 ->with(['user', 'role'])
                 ->get()
@@ -270,7 +270,7 @@ class UpdateProjectMemberService
                         'name' => $assignment->user?->name,
                         'email' => $assignment->user?->email
                     ],
-                    'current_role' => 'Administrators',
+                    'current_role' => 'administrators',
                     'attempted_role' => $newRoleType,
                     'admin_count' => $adminCount,
                     'suggestion' => 'Antes de cambiar, promueve a otro usuario a Administrador',

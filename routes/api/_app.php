@@ -9,7 +9,8 @@ use App\Http\Controllers\IncidenceAssignedController;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('projects', ProjectController::class)->except(['update', 'destroy']);
-
+    Route::get('projects/{project}/summary', [ProjectController::class, 'summary'])
+        ->name('projects.summary');
     Route::middleware([CheckProjectAdmin::class])->group(function () {
         Route::put('projects/{project}', [ProjectController::class, 'update'])
             ->name('projects.update');
