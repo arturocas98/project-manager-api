@@ -11,6 +11,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('projects', ProjectController::class)->except(['update', 'destroy']);
     Route::get('projects/{project}/summary', [ProjectController::class, 'summary'])
         ->name('projects.summary');
+    Route::get('projects/{project}/unassigned-users', [ProjectController::class, 'getUnassignedUsers'])
+        ->name('projects.unassigned-users');
     Route::middleware([CheckProjectAdmin::class])->group(function () {
         Route::put('projects/{project}', [ProjectController::class, 'update'])
             ->name('projects.update');
@@ -37,7 +39,7 @@ Route::middleware(['auth:api'])->group(function () {
             ->name('projects.incidences.index');
         Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
             ->name('projects.incidences.store');
-        Route::put('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'update'])
+        Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])
             ->name('projects.incidences.update');
         Route::delete('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'destroy'])
             ->name('projects.incidences.destroy');

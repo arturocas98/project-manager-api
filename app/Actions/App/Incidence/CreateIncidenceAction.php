@@ -30,7 +30,7 @@ class CreateIncidenceAction
                 'incidence_priority_id' => $data['incidence_priority_id'],
                 'project_id' => $projectId,
                 'incidence_type_id' => $data['incidence_type_id'],
-                'incidence_state_id' => 1, // Estado predeterminado: 1 (ej: "Abierto" o "Nuevo")
+                'incidence_state_id' => $data['incidence_state_id']??1,
                 'created_by_id' => $createdById,
                 'assigned_user_id' => null, // Siempre nulo al crear
                 'parent_incidence_id' => $data['parent_incidence_id'] ?? null,

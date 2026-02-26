@@ -14,11 +14,12 @@ class IncidenceResource extends JsonResource
                 'id' => $this->id,
                 'title' => $this->title,
                 'description' => $this->description,
-                'date' => $this->date,
-                'priority' => $this->priority,
+                'priority' => $this->incidencePriority->priority,
                 'project_id' => $this->project_id,
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
+                'due_date' => $this->due_date,
+                'start_date' => $this->start_date,
 
                 'type' => $this->incidenceType ? [
                     'id' => $this->incidenceType->id,
@@ -36,7 +37,11 @@ class IncidenceResource extends JsonResource
                     'email' => $this->createdBy->email,
                 ] : null,
 
-                'assigned_to' => null, // Siempre null al crear
+                'assigned_to' => $this->assignedUser ? [
+                    'id' => $this->assignedUser->id,
+                    'name' => $this->assignedUser->name,
+                    'email' => $this->assignedUser->email,
+                ] : null,
 
                 'parent' => $this->parentIncidence ? [
                     'id' => $this->parentIncidence->id,

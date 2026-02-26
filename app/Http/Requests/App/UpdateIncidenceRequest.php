@@ -28,7 +28,8 @@ class UpdateIncidenceRequest extends FormRequest
             'incidence_state_id' => ['sometimes', 'integer', Rule::exists('incidence_states', 'id')],
             'parent_incidence_id' => ['sometimes', 'nullable', 'integer', Rule::exists('incidences', 'id')],
             'assigned_user_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')],
-            'date' => ['sometimes', 'nullable', 'date'],
+            'start_date' => ['sometimes', 'nullable', 'date', 'before_or_equal:due_date'],
+            'due_date' => ['sometimes', 'nullable', 'date', 'after_or_equal:start_date'],
         ];
     }
 
@@ -52,8 +53,6 @@ class UpdateIncidenceRequest extends FormRequest
             'parent_incidence_id.exists' => 'La incidencia padre seleccionada no existe',
 
             'assigned_user_id.exists' => 'El usuario asignado no existe',
-
-            'date.date' => 'La fecha debe tener un formato válido',
         ];
     }
 
@@ -102,12 +101,6 @@ class UpdateIncidenceRequest extends FormRequest
                 'example' => 'The login form does not validate email format correctly',
                 'required' => false,
                 'type' => 'string',
-            ],
-            'date' => [
-                'description' => 'Date when the incidence occurred',
-                'example' => '2024-03-15',
-                'required' => false,
-                'type' => 'date',
             ],
             'incidence_priority_id' => [
                 'description' => 'Priority ID of the incidence',

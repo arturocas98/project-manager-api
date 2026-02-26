@@ -10,8 +10,9 @@ class ProjectCreatedResource extends JsonResource
     {
         $availableRoles = [
             ['type' => 'administrator', 'description' => 'Pueden crear, borrar, editar todo a su antojo'],
+            ['type' => 'manager', 'description' => 'Pueden crear, editar, y borrar issues, gestionarlas con los developers'],
             ['type' => 'developers', 'description' => 'Pueden crear y editar issues, gestionar versiones'],
-            ['type' => 'users', 'description' => 'Pueden crear issues y comentar'],
+            ['type' => 'users', 'description' => 'Pueden visualizar issues y comentar'],
             ['type' => 'bug', 'description' => 'Pueden reportar bugs'],
             ['type' => 'subtask', 'description' => 'Pueden crear y gestionar subtareas']
         ];

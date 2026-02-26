@@ -29,6 +29,8 @@ return new class extends Migration
             $table->unsignedBigInteger('assigned_user_id')->nullable();
             $table->foreign('assigned_user_id')->references('id')->on('users')->onDelete('cascade');
             $table->text('description');
+            $table->date('due_date')->nullable();
+            $table->date('start_date')->nullable();
             $table->timestamps();
             $table->softDeletes();
         });

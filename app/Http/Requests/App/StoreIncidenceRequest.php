@@ -19,19 +19,18 @@ class StoreIncidenceRequest extends FormRequest
         return [
             'title' => 'required|string|max:255',
             'description' => 'nullable|string',
-            'date' => 'nullable|date',
+            'start_date' => 'nullable|date|before_or_equal:due_date',
+            'due_date' => 'nullable|date|after_or_equal:start_date',
             'incidence_priority_id' => 'required|exists:incidence_priorities,id',
             'incidence_type_id' => 'required|exists:incidence_types,id',
+            'incidence_state_id' => 'nullable|exists:incidence_states,id',
             'parent_incidence_id' => [
                 'nullable',
                 'exists:incidences,id',
                 function ($attribute, $value, $fail) {
-                    // Si el tipo es Epic (ID: 1), parent_incidence_id debe ser nulo
                     if ($this->incidence_type_id == 1 && !is_null($value)) {
                         $fail('Una incidencia de tipo Epic no puede tener una incidencia padre');
                     }
-
-                    // Si el tipo no es Epic, parent_incidence_id es obligatorio
                     if ($this->incidence_type_id != 1 && is_null($value)) {
                         $fail('Las incidencias que no son de tipo Epic deben tener una incidencia padre');
                     }

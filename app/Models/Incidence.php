@@ -23,6 +23,8 @@ class Incidence extends Model
         'created_by_id',
         'assigned_user_id',
         'description',
+        'due_date',
+        'start_date',
     ];
 
     protected $casts = [
@@ -38,6 +40,20 @@ class Incidence extends Model
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
+    }
+    // En el modelo Incidence
+    protected $appends = ['assigned_user_role'];
+
+    public function getAssignedUserRoleAttribute()
+    {
+        if (!$this->assigned_user_id || !$this->project_id) {
+            return null;
+        }
+
+        return $this->assignedUser?->projectRoles()
+            ->whereHas('project', fn($q) => $q->where('id', $this->project_id))
+            ->first()
+            ?->name;
     }
     public function project():BelongsTo
     {

@@ -11,11 +11,13 @@ use App\Http\Resources\App\OneProjectResource;
 use App\Http\Resources\App\ProjectCreatedResource;
 use App\Http\Resources\App\ProjectResource;
 use App\Http\Resources\App\ProjectSummaryResource;
+use App\Http\Resources\Auth\UserProyectCollection;
 use App\Models\Project;
 use App\Services\Project\ProjectCreationService;
 use App\Services\Project\ProjectDeleteService;
 use App\Services\Project\ProjectSummaryService;
 use App\Services\Project\ProjectUpdateService;
+use App\Services\Project\ProjectUsersServices;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\AnonymousResourceCollection;
@@ -37,6 +39,7 @@ class ProjectController extends Controller
         private ProjectDeleteService $projectDeleteService,
         private CreateRecentAction $createRecent,
         private ProjectSummaryService $summaryService,
+        private ProjectUsersServices $projectUserService,
     ) {}
     /**
      * Display a listing of the resource.
@@ -58,6 +61,18 @@ class ProjectController extends Controller
         $summaryData = $this->summaryService->getSummary($projectId);
 
         return new ProjectSummaryResource($summaryData);
+    }
+
+    public function getUnassignedUsers(int $projectId, Request $request): UserProyectCollection
+    {
+        $authenticatedUserId = $request->user()->id;
+
+        $users = $this->projectUserService->getUnassignedUsers(
+            $projectId,
+            $authenticatedUserId
+        );
+
+        return new UserProyectCollection($users);
     }
 
     /**
@@ -142,11 +157,7 @@ class ProjectController extends Controller
             $request->validated()
         );
 
-        return response()->json([
-            'success' => true,
-            'message' => 'Proyecto actualizado exitosamente',
-            'data' => new ProjectResource($updatedProject)
-        ], 200);
+        return new ProjectResource($updatedProject);
     }
 
     /**

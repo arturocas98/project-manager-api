@@ -26,10 +26,11 @@ class IncidenceCollection extends ResourceCollection
                     'id' => $incidence->id,
                     'title' => $incidence->title,
                     'description' => $incidence->description,
-                    'date' => $incidence->date,
-                    'priority' => $incidence->priority,
+                    'priority' => $incidence->incidencePriority->priority,
                     'created_at' => $incidence->created_at,
                     'updated_at' => $incidence->updated_at,
+                    'due_date' => $incidence->due_date,
+                    'start_date' => $incidence->start_date,
 
                     'type' => $incidence->incidenceType ? [
                         'id' => $incidence->incidenceType->id,
@@ -51,6 +52,11 @@ class IncidenceCollection extends ResourceCollection
                         'id' => $incidence->assignedUser->id,
                         'name' => $incidence->assignedUser->name,
                         'email' => $incidence->assignedUser->email,
+                        'role_name' => $incidence->assignedUser
+                            ->projectRoles()
+                            ->where('project_id', $incidence->project_id)  // Filtramos por el proyecto de la incidencia
+                            ->first()
+                            ?->type  // El campo 'type' en ProjectRole tiene el nombre del rol
                     ] : null,
 
                     'parent' => $incidence->parentIncidence ? [

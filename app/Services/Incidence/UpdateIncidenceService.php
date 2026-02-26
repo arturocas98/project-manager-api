@@ -3,6 +3,7 @@
 namespace App\Services\Incidence;
 use App\Models\Incidence;
 use App\Exceptions\IncidenceException;
+use Carbon\Carbon;
 
 class UpdateIncidenceService
 {
@@ -29,14 +30,18 @@ class UpdateIncidenceService
     // Estados permitidos (esto debería venir de la base de datos idealmente)
     private const STATE_OPEN = 1;
     private const STATE_IN_PROGRESS = 2;
-    private const STATE_CLOSED = 3;
-    private const STATE_REOPENED = 4;
+    private const STATE_REVIEW = 3;
+    private const STATE_CLOSED = 4;
+    private const STATE_LOCKED = 5;
+    private const STATE_FINISHED = 6;
 
     private const ALLOWED_STATE_TRANSITIONS = [
         self::STATE_OPEN => [self::STATE_IN_PROGRESS, self::STATE_CLOSED],
-        self::STATE_IN_PROGRESS => [self::STATE_OPEN, self::STATE_CLOSED],
-        self::STATE_CLOSED => [self::STATE_REOPENED],
-        self::STATE_REOPENED => [self::STATE_IN_PROGRESS, self::STATE_CLOSED],
+        self::STATE_IN_PROGRESS => [self::STATE_OPEN, self::STATE_REVIEW, self::STATE_CLOSED],
+        self::STATE_REVIEW => [self::STATE_IN_PROGRESS, self::STATE_CLOSED, self::STATE_LOCKED],
+        self::STATE_CLOSED => [self::STATE_LOCKED],
+        self::STATE_LOCKED => [self::STATE_FINISHED],
+        self::STATE_FINISHED => [],
     ];
 
     public function __construct(
@@ -59,6 +64,7 @@ class UpdateIncidenceService
 
         // Validar reglas de negocio antes de actualizar
         $this->validateUpdate($incidence, $data);
+        $this->validateDateUpdate($incidence, $data);
 
         // Registrar cambios para auditoría
         $oldData = $this->captureOldData($incidence);
@@ -74,10 +80,86 @@ class UpdateIncidenceService
             'childIncidences'
         ]);
 
-        // Log de auditoría
-        $this->logChanges($incidenceId, $updatedById, $oldData, $updatedIncidence);
-
         return $updatedIncidence;
+    }
+    private function validateDateUpdate(Incidence $incidence, array $data): void
+    {
+        $startDate = $data['start_date'] ?? $incidence->start_date;
+        $dueDate = $data['due_date'] ?? $incidence->due_date;
+
+        // Si se están actualizando las fechas
+        if (isset($data['start_date']) || isset($data['due_date'])) {
+
+            // Validar que start_date <= due_date si ambos están presentes
+            if ($startDate && $dueDate) {
+                $startCarbon = Carbon::parse($startDate);
+                $dueCarbon = Carbon::parse($dueDate);
+
+                if ($startCarbon->gt($dueCarbon)) {
+                    throw new IncidenceException(
+                        'La fecha de inicio no puede ser posterior a la fecha de vencimiento',
+                        422
+                    );
+                }
+            }
+
+            // Validaciones específicas por estado
+            if ($incidence->incidence_state_id === self::STATE_CLOSED) {
+                if (isset($data['due_date']) || isset($data['start_date'])) {
+                    throw new IncidenceException(
+                        'No se pueden modificar las fechas de una incidencia cerrada',
+                        422
+                    );
+                }
+            }
+
+            // Validar que due_date no sea en el pasado si la incidencia está en progreso
+            if ($incidence->incidence_state_id === self::STATE_IN_PROGRESS && isset($data['due_date'])) {
+                $newDueDate = Carbon::parse($data['due_date']);
+
+                if ($newDueDate->lt(now())) {
+                    throw new IncidenceException(
+                        'No se puede establecer una fecha de vencimiento en el pasado para una incidencia en progreso',
+                        422
+                    );
+                }
+            }
+        }
+
+        // Validaciones específicas por tipo al actualizar
+        $newTypeId = $data['incidence_type_id'] ?? $incidence->incidence_type_id;
+
+        if ($newTypeId === self::TYPE_TASK) {
+            $finalDueDate = $data['due_date'] ?? $incidence->due_date;
+
+            if (!$finalDueDate) {
+                throw new IncidenceException(
+                    'Las tareas deben tener una fecha de vencimiento',
+                    422
+                );
+            }
+        }
+    }
+
+    /**
+     * Validar que se pueda cerrar la incidencia (actualizado)
+     */
+    /**
+     * Capturar datos antiguos para auditoría (actualizado)
+     */
+    private function captureOldData(Incidence $incidence): array
+    {
+        return [
+            'title' => $incidence->title,
+            'description' => $incidence->description,
+            'incidence_type_id' => $incidence->incidence_type_id,
+            'incidence_state_id' => $incidence->incidence_state_id,
+            'parent_incidence_id' => $incidence->parent_incidence_id,
+            'assigned_user_id' => $incidence->assigned_user_id,
+            'date' => $incidence->date,
+            'start_date' => $incidence->start_date,
+            'due_date' => $incidence->due_date,
+        ];
     }
 
     /**
@@ -337,7 +419,6 @@ class UpdateIncidenceService
             $this->validateCanClose($incidence);
         }
     }
-
     /**
      * Validar que se pueda cerrar la incidencia
      */
@@ -424,22 +505,6 @@ class UpdateIncidenceService
     }
 
     /**
-     * Capturar datos antiguos para auditoría
-     */
-    private function captureOldData(Incidence $incidence): array
-    {
-        return [
-            'title' => $incidence->title,
-            'description' => $incidence->description,
-            'incidence_type_id' => $incidence->incidence_type_id,
-            'incidence_state_id' => $incidence->incidence_state_id,
-            'parent_incidence_id' => $incidence->parent_incidence_id,
-            'assigned_user_id' => $incidence->assigned_user_id,
-            'date' => $incidence->date,
-        ];
-    }
-
-    /**
      * Registrar cambios en log
      */
     private function logChanges(int $incidenceId, int $updatedById, array $oldData, Incidence $newIncidence): void
@@ -454,14 +519,6 @@ class UpdateIncidenceService
                     'new' => $newValue
                 ];
             }
-        }
-
-        if (!empty($changes)) {
-            Log::info('Incidencia actualizada', [
-                'incidence_id' => $incidenceId,
-                'updated_by' => $updatedById,
-                'changes' => $changes
-            ]);
         }
     }
 
@@ -488,36 +545,11 @@ class UpdateIncidenceService
         return match($stateId) {
             self::STATE_OPEN => 'Abierto',
             self::STATE_IN_PROGRESS => 'En Progreso',
+            self::STATE_REVIEW => 'En Revisión',
             self::STATE_CLOSED => 'Cerrado',
-            self::STATE_REOPENED => 'Reabierto',
-            default => 'Desconocido'
+            self::STATE_LOCKED => 'Bloqueado',
+            self::STATE_FINISHED => 'Finalizado',
+            default => 'Desconocido',
         };
-    }
-
-    /**
-     * Validar que se pueda reabrir una incidencia
-     */
-    public function validateCanReopen(Incidence $incidence): void
-    {
-        if ($incidence->incidence_state_id !== self::STATE_CLOSED) {
-            throw new IncidenceException(
-                'Solo se pueden reabrir incidencias cerradas',
-                422
-            );
-        }
-    }
-
-    /**
-     * Reabrir una incidencia (método helper)
-     */
-    public function reopen(int $incidenceId, int $updatedById): Incidence
-    {
-        $incidence = $this->getIncidenceWithRelations($incidenceId);
-
-        $this->validateCanReopen($incidence);
-
-        return $this->update($incidenceId, [
-            'incidence_state_id' => self::STATE_REOPENED
-        ], $updatedById);
     }
 }

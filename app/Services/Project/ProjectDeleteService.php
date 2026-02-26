@@ -22,7 +22,7 @@ class ProjectDeleteService
         // VALIDACIONES DE NEGOCIO
         $this->validateProject($project);
         $this->validatePermissions($project);
-        $this->validateNotLastAdmin($project);
+        //$this->validateNotLastAdmin($project);
         $this->validateNoCriticalIssues($project); // Opcional
 
         // TRANSACCIÓN

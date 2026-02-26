@@ -127,16 +127,19 @@ class UpdateIncidenceAction
     private function validateStateTransition(int $oldStateId, int $newStateId): void
     {
         $allowedTransitions = [
-            1 => [2, 3], // Abierto -> En progreso, Cerrado
-            2 => [1, 3], // En progreso -> Abierto, Cerrado
-            3 => [1],    // Cerrado -> Abierto (reabrir)
+            1 => [2, 4],       // Open -> In Progress, Closed
+            2 => [1, 3, 4],    // In Progress -> Open, Review, Closed
+            3 => [2, 4, 5],    // Review -> In Progress, Closed, Locked
+            4 => [5],          // Closed -> Locked
+            5 => [6],          // Locked -> Finished
+            6 => [],           // Finished -> (final)
         ];
 
         if (!isset($allowedTransitions[$oldStateId]) ||
             !in_array($newStateId, $allowedTransitions[$oldStateId])) {
 
             throw new IncidenceException(
-                "Transición de estado no permitida",
+                "No se puede cambiar del estado {$oldStateId} al estado {$newStateId}.",
                 422
             );
         }

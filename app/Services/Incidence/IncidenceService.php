@@ -10,12 +10,45 @@ use Illuminate\Support\Collection;
 
 class IncidenceService
 {
-    public function getProjectIncidences(int $projectId): Collection
+    public function getProjectIncidences(int $projectId, array $filters = []): Collection
     {
+        $query = (new IncidenceQuery())
+            ->byProject($projectId)
+            ->withDefaultRelations();
+
+        // Aplicar filtros de fecha si existen
+        if (isset($filters['start_date']) || isset($filters['due_date'])) {
+            $query->byDateRange(
+                $filters['start_date'] ?? null,
+                $filters['due_date'] ?? null
+            );
+        }
+
+        // Filtrar vencidas
+        if (isset($filters['overdue']) && $filters['overdue']) {
+            $query->overdue();
+        }
+
+        // Ordenar por fecha de vencimiento
+        if (isset($filters['sort_by_due_date'])) {
+            $query->orderByDueDate($filters['sort_by_due_date']);
+        }
+
+        return $query->orderByLatest()->get();
+    }
+
+    public function getIncidencesDueSoon(int $projectId, int $days = 7): Collection
+    {
+        $startDate = now();
+        $endDate = now()->addDays($days);
+
         return (new IncidenceQuery())
             ->byProject($projectId)
+            ->byDateRange(null, $endDate)
+            ->where('due_date', '>=', $startDate)
+            ->where('incidence_state_id', '!=', 3) // Excluir cerradas
             ->withDefaultRelations()
-            ->orderByLatest()
+            ->orderByDueDate()
             ->get();
     }
 

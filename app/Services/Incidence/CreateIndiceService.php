@@ -8,6 +8,7 @@ use App\Http\Queries\App\IncidenceQuery;
 use App\Models\Project;
 use App\Models\Incidence;
 use App\Exceptions\ProjectException;
+use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
 class CreateIndiceService
@@ -50,8 +51,47 @@ class CreateIndiceService
     {
         // Validar jerarquía antes de crear
         $this->validateIncidenceHierarchy($projectId, $data);
-
+        $this->validateDates($data);
         return $this->createIncidenceAction->execute($projectId, $data, $createdById);
+    }
+
+    private function validateDates(array $data): void
+    {
+        // Si ambas fechas están presentes, validar que start_date <= due_date
+        if (isset($data['start_date']) && isset($data['due_date'])) {
+            $startDate = Carbon::parse($data['start_date']);
+            $dueDate = Carbon::parse($data['due_date']);
+
+            if ($startDate->gt($dueDate)) {
+                throw new IncidenceException(
+                    'La fecha de inicio no puede ser posterior a la fecha de vencimiento',
+                    422
+                );
+            }
+        }
+
+        // Validar que due_date no sea demasiado lejano (opcional)
+        if (isset($data['due_date'])) {
+            $dueDate = Carbon::parse($data['due_date']);
+            $maxDueDate = now()->addMonths(6); // Máximo 6 meses
+
+            if ($dueDate->gt($maxDueDate)) {
+                throw new IncidenceException(
+                    'La fecha de vencimiento no puede ser superior a 6 meses',
+                    422
+                );
+            }
+        }
+
+        // Validaciones específicas por tipo
+        $typeId = $data['incidence_type_id'] ?? null;
+
+        if ($typeId === self::TYPE_TASK && !isset($data['due_date'])) {
+            throw new IncidenceException(
+                'Las tareas requieren una fecha de vencimiento',
+                422
+            );
+        }
     }
 
     /**

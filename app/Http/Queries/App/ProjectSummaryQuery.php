@@ -263,7 +263,7 @@ class ProjectSummaryQuery
                     'priority' => $incidence->priority,
                     'assigned_user_name' => $incidence->assigned_user_name ?? 'Unassigned',
                     'project_name' => $incidence->project_name,
-                    'status' => $incidence->status, // 👈 agregado
+                    'status' => $incidence->status,
                 ];
             });
     }
