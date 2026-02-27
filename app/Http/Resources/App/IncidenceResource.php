@@ -41,6 +41,11 @@ class IncidenceResource extends JsonResource
                     'id' => $this->assignedUser->id,
                     'name' => $this->assignedUser->name,
                     'email' => $this->assignedUser->email,
+                    'role_name' => $this->assignedUser
+                        ->projectRoles()
+                        ->where('project_id', $this->project_id)  // Filtramos por el proyecto de la incidencia
+                        ->first()
+                        ?->type  // El campo 'type' en ProjectRole tiene el nombre del rol
                 ] : null,
 
                 'parent' => $this->parentIncidence ? [

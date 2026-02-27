@@ -66,7 +66,18 @@ class IncidenceController extends Controller
 
         return new IncidenceResource($incidence);
     }
-    public function show($id){}
+    public function show(int $project, int $incidence): IncidenceResource
+    {
+        $projectModel = Project::findOrFail($project);
+
+        $this->incidenceService->validateProjectAccess($projectModel);
+
+        $incidenceModel = Incidence::where('project_id', $project)
+            ->where('id', $incidence)
+            ->firstOrFail();
+
+        return new IncidenceResource($incidenceModel);
+    }
     public function update(UpdateIncidenceRequest $request, int $projectId, int $incidenceId): IncidenceResource
     {
         $project = Project::findOrFail($projectId);

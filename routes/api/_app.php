@@ -37,6 +37,8 @@ Route::middleware(['auth:api'])->group(function () {
     Route::middleware([CheckRole::class])->group(function () {
         Route::get('projects/{project}/incidences', [IncidenceController::class, 'index'])
             ->name('projects.incidences.index');
+        Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])
+            ->name('projects.incidences.show');
         Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
             ->name('projects.incidences.store');
         Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])
