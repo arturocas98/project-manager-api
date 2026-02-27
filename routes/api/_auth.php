@@ -26,6 +26,16 @@ Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(functio
     Route::post('/users', [UserController::class, 'store']);
     Route::put('/users/{id}', [UserController::class, 'update'])->whereNumber(['id']);
     Route::delete('/users/{user}', [UserController::class, 'destroy'])->whereNumber(['user']);
+
+    Route::get('/roles', [Auth\RoleController::class, 'index']);
+    Route::get('/roles/{role}', [Auth\RoleController::class, 'show'])
+        ->whereNumber(['role'])->middleware('can:show,role');
+    Route::post('/roles', [Auth\RoleController::class, 'store'])
+        ->middleware('can:create,Spatie\Permission\Models\Role');
+    Route::put('/roles/{role}', [Auth\RoleController::class, 'update'])
+        ->whereNumber(['role'])->middleware('can:update,role');
+    Route::delete('/roles/{role}', [Auth\RoleController::class, 'destroy'])
+        ->whereNumber(['role'])->middleware('can:delete,role');
 });
 
 Route::middleware(['auth:api'])->group(function () {

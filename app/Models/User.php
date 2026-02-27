@@ -24,6 +24,9 @@ class User extends Authenticatable implements MustVerifyEmail
     use SoftDeletes;
     use TwoFactorAuthenticatable;
 
+    public $to_show_password;
+
+
     /**
      * The attributes that are mass assignable.
      *
@@ -33,6 +36,9 @@ class User extends Authenticatable implements MustVerifyEmail
         'name',
         'email',
         'password',
+        'modality_id',
+        'telephone',
+        'address'
     ];
 
     /**
@@ -86,7 +92,7 @@ class User extends Authenticatable implements MustVerifyEmail
 
     public function projects()
     {
-        return Project::whereHas('roles.users', fn ($q) => $q->where('user_id', $this->id));
+        return Project::whereHas('roles.users', fn($q) => $q->where('user_id', $this->id));
     }
 
     /**
@@ -95,7 +101,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function hasProjectAccess(int $projectId): bool
     {
         return $this->projectRoles()
-            ->whereHas('project', fn ($q) => $q->where('id', $projectId))
+            ->whereHas('project', fn($q) => $q->where('id', $projectId))
             ->exists();
     }
 
@@ -105,7 +111,7 @@ class User extends Authenticatable implements MustVerifyEmail
     public function getProjectRole(int $projectId): ?ProjectRole
     {
         return $this->projectRoles()
-            ->whereHas('project', fn ($q) => $q->where('id', $projectId))
+            ->whereHas('project', fn($q) => $q->where('id', $projectId))
             ->first();
     }
 

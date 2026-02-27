@@ -18,7 +18,9 @@ class SaveUserAction
                 $user->password = Hash::make($input->get('password'));
                 $user->to_show_password = $input->get('password');
             }
-            $user->syncRoles([$input->get('rols')]);
+            if ($input->has('rols')) {
+                $user->syncRoles([$input->get('rols')['id']]);
+            }
             $user->makeHidden('to_show_password');
             if ($input->has('status') && ! $input->get('status')) {
                 $user->delete();

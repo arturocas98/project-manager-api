@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\Auth;
 
+use App\Enums\UserModality;
 use App\Models\User;
 use App\Traits\PasswordRules;
 use Illuminate\Foundation\Http\FormRequest;
@@ -25,33 +26,32 @@ class UserRequest extends FormRequest
                 'email',
                 'max:255',
             ],
-            'reset_password' => [
-                'required',
-                'boolean',
-            ],
             'rols' => [
-                'required',
+                'nullable',
                 'array',
-            ],
-            'rols.*.name' => [
-                'required',
-                'string',
             ],
             'status' => [
                 'nullable',
                 'boolean',
             ],
-            'expires_at' => [
-                'sometimes',
+            'telephone' => [
                 'nullable',
-                'date_format:Y-m-d',
-                'after:today',
+                'string'
+            ],
+            'modality_id' => [
+                'nullable',
+                'int',
+                // Rule::enum(UserModality::cases())
+            ],
+            'address' => [
+                'nullable',
+                'string'
             ],
         ];
         if ($this->isMethod(FormRequest::METHOD_POST)) {
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();
         }
-        $rules = array_merge($rules, $this->passwordRules());
+        // $rules = array_merge($rules, $this->passwordRules());
 
         return $rules;
     }
