@@ -32,7 +32,7 @@ class CreateIncidenceAction
                 'incidence_type_id' => $data['incidence_type_id'],
                 'incidence_state_id' => $data['incidence_state_id']??1,
                 'created_by_id' => $createdById,
-                'assigned_user_id' => null, // Siempre nulo al crear
+                'assigned_user_id' => $data['assigned_user_id']??null, // Siempre nulo al crear
                 'parent_incidence_id' => $data['parent_incidence_id'] ?? null,
             ];
 

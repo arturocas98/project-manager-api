@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\App;
 
+use App\Models\ProjectUser;
 use Illuminate\Foundation\Http\FormRequest;
 
 class StoreIncidenceRequest extends FormRequest
@@ -24,6 +25,19 @@ class StoreIncidenceRequest extends FormRequest
             'incidence_priority_id' => 'required|exists:incidence_priorities,id',
             'incidence_type_id' => 'required|exists:incidence_types,id',
             'incidence_state_id' => 'nullable|exists:incidence_states,id',
+            'assigned_user_id' => [
+                'nullable',
+                'exists:users,id',
+                function ($attribute, $value, $fail) {
+                    // Solo validar si se proporciona un usuario asignado
+                    if ($value) {
+                        $this->validateAssignedUserRole($value, $fail);
+                    } else {
+                        // Si es null, validar según el tipo de incidencia
+                        $this->validateNullableAssignedUser($fail);
+                    }
+                },
+            ],
             'parent_incidence_id' => [
                 'nullable',
                 'exists:incidences,id',
@@ -48,6 +62,29 @@ class StoreIncidenceRequest extends FormRequest
             'incidence_type_id.exists' => 'El tipo de incidencia seleccionado no es válido',
             'parent_incidence_id.exists' => 'La incidencia padre seleccionada no es válida',
         ];
+    }
+
+    private function validateAssignedUserRole($userId, $fail): void
+    {
+        $projectId = $this->route('project'); // <- aquí está la clave
+
+        $projectUser = ProjectUser::where('user_id', $userId)
+            ->whereHas('role', function ($query) use ($projectId) {
+                $query->where('project_id', $projectId);
+            })
+            ->with('role')
+            ->first();
+
+        if (!$projectUser || !$projectUser->role) {
+            $fail('El usuario seleccionado no tiene un rol asignado en este proyecto.');
+            return;
+        }
+
+        $forbiddenRoles = ['guest', 'client'];
+
+        if (in_array(strtolower($projectUser->role->type), $forbiddenRoles)) {
+            $fail('No se puede asignar una tarea a un usuario con rol ' . $projectUser->role->type . '.');
+        }
     }
 
     /**
