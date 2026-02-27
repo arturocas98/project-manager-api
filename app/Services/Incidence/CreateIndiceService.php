@@ -71,9 +71,6 @@ class CreateIndiceService
         // Validar usuario asignado si se proporciona
         if (isset($data['assigned_user_id']) && $data['assigned_user_id']) {
             $this->validateAssignedUser($projectId, $data['assigned_user_id'], $data['incidence_type_id']);
-        } else {
-            // Si no se asigna usuario, validar si es permitido según el tipo
-            $this->validateNullableAssignedUser($data['incidence_type_id']);
         }
 
         return $this->createIncidenceAction->execute($projectId, $data, $createdById);
@@ -157,21 +154,6 @@ class CreateIndiceService
                 );
             }
         }
-    }
-
-    /**
-     * Validar si es permitido que no haya usuario asignado según el tipo de incidencia
-     */
-    private function validateNullableAssignedUser(int $incidenceTypeId): void
-    {
-        // Para Epic y History, podrías requerir que siempre tengan asignación
-        if (in_array($incidenceTypeId, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
-            // Si quieres que sea obligatorio, descomenta la siguiente línea:
-            // throw new IncidenceException("Las incidencias de tipo Epic o History deben tener un usuario asignado", 422);
-        }
-
-        // Para Task, Bug y Subtask, puede ser null (sin asignar)
-        // No se requiere validación adicional
     }
 
     private function validateDates(array $data): void

@@ -34,6 +34,15 @@ class ProfileController extends Controller
      *
      * Displays the profile of the authenticated user.
      */
+
+    public function index()
+    {
+        return ProfileResource::collection(
+            User::where('id', '!=', auth()->id())->get()
+        );
+    }
+
+
     public function show(): ProfileResource
     {
         return ProfileResource::make($this->user);
