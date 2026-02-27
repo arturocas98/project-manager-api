@@ -1,11 +1,11 @@
 <?php
 
-use App\Http\Middleware\CheckRole;
+use App\Http\Controllers\IncidenceAssignedController;
+use App\Http\Controllers\IncidenceController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
-use App\Http\Controllers\IncidenceController;
 use App\Http\Middleware\CheckProjectAdmin;
-use App\Http\Controllers\IncidenceAssignedController;
+use App\Http\Middleware\CheckRole;
 
 Route::middleware(['auth:api'])->group(function () {
     Route::apiResource('projects', ProjectController::class)->except(['update', 'destroy']);
@@ -32,7 +32,6 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])
             ->name('projects.members.destroy');
     });
-
 
     Route::middleware([CheckRole::class])->group(function () {
         Route::get('projects/{project}/incidences', [IncidenceController::class, 'index'])

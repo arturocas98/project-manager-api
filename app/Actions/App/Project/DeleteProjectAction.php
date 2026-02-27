@@ -2,8 +2,8 @@
 
 namespace App\Actions\App\Project;
 
-use App\Models\Project;
 use App\Exceptions\ProjectException;
+use App\Models\Project;
 
 class DeleteProjectAction
 {
@@ -18,7 +18,7 @@ class DeleteProjectAction
             // Soft delete
             $result = $project->delete();
 
-            if (!$result) {
+            if (! $result) {
                 throw new ProjectException('No se pudo eliminar el proyecto', 500);
             }
 
@@ -28,7 +28,7 @@ class DeleteProjectAction
             throw $e;
         } catch (\Exception $e) {
             throw new ProjectException(
-                'Error al eliminar el proyecto: ' . $e->getMessage(),
+                'Error al eliminar el proyecto: '.$e->getMessage(),
                 500
             );
         }

@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('incidence_types', function (Blueprint $table) {
             $table->id();
-            $table->String('type');//'Epic', 'history_user', 'task', 'bug', 'subtask'
+            $table->String('type'); //'Epic', 'history_user', 'task', 'bug', 'subtask'
             $table->timestamps();
         });
     }

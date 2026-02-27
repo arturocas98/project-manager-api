@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Model;
 class IncidenceState extends Model
 {
     use HasFactory;
+
     protected $table = 'incidence_states';
 
     protected $fillable = [

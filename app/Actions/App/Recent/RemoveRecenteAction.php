@@ -17,7 +17,7 @@ class RemoveRecenteAction
             // Soft delete
             $result = $recent->delete();
 
-            if (!$result) {
+            if (! $result) {
                 throw new \Exception('No se pudo eliminar el proyecto', 500);
             }
 
@@ -25,7 +25,7 @@ class RemoveRecenteAction
 
         } catch (\Exception $e) {
             throw new \Exception(
-                'Error al eliminar el proyecto: ' . $e->getMessage(),
+                'Error al eliminar el proyecto: '.$e->getMessage(),
                 500
             );
         }

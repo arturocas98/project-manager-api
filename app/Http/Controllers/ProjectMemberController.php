@@ -35,10 +35,7 @@ class ProjectMemberController extends Controller
         private UpdateProjectMemberService $updateProjectMemberService,
     ) {}
 
-    public function show(Request $request, Project $project)
-    {
-
-    }
+    public function show(Request $request, Project $project) {}
 
     #[ResponseFromApiResource(
         ProjectMemberResource::class,
@@ -86,7 +83,7 @@ class ProjectMemberController extends Controller
         return response()->json([
             'success' => true,
             'message' => 'Miembro añadido exitosamente al proyecto',
-            'data' => new ProjectMemberResource((object) $result)
+            'data' => new ProjectMemberResource((object) $result),
         ], 201);
     }
 

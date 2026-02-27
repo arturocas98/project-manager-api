@@ -41,24 +41,24 @@ class TeamController extends Controller
         return new TeamResource($team);
     }
 
-    public function Team_add(TeamUserRequest $request, SaveTeamUserAction $save):TeamResource
+    public function Team_add(TeamUserRequest $request, SaveTeamUserAction $save): TeamResource
     {
         $team_user = $save($request->validated());
+
         return new TeamResource($team_user);
     }
 
-    public function Friend_request_email(FriendRequest $request){
+    public function Friend_request_email(FriendRequest $request)
+    {
         //enviar el email al usuario para aceptar la solicitud
     }
 
-    public  function Friend()
-    {
+    public function Friend() {}
 
-    }
     /**
      * Display the specified resource.
      */
-    public function show(Team $team):TeamResource
+    public function show(Team $team): TeamResource
     {
         return new TeamResource($team);
     }
@@ -79,6 +79,7 @@ class TeamController extends Controller
     public function destroy(Team $team)
     {
         $team->delete();
+
         return new JsonResponse(status: Response::HTTP_NO_CONTENT);
     }
 }

@@ -12,23 +12,23 @@ class AssignPermissionSchemeAction
         try {
             $scheme = ProjectPermissionScheme::where('name', $schemeName)->first();
 
-            if (!$scheme) {
+            if (! $scheme) {
                 throw new \Exception("Esquema de permisos '{$schemeName}' no encontrado");
             }
 
             $permission = ProjectRolePermission::create([
                 'project_role_id' => $projectRoleId,
-                'permission_scheme_id' => $scheme->id
+                'permission_scheme_id' => $scheme->id,
             ]);
 
-            if (!$permission) {
+            if (! $permission) {
                 throw new \Exception('No se pudo asignar el esquema de permisos');
             }
 
             return $permission;
 
         } catch (\Exception $e) {
-            throw new \Exception('Error al asignar permisos: ' . $e->getMessage());
+            throw new \Exception('Error al asignar permisos: '.$e->getMessage());
         }
     }
 }

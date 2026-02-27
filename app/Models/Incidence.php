@@ -37,6 +37,7 @@ class Incidence extends Model
     {
         return $this->belongsTo(User::class, 'created_by_id');
     }
+
     public function assignedUser(): BelongsTo
     {
         return $this->belongsTo(User::class, 'assigned_user_id');
@@ -55,22 +56,26 @@ class Incidence extends Model
             ->first()
             ?->name;
     }
-    public function project():BelongsTo
+    public function project(): BelongsTo
     {
         return $this->belongsTo(Project::class);
     }
-    public function incidenceType():BelongsTo
+
+    public function incidenceType(): BelongsTo
     {
-        return $this->belongsTo(IncidenceType::class,  'incidence_type_id');
+        return $this->belongsTo(IncidenceType::class, 'incidence_type_id');
     }
-    public function incidenceState():BelongsTo
+
+    public function incidenceState(): BelongsTo
     {
         return $this->belongsTo(IncidenceState::class, 'incidence_state_id');
     }
-    public function parentIncidence():BelongsTo
+
+    public function parentIncidence(): BelongsTo
     {
         return $this->belongsTo(Incidence::class, 'parent_incidence_id');
     }
+
     public function childIncidences(): HasMany
     {
         return $this->hasMany(Incidence::class, 'parent_incidence_id');

@@ -2,8 +2,8 @@
 
 namespace Database\Seeders;
 
-use App\Models\ProjectPermissionScheme;
 use App\Models\ProjectPermission;
+use App\Models\ProjectPermissionScheme;
 use App\Models\SchemePermission;
 use Illuminate\Database\Seeder;
 
@@ -33,11 +33,24 @@ class SchemePermissionSeeder extends Seeder
         // 2. project manager
         if (isset($schemes['project manager'])) {
             $managerPermissions = [
-                'view_projects', 'create_projects', 'edit_projects', 'delete_projects',
-                'manage_members', 'invite_users', 'remove_users',
-                'view_tasks', 'create_tasks', 'edit_tasks', 'delete_tasks', 'assign_tasks',
-                'view_files', 'upload_files', 'download_files', 'delete_files',
-                'view_reports', 'generate_reports',
+                'view_projects',
+                'create_projects',
+                'edit_projects',
+                'delete_projects',
+                'manage_members',
+                'invite_users',
+                'remove_users',
+                'view_tasks',
+                'create_tasks',
+                'edit_tasks',
+                'delete_tasks',
+                'assign_tasks',
+                'view_files',
+                'upload_files',
+                'download_files',
+                'delete_files',
+                'view_reports',
+                'generate_reports',
                 'manage_settings',
             ];
 
@@ -58,8 +71,14 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['team member'])) {
             $memberPermissions = [
                 'view_projects',
-                'view_tasks', 'create_tasks', 'edit_tasks', 'assign_tasks', 'comment_tasks',
-                'view_files', 'upload_files', 'download_files',
+                'view_tasks',
+                'create_tasks',
+                'edit_tasks',
+                'assign_tasks',
+                'comment_tasks',
+                'view_files',
+                'upload_files',
+                'download_files',
                 'view_reports',
             ];
 
@@ -80,8 +99,10 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['guest'])) {
             $guestPermissions = [
                 'view_projects',
-                'view_tasks', 'comment_tasks',
-                'view_files', 'download_files',
+                'view_tasks',
+                'comment_tasks',
+                'view_files',
+                'download_files',
                 'view_reports',
             ];
 
@@ -102,9 +123,13 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['supervisor'])) {
             $supervisorPermissions = [
                 'view_projects',
-                'view_tasks', 'assign_tasks', 'comment_tasks',
-                'view_files', 'download_files',
-                'view_reports', 'generate_reports',
+                'view_tasks',
+                'assign_tasks',
+                'comment_tasks',
+                'view_files',
+                'download_files',
+                'view_reports',
+                'generate_reports',
             ];
 
             $count = 0;
@@ -124,8 +149,11 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['external contributor'])) {
             $externalPermissions = [
                 'view_projects',
-                'view_tasks', 'comment_tasks',
-                'view_files', 'download_files', 'upload_files',
+                'view_tasks',
+                'comment_tasks',
+                'view_files',
+                'download_files',
+                'upload_files',
             ];
 
             $count = 0;
@@ -156,8 +184,14 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['developer'])) {
             $developerPermissions = [
                 'view_projects',
-                'view_tasks', 'create_tasks', 'edit_tasks', 'assign_tasks', 'comment_tasks',
-                'view_files', 'upload_files', 'download_files',
+                'view_tasks',
+                'create_tasks',
+                'edit_tasks',
+                'assign_tasks',
+                'comment_tasks',
+                'view_files',
+                'upload_files',
+                'download_files',
                 'view_reports',
             ];
 
@@ -178,9 +212,12 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['tester'])) {
             $testerPermissions = [
                 'view_projects',
-                'view_tasks', 'comment_tasks',
-                'view_files', 'download_files',
-                'view_reports', 'generate_reports',
+                'view_tasks',
+                'comment_tasks',
+                'view_files',
+                'download_files',
+                'view_reports',
+                'generate_reports',
             ];
 
             $count = 0;
@@ -200,8 +237,10 @@ class SchemePermissionSeeder extends Seeder
         if (isset($schemes['client'])) {
             $clientPermissions = [
                 'view_projects',
-                'view_tasks', 'comment_tasks',
-                'view_files', 'download_files',
+                'view_tasks',
+                'comment_tasks',
+                'view_files',
+                'download_files',
                 'view_reports',
             ];
 

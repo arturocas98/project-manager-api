@@ -9,6 +9,7 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 class TeamUser extends Model
 {
     use HasFactory;
+
     protected $table = 'team_user';
 
     protected $fillable = [
@@ -20,7 +21,6 @@ class TeamUser extends Model
     {
         return $this->belongsTo(User::class, 'user_id');
     }
-
 
     public function team(): BelongsTo
     {

@@ -29,6 +29,7 @@ class TeamUserRequest extends FormRequest
             Rule::exists('team', 'team_id'),
         ];
     }
+
     public function messages(): array
     {
         return [

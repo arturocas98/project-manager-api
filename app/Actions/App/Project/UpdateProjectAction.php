@@ -9,9 +9,6 @@ class UpdateProjectAction
     /**
      * Actualizar un proyecto
      *
-     * @param Project $project
-     * @param array $data
-     * @return Project
      * @throws \Exception
      */
     public function execute(Project $project, array $data): Project
@@ -21,7 +18,7 @@ class UpdateProjectAction
             $fillable = array_intersect_key($data, array_flip([
                 'name',
                 'key',
-                'description'
+                'description',
             ]));
 
             // Si no hay nada para actualizar
@@ -38,7 +35,7 @@ class UpdateProjectAction
             return $project;
 
         } catch (\Exception $e) {
-            throw new \Exception('Error al actualizar el proyecto: ' . $e->getMessage());
+            throw new \Exception('Error al actualizar el proyecto: '.$e->getMessage());
         }
     }
 }

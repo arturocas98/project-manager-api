@@ -11,6 +11,7 @@ use App\Models\Project;
 use App\Models\ProjectPermissionScheme;
 use App\Models\ProjectRole;
 use App\Models\ProjectUser;
+
 class UpdateProjectMemberService
 {
     public function __construct(
@@ -123,7 +124,7 @@ class UpdateProjectMemberService
                     'error' => 'Proyecto no disponible',
                     'reason' => 'No se pueden cambiar roles en un proyecto eliminado',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -137,11 +138,11 @@ class UpdateProjectMemberService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -152,7 +153,7 @@ class UpdateProjectMemberService
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             $userRole = $project->roles()
                 ->whereHas('users', fn($q) => $q->where('user_id', $userId))
                 ->first();
@@ -184,13 +185,13 @@ class UpdateProjectMemberService
             ->whereNull('deleted_at')
             ->first();
 
-        if (!$assignment) {
+        if (! $assignment) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Miembro no encontrado',
                     'reason' => 'El miembro no existe en este proyecto',
                     'assignment_id' => $assignmentId,
-                    'project_id' => $project->id
+                    'project_id' => $project->id,
                 ]),
                 404
             );
@@ -243,7 +244,7 @@ class UpdateProjectMemberService
         // Si es el último admin, no permitir cambiar a otro rol
         if ($adminCount === 1) {
             // Buscar otros miembros que podrían ser administradores
-            $candidates = ProjectUser::whereHas('role', function($q) use ($project) {
+            $candidates = ProjectUser::whereHas('role', function ($q) use ($project) {
                 $q->where('project_id', $project->id)
                     ->where('type', '!=', 'administrators');
             })
@@ -268,13 +269,13 @@ class UpdateProjectMemberService
                     'user' => [
                         'id' => $assignment->user_id,
                         'name' => $assignment->user?->name,
-                        'email' => $assignment->user?->email
+                        'email' => $assignment->user?->email,
                     ],
                     'current_role' => 'administrators',
                     'attempted_role' => $newRoleType,
                     'admin_count' => $adminCount,
                     'suggestion' => 'Antes de cambiar, promueve a otro usuario a Administrador',
-                    'candidates' => $candidates
+                    'candidates' => $candidates,
                 ]),
                 400
             );
@@ -293,7 +294,7 @@ class UpdateProjectMemberService
                 json_encode([
                     'error' => 'Auto-cambio no permitido',
                     'reason' => 'No puedes cambiar tu propio rol',
-                    'suggestion' => 'Pide a otro administrador que cambie tu rol'
+                    'suggestion' => 'Pide a otro administrador que cambie tu rol',
                 ]),
                 400
             );

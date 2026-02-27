@@ -78,7 +78,7 @@ class ProjectMemberResource extends JsonResource
 
         $scheme = $role->permissionScheme?->scheme;
 
-        if (!$scheme || !$scheme->relationLoaded('permissions')) {
+        if (! $scheme || ! $scheme->relationLoaded('permissions')) {
             return [];
         }
 

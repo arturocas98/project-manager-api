@@ -14,7 +14,7 @@ class ProjectCreatedResource extends JsonResource
             ['type' => 'developers', 'description' => 'Pueden crear y editar issues, gestionar versiones'],
             ['type' => 'users', 'description' => 'Pueden visualizar issues y comentar'],
             ['type' => 'bug', 'description' => 'Pueden reportar bugs'],
-            ['type' => 'subtask', 'description' => 'Pueden crear y gestionar subtareas']
+            ['type' => 'subtask', 'description' => 'Pueden crear y gestionar subtareas'],
         ];
 
         return [
@@ -33,7 +33,6 @@ class ProjectCreatedResource extends JsonResource
                         'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
                     ]
                 ],
-
                 'available_roles' => collect($availableRoles)->map(function ($role) {
                     return [
                         'type' => $role['type'],

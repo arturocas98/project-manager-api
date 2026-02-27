@@ -30,12 +30,12 @@ class ProjectUpdateService
             $updatedProject = $this->updateProject->execute($project, $data);
 
             // VERIFICAR RESULTADO
-            if (!$updatedProject) {
+            if (! $updatedProject) {
                 throw new ProjectException(
                     json_encode([
                         'error' => 'Error al actualizar el proyecto',
                         'reason' => 'La acción de actualización no devolvió el proyecto actualizado',
-                        'project_id' => $project->id
+                        'project_id' => $project->id,
                     ]),
                     500
                 );
@@ -47,7 +47,7 @@ class ProjectUpdateService
                     $q->whereHas('users', fn($q) => $q->where('user_id', auth()->id()))
                         ->with(['permissionScheme.scheme.permissions']);
                 },
-                'createdBy'
+                'createdBy',
             ]);
 
             return $updatedProject;
@@ -65,7 +65,7 @@ class ProjectUpdateService
                     'error' => 'Proyecto no disponible',
                     'reason' => 'El proyecto ha sido eliminado',
                     'project_id' => $project->id,
-                    'deleted_at' => $project->deleted_at?->toDateTimeString()
+                    'deleted_at' => $project->deleted_at?->toDateTimeString(),
                 ]),
                 400
             );
@@ -79,11 +79,11 @@ class ProjectUpdateService
     {
         $userId = auth()->id();
 
-        if (!$userId) {
+        if (! $userId) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción'
+                    'reason' => 'Se requiere un usuario autenticado para esta acción',
                 ]),
                 401
             );
@@ -94,7 +94,7 @@ class ProjectUpdateService
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$isAdmin) {
+        if (! $isAdmin) {
             // Obtener el rol del usuario para mejor mensaje
             $userRole = $project->roles()
                 ->whereHas('users', fn($q) => $q->where('user_id', $userId))
@@ -126,7 +126,7 @@ class ProjectUpdateService
                 json_encode([
                     'error' => 'Datos insuficientes',
                     'reason' => 'No se recibieron datos para actualizar',
-                    'suggestion' => 'Envía al menos uno de los campos permitidos'
+                    'suggestion' => 'Envía al menos uno de los campos permitidos',
                 ]),
                 400
             );
@@ -143,7 +143,7 @@ class ProjectUpdateService
                     'reason' => 'Ninguno de los campos enviados es válido',
                     'received_fields' => $receivedFields,
                     'allowed_fields' => $allowedFields,
-                    'suggestion' => 'Usa: ' . implode(', ', $allowedFields)
+                    'suggestion' => 'Usa: ' . implode(', ', $allowedFields),
                 ]),
                 400
             );
@@ -154,20 +154,20 @@ class ProjectUpdateService
         $emptyFields = [];
 
         foreach ($validFields as $field) {
-            if (isset($data[$field]) && !is_null($data[$field]) && $data[$field] !== '') {
+            if (isset($data[$field]) && ! is_null($data[$field]) && $data[$field] !== '') {
                 $hasValue = true;
             } else {
                 $emptyFields[] = $field;
             }
         }
 
-        if (!$hasValue) {
+        if (! $hasValue) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Valores vacíos',
                     'reason' => 'Los campos enviados están vacíos',
                     'empty_fields' => $emptyFields,
-                    'suggestion' => 'Los campos no pueden estar vacíos'
+                    'suggestion' => 'Los campos no pueden estar vacíos',
                 ]),
                 400
             );
@@ -175,13 +175,13 @@ class ProjectUpdateService
 
         // Validaciones específicas por campo
         if (isset($data['key'])) {
-            if (!preg_match('/^[A-Z0-9]{2,10}$/', $data['key'])) {
+            if (! preg_match('/^[A-Z0-9]{2,10}$/', $data['key'])) {
                 throw new ProjectException(
                     json_encode([
                         'error' => 'Formato de clave inválido',
                         'reason' => 'La clave debe tener 2-10 caracteres alfanuméricos en mayúsculas',
                         'received' => $data['key'],
-                        'examples' => ['WEB', 'API', 'CRM23', 'TOC']
+                        'examples' => ['WEB', 'API', 'CRM23', 'TOC'],
                     ]),
                     400
                 );
@@ -200,8 +200,8 @@ class ProjectUpdateService
                         'key' => $data['key'],
                         'existing_project' => [
                             'id' => $existingProject->id,
-                            'name' => $existingProject->name
-                        ]
+                            'name' => $existingProject->name,
+                        ],
                     ]),
                     400
                 );
@@ -213,7 +213,7 @@ class ProjectUpdateService
                 json_encode([
                     'error' => 'Nombre muy corto',
                     'reason' => 'El nombre debe tener al menos 3 caracteres',
-                    'received' => $data['name']
+                    'received' => $data['name'],
                 ]),
                 400
             );

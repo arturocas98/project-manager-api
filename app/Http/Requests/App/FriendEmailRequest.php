@@ -47,7 +47,7 @@ class FriendEmailRequest extends FormRequest
             response()->json([
                 'mensaje' => 'Error of add Friend',
                 'errors' => $validator->errors(),
-            ],status: 422)
+            ], status: 422)
         );
     }
 

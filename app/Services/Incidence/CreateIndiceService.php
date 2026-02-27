@@ -145,8 +145,7 @@ class CreateIndiceService
                     422
                 );
             }
-        }
-        else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
+        } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
             // Task (3), Bug (4), Subtask (5) - cualquier rol excepto client, guest, owner
             $forbiddenRoles = ['client', 'guest', 'owner'];
 
@@ -353,7 +352,7 @@ class CreateIndiceService
      */
     private function getTypeName(int $typeId): string
     {
-        return match($typeId) {
+        return match ($typeId) {
             self::TYPE_EPIC => 'Epic',
             self::TYPE_HISTORY_USER => 'History User',
             self::TYPE_TASK => 'Task',
@@ -389,7 +388,7 @@ class CreateIndiceService
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             throw new ProjectException(
                 'Acceso denegado: No tienes acceso a este proyecto',
                 403

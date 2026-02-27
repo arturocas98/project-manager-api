@@ -13,7 +13,7 @@ return new class extends Migration
     {
         Schema::create('incidence_priorities', function (Blueprint $table) {
             $table->id();
-            $table->String('priority');//Low, Medium, High, Critical
+            $table->String('priority'); //Low, Medium, High, Critical
             $table->timestamps();
         });
     }

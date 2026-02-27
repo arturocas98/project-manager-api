@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Middleware;
 
 use Closure;
@@ -28,19 +27,19 @@ class CheckRole
         $userId = auth()->id();
         $method = $request->method();
 
-        if (!$userId) {
+        if (! $userId) {
             return $this->unauthorizedResponse('Usuario no autenticado');
         }
 
         // Obtener el rol del usuario y sus permisos
         $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
 
-        if (!$roleData) {
+        if (! $roleData) {
             return $this->unauthorizedResponse('Usuario no tiene un rol asignado en este proyecto');
         }
 
         // Verificar si el usuario tiene permiso para realizar esta acción
-        if (!$this->hasRequiredPermission($roleData->permissions, $method, $request)) {
+        if (! $this->hasRequiredPermission($roleData->permissions, $method, $request)) {
             return $this->forbiddenResponse($roleData, $method);
         }
 
@@ -49,7 +48,7 @@ class CheckRole
             'user_role_id' => $roleData->role_id,
             'user_role_name' => $roleData->role_name,
             'user_role_type' => $roleData->role_type,
-            'user_permissions' => $roleData->permissions
+            'user_permissions' => $roleData->permissions,
         ]);
 
         return $next($request);
@@ -88,7 +87,7 @@ class CheckRole
                 )
                 ->first();
 
-            if (!$userRole) {
+            if (! $userRole) {
                 return $this->getAdminRole($projectId, $userId);
             }
 
@@ -102,12 +101,12 @@ class CheckRole
                 )
                 ->first();
 
-            if (!$permissionScheme) {
-                return (object)[
+            if (! $permissionScheme) {
+                return (object) [
                     'role_id' => $userRole->role_id,
                     'role_name' => $this->mapRoleTypeToName($userRole->role_type),
                     'role_type' => $userRole->role_type,
-                    'permissions' => []
+                    'permissions' => [],
                 ];
             }
 
@@ -118,11 +117,11 @@ class CheckRole
                 ->pluck('project_permissions.key')
                 ->toArray();
 
-            return (object)[
+            return (object) [
                 'role_id' => $userRole->role_id,
                 'role_name' => $permissionScheme->scheme_name,
                 'role_type' => $userRole->role_type,
-                'permissions' => $permissions
+                'permissions' => $permissions,
             ];
 
         } catch (\Exception $e) {
@@ -148,11 +147,11 @@ class CheckRole
             // Obtener todos los permisos existentes
             $allPermissions = \DB::table('project_permissions')->pluck('key')->toArray();
 
-            return (object)[
+            return (object) [
                 'role_id' => null,
                 'role_name' => 'Administrators',
                 'role_type' => 'Administrators',
-                'permissions' => $allPermissions
+                'permissions' => $allPermissions,
             ];
         }
 
@@ -238,7 +237,7 @@ class CheckRole
         return response()->json([
             'success' => false,
             'message' => $message,
-            'error_code' => 'UNAUTHORIZED'
+            'error_code' => 'UNAUTHORIZED',
         ], 401);
     }
 
@@ -254,7 +253,7 @@ class CheckRole
             'role' => $roleData->role_name,
             'role_type' => $roleData->role_type,
             'method' => $method,
-            'required_permissions' => $this->methodPermissions[$method] ?? []
+            'required_permissions' => $this->methodPermissions[$method] ?? [],
         ], 403);
     }
 
@@ -264,6 +263,7 @@ class CheckRole
     public function hasPermission($projectId, $userId, $permissionKey)
     {
         $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
+
         return $roleData && in_array($permissionKey, $roleData->permissions);
     }
 
@@ -273,6 +273,7 @@ class CheckRole
     public function hasRole($projectId, $userId, $roleName)
     {
         $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
+
         return $roleData && $roleData->role_name === $roleName;
     }
 
@@ -282,6 +283,7 @@ class CheckRole
     public function hasRoleType($projectId, $userId, $roleType)
     {
         $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
+
         return $roleData && $roleData->role_type === $roleType;
     }
 
@@ -291,6 +293,7 @@ class CheckRole
     public function getUserPermissions($projectId, $userId)
     {
         $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
+
         return $roleData ? $roleData->permissions : [];
     }
 }

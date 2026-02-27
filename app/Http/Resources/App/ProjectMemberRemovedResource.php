@@ -50,13 +50,13 @@ class ProjectMemberRemovedResource extends JsonResource
                     'name' => $project->name,
                     'key' => $project->key,
                     'links' => [
-                        'self' => route('projects.show', ['project' => $project->id])
-                    ]
+                        'self' => route('projects.show', ['project' => $project->id]),
+                    ],
                 ],
                 'stats' => [
                     'remaining_members' => $remainingMembers,
-                    'roles_breakdown' => $this->getRolesBreakdown($project)
-                ]
+                    'roles_breakdown' => $this->getRolesBreakdown($project),
+                ],
             ],
             'meta' => [
                 'api_version' => '1.0.0',

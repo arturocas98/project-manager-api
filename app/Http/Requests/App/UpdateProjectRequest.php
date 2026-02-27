@@ -20,7 +20,7 @@ class UpdateProjectRequest extends FormRequest
         return [
             'name' => 'sometimes|string|max:255',
             'description' => 'nullable|string|max:1000',
-            'key' => 'sometimes|string|max:10|unique:projects,key,' . $this->route('project'),
+            'key' => 'sometimes|string|max:10|unique:projects,key,'.$this->route('project'),
         ];
     }
 
@@ -43,7 +43,7 @@ class UpdateProjectRequest extends FormRequest
     {
         if ($this->has('key')) {
             $this->merge([
-                'key' => strtoupper($this->key)
+                'key' => strtoupper($this->key),
             ]);
         }
     }

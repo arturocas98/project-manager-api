@@ -41,6 +41,7 @@ class ProjectController extends Controller
         private ProjectSummaryService $summaryService,
         private ProjectUsersServices $projectUserService,
     ) {}
+
     /**
      * Display a listing of the resource.
      */
@@ -53,6 +54,7 @@ class ProjectController extends Controller
     public function index(ProjectQuery $query): AnonymousResourceCollection
     {
         $projects = $query->paginate();
+
         return ProjectResource::collection($projects);
     }
 
@@ -93,11 +95,11 @@ class ProjectController extends Controller
     {
         $project = $query->findForShow($id);
 
-        if (!$project) {
+        if (! $project) {
             return response()->json([
                 'success' => false,
                 'message' => 'Proyecto no encontrado o no tienes acceso',
-                'error_code' => 'PROJECT_NOT_FOUND'
+                'error_code' => 'PROJECT_NOT_FOUND',
             ], 404);
         }
 
@@ -105,14 +107,12 @@ class ProjectController extends Controller
             'title' => $project->name,
             'link' => "project/$project->id",
             'project_id' => $project->id,
-            'icon' => "ph ph-rocket",
+            'icon' => 'ph ph-rocket',
         ];
         $this->createRecent->execute($data);
 
         return new OneProjectResource($project);
     }
-
-
 
     /**
      * Store a newly created resource in storage.
@@ -126,8 +126,8 @@ class ProjectController extends Controller
     {
         try {
             $result = $this->projectCreationService->create($request->validated());
-            return new ProjectCreatedResource((object) $result);
 
+            return new ProjectCreatedResource((object) $result);
         } catch (ProjectException $e) {
             throw $e;
         } catch (\Exception $e) {
@@ -187,8 +187,8 @@ class ProjectController extends Controller
         return response()->json([
             'data' => [
                 'id' => $project->id,
-                'deleted_at' => now()->toDateTimeString()
-            ]
+                'deleted_at' => now()->toDateTimeString(),
+            ],
         ]);
     }
 }

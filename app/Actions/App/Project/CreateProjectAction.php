@@ -14,17 +14,17 @@ class CreateProjectAction
                 'name' => $data['name'],
                 'key' => $this->generateKey($data['name']),
                 'description' => $data['description'] ?? null,
-                'created_by' => auth()->id()
+                'created_by' => auth()->id(),
             ]);
 
-            if (!$project) {
+            if (! $project) {
                 throw new \Exception('No se pudo crear el proyecto');
             }
 
             return $project;
 
         } catch (\Exception $e) {
-            throw new \Exception('Error al crear proyecto: ' . $e->getMessage());
+            throw new \Exception('Error al crear proyecto: '.$e->getMessage());
         }
     }
 
@@ -38,7 +38,7 @@ class CreateProjectAction
         $counter = 1;
 
         while (Project::withTrashed()->where('key', $baseKey)->exists()) {
-            $baseKey = $originalKey . $counter;
+            $baseKey = $originalKey.$counter;
             $counter++;
         }
 

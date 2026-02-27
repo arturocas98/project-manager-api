@@ -45,7 +45,7 @@ class StoreIncidenceRequest extends FormRequest
                     if ($this->incidence_type_id != 1 && is_null($value)) {
                         $fail('Las incidencias que no son de tipo Epic deben tener una incidencia padre');
                     }
-                }
+                },
             ],
         ];
     }
@@ -90,7 +90,7 @@ class StoreIncidenceRequest extends FormRequest
     protected function prepareForValidation(): void
     {
         // Si no se envía fecha, usar la fecha actual
-        if (!$this->has('date')) {
+        if (! $this->has('date')) {
             $this->merge([
                 'date' => now()->toDateString(),
             ]);

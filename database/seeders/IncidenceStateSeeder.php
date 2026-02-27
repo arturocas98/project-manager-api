@@ -25,6 +25,6 @@ class IncidenceStateSeeder extends Seeder
         }
 
         $this->command->info('states of incidence created successfully!');
-        $this->command->info('Total states: ' . count($states));
+        $this->command->info('Total states: '.count($states));
     }
 }

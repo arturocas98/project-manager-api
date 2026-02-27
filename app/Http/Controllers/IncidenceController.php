@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Http\Controllers;
+
 use App\Http\Requests\App\StoreIncidenceRequest;
 use App\Http\Requests\App\UpdateIncidenceRequest;
 use App\Http\Resources\App\IncidenceCollection;
@@ -24,12 +25,11 @@ use Knuckles\Scribe\Attributes\Subgroup;
 #[Authenticated]
 class IncidenceController extends Controller
 {
-
     public function __construct(
         private IncidenceService $incidenceService,
         private CreateIndiceService $createIndiceService,
         private UpdateIncidenceService $updateIncidenceService,
-    ){}
+    ) {}
     #[ResponseFromApiResource(IncidenceCollection::class, Incidence::class, collection: true)]
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
@@ -94,5 +94,5 @@ class IncidenceController extends Controller
 
         return new IncidenceResource($incidence);
     }
-    public function destroy($id){}
+    public function destroy($id) {}
 }

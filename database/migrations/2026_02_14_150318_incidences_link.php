@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('source_incidence_id')->references('id')->on('incidences')->onDelete('cascade');
             $table->unsignedBigInteger('target_incidence_id');
             $table->foreign('target_incidence_id')->references('id')->on('incidences')->onDelete('cascade');
-            $table->string('type');//'blocks', 'relates_to', 'duplicates', 'clones', 'Causes', 'Depends', 'Implements', 'Tests'
+            $table->string('type'); //'blocks', 'relates_to', 'duplicates', 'clones', 'Causes', 'Depends', 'Implements', 'Tests'
         });
     }
 

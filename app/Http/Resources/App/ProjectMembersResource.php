@@ -23,11 +23,11 @@ class ProjectMembersResource extends JsonResource
                         'last_page' => $this->resource->lastPage(),
                         'per_page' => $this->resource->perPage(),
                         'to' => $this->resource->lastItem(),
-                        'total' => $this->resource->total()
+                        'total' => $this->resource->total(),
                     ],
                     'project' => [
-                        'id' => $projectId
-                    ]
+                        'id' => $projectId,
+                    ],
                 ],
                 'links' => $this->getPaginationLinks($projectId)
             ];
@@ -39,7 +39,7 @@ class ProjectMembersResource extends JsonResource
                 'api_version' => '1.0.0',
                 'timestamp' => now()->toIso8601String(),
                 'resource_type' => 'project_member',
-                'project_id' => $projectId
+                'project_id' => $projectId,
             ],
             'links' => $this->getMemberLinks($projectId, $this->resource)
         ];
@@ -150,7 +150,7 @@ class ProjectMembersResource extends JsonResource
 
     private function getRolePermissionsById($roleId): array
     {
-        if (!$roleId) {
+        if (! $roleId) {
             return [];
         }
 

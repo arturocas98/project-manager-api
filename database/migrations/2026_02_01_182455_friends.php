@@ -17,7 +17,7 @@ return new class extends Migration
             $table->foreign('user_id')->references('id')->on('users')->onDelete('cascade');
             $table->unsignedBigInteger('friend_id');
             $table->foreign('friend_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('state');//'Accepted', 'Rejected', 'Blocked', 'Pending'
+            $table->string('state'); //'Accepted', 'Rejected', 'Blocked', 'Pending'
         });
     }
 

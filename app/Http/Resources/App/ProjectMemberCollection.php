@@ -1,9 +1,8 @@
 <?php
 
 namespace App\Http\Resources\App;
+
 use Illuminate\Http\Resources\Json\ResourceCollection;
-use App\Models\ProjectRolePermission;
-use App\Models\SchemePermission;
 
 class ProjectMemberCollection extends ResourceCollection
 {
@@ -20,28 +19,28 @@ class ProjectMemberCollection extends ResourceCollection
                 return [
                     'assignment' => [
                         'id' => $member->assignment_id,
-                        'assigned_at' => date('Y-m-d H:i:s', strtotime($member->assigned_at))
+                        'assigned_at' => date('Y-m-d H:i:s', strtotime($member->assigned_at)),
                     ],
                     'user' => [
                         'id' => $member->user_id,
                         'name' => $member->user_name,
-                        'email' => $member->user_email
+                        'email' => $member->user_email,
                     ],
                     'role' => [
                         'id' => $member->role_id,
                         'type' => $member->role_type,
-                        'permissions' => $permissionsByRole[$member->role_id] ?? []
+                        'permissions' => $permissionsByRole[$member->role_id] ?? [],
                     ],
                     'links' => [
                         'self' => route('projects.members.show', [
                             'project' => request()->route('project'),
-                            'member' => $member->assignment_id
+                            'member' => $member->assignment_id,
                         ]),
                         'remove' => route('projects.members.destroy', [
                             'project' => request()->route('project'),
-                            'member' => $member->assignment_id
-                        ])
-                    ]
+                            'member' => $member->assignment_id,
+                        ]),
+                    ],
                 ];
             }),
             'meta' => [
@@ -50,14 +49,14 @@ class ProjectMemberCollection extends ResourceCollection
                 'last_page' => $this->resource->lastPage(),
                 'per_page' => $this->resource->perPage(),
                 'to' => $this->resource->lastItem(),
-                'total' => $this->resource->total()
+                'total' => $this->resource->total(),
             ],
             'links' => [
                 'first' => $this->resource->url(1),
                 'last' => $this->resource->url($this->resource->lastPage()),
                 'prev' => $this->resource->previousPageUrl(),
-                'next' => $this->resource->nextPageUrl()
-            ]
+                'next' => $this->resource->nextPageUrl(),
+            ],
         ];
     }
 
@@ -88,7 +87,7 @@ class ProjectMemberCollection extends ResourceCollection
             ->whereIn('scheme_permissions.permission_scheme_id', $schemeIds)
             ->select([
                 'scheme_permissions.permission_scheme_id',
-                'project_permissions.key'
+                'project_permissions.key',
             ])
             ->get()
             ->groupBy('permission_scheme_id')

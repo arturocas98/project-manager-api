@@ -20,17 +20,17 @@ class CreateProjectRoleAction
 
             $role = ProjectRole::create([
                 'project_id' => $projectId,
-                'type' => $roleType
+                'type' => $roleType,
             ]);
 
-            if (!$role) {
+            if (! $role) {
                 throw new \Exception("No se pudo crear el rol {$roleType}");
             }
 
             return $role;
 
         } catch (\Exception $e) {
-            throw new \Exception('Error al crear rol: ' . $e->getMessage());
+            throw new \Exception('Error al crear rol: '.$e->getMessage());
         }
     }
 }

@@ -6,7 +6,6 @@ use App\Models\project_permission_scheme;
 use App\Models\ProjectPermission;
 use Illuminate\Database\Eloquent\Factories\Factory;
 
-
 class project_permission_schemeFactory extends Factory
 {
     protected $model = project_permission_scheme::class;
@@ -31,7 +30,7 @@ class project_permission_schemeFactory extends Factory
 
         return [
             'project_permissions_id' => ProjectPermission::factory(),
-            'name' => $this->faker->randomElement($schemes) . ' ' . $this->faker->randomNumber(2),
+            'name' => $this->faker->randomElement($schemes).' '.$this->faker->randomNumber(2),
             'created_at' => now(),
             'updated_at' => now(),
         ];
@@ -48,7 +47,7 @@ class project_permission_schemeFactory extends Factory
                 // Obtener o crear permisos de administrador
                 return ProjectPermission::factory()->create([
                     'key' => 'manage_settings',
-                    'description' => 'Gestionar configuración'
+                    'description' => 'Gestionar configuración',
                 ])->id;
             },
         ]);
@@ -75,7 +74,7 @@ class project_permission_schemeFactory extends Factory
 
                 return ProjectPermission::factory()->create([
                     'key' => $this->faker->randomElement($permissionKeys),
-                    'description' => $this->getDescriptionForScheme('manager')
+                    'description' => $this->getDescriptionForScheme('manager'),
                 ])->id;
             },
         ]);
@@ -104,7 +103,7 @@ class project_permission_schemeFactory extends Factory
 
                 return ProjectPermission::factory()->create([
                     'key' => $this->faker->randomElement($permissionKeys),
-                    'description' => 'Gestión de tareas y archivos'
+                    'description' => 'Gestión de tareas y archivos',
                 ])->id;
             },
         ]);
@@ -129,7 +128,7 @@ class project_permission_schemeFactory extends Factory
 
                 return ProjectPermission::factory()->create([
                     'key' => $this->faker->randomElement($permissionKeys),
-                    'description' => 'Permisos de solo lectura'
+                    'description' => 'Permisos de solo lectura',
                 ])->id;
             },
         ]);
@@ -156,7 +155,7 @@ class project_permission_schemeFactory extends Factory
 
                 return ProjectPermission::factory()->create([
                     'key' => $this->faker->randomElement($permissionKeys),
-                    'description' => 'Supervisión y reportes'
+                    'description' => 'Supervisión y reportes',
                 ])->id;
             },
         ]);
@@ -168,7 +167,7 @@ class project_permission_schemeFactory extends Factory
     public function withTaskPermissions(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => 'Esquema de Tareas - ' . $this->faker->word(),
+            'name' => 'Esquema de Tareas - '.$this->faker->word(),
             'project_permissions_id' => function () {
                 return ProjectPermission::factory()->taskPermissions()->create()->id;
             },
@@ -181,7 +180,7 @@ class project_permission_schemeFactory extends Factory
     public function withFilePermissions(): static
     {
         return $this->state(fn (array $attributes) => [
-            'name' => 'Esquema de Archivos - ' . $this->faker->word(),
+            'name' => 'Esquema de Archivos - '.$this->faker->word(),
             'project_permissions_id' => function () {
                 return ProjectPermission::factory()->filePermissions()->create()->id;
             },

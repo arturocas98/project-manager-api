@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Services\Incidence;
 
 use App\Exceptions\ProjectException;
@@ -57,10 +56,10 @@ class IncidenceService
         $userId = auth()->id();
 
         $hasAccess = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
+            ->whereHas('users', fn ($q) => $q->where('user_id', $userId))
             ->exists();
 
-        if (!$hasAccess) {
+        if (! $hasAccess) {
             throw new ProjectException(
                 'Acceso denegado: No tienes acceso a este proyecto',
                 403

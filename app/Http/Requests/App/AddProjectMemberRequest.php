@@ -25,7 +25,7 @@ class AddProjectMemberRequest extends FormRequest
             'user_id.required' => 'El ID del usuario es obligatorio',
             'user_id.exists' => 'El usuario no existe en el sistema',
             'role_type.required' => 'El rol es obligatorio',
-            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask'
+            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask',
         ];
     }
 

@@ -2,7 +2,6 @@
 
 namespace App\Http\Queries\App;
 
-use App\Models\Project;
 use App\Models\Team;
 use Illuminate\Http\Request;
 use Spatie\QueryBuilder\AllowedFilter;
@@ -11,7 +10,6 @@ use TeamQ\Datatables\QueryBuilder;
 
 class TeamQuery extends QueryBuilder
 {
-
     public function __construct(Request $request)
     {
         parent::__construct(

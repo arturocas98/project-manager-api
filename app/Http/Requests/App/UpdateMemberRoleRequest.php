@@ -22,7 +22,7 @@ class UpdateMemberRoleRequest extends FormRequest
     {
         return [
             'role_type.required' => 'El nuevo rol es obligatorio',
-            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask'
+            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask',
         ];
     }
 

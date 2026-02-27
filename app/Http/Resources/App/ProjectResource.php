@@ -2,8 +2,8 @@
 
 namespace App\Http\Resources\App;
 
-use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+
 class ProjectResource extends JsonResource
 {
 

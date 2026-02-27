@@ -33,8 +33,8 @@ class RegisterRequest extends FormRequest
         ];
     }
 
-
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
             'email.required' => 'El campo Email es obligatorio',
             'email.unique' => 'Ese email ya esta registrado',
@@ -47,23 +47,26 @@ class RegisterRequest extends FormRequest
             'password.min' => 'La contraseña debe tener al menos 6 caracteres',
         ];
     }
+
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
             response()->json([
                 'mensaje' => 'Error al registrarse',
                 'errors' => $validator->errors(),
-            ],status: 422)
+            ], status: 422)
         );
     }
 
-    public function ValidatedUser():User{
+    public function ValidatedUser(): User
+    {
         $user = User::where('email', $this->email)->first();
-        if (!$user || !Hash::check($this->password, $user->password)) {
+        if (! $user || ! Hash::check($this->password, $user->password)) {
             throw ValidationException::withMessages([
-                "user"=>"Credenciales incorrectas",
+                'user' => 'Credenciales incorrectas',
             ]);
         }
+
         return $user;
     }
 

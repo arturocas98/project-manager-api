@@ -34,11 +34,12 @@ class TeamRequest extends FormRequest
             'created_by_id' => [
                 'integer',
                 Rule::exists('users', 'id'),
-            ]
+            ],
         ];
     }
 
-    public function messages(): array{
+    public function messages(): array
+    {
         return [
             'name.required' => 'El campo Nombre es obligatorio',
             'name.unique' => 'Ese name ya esta registrado',
@@ -57,7 +58,7 @@ class TeamRequest extends FormRequest
             response()->json([
                 'message' => 'Error al registrarse',
                 'errors' => $validator->errors(),
-            ],status: 422)
+            ], status: 422)
         );
     }
 

@@ -1,6 +1,5 @@
 <?php
 
-
 namespace App\Http\Queries\App;
 
 use App\Models\Project;
@@ -11,7 +10,9 @@ use Illuminate\Http\Request;
 class ProjectMemberQuery
 {
     private Project $project;
+
     private Request $request;
+
     private Builder $query;
 
     public function __construct(Project $project, Request $request)
@@ -111,7 +112,7 @@ class ProjectMemberQuery
         return $this->project->roles()
             ->withCount('users')
             ->get()
-            ->map(fn ($role) => [
+            ->map(fn($role) => [
                 'role_id' => $role->id,
                 'role_type' => $role->type,
                 'members_count' => $role->users_count,
