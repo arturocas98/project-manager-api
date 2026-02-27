@@ -32,9 +32,6 @@ class StoreIncidenceRequest extends FormRequest
                     // Solo validar si se proporciona un usuario asignado
                     if ($value) {
                         $this->validateAssignedUserRole($value, $fail);
-                    } else {
-                        // Si es null, validar según el tipo de incidencia
-                        $this->validateNullableAssignedUser($fail);
                     }
                 },
             ],

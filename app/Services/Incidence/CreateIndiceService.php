@@ -137,7 +137,7 @@ class CreateIndiceService
         // Validaciones específicas según el tipo de incidencia
         if (in_array($incidenceTypeId, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
             // Epic (1) o History (2) - solo project manager o supervisor
-            $allowedRolesForEpicAndHistory = ['project manager', 'supervisor'];
+            $allowedRolesForEpicAndHistory = ['project manager', 'supervisor', 'administrators'];
 
             if (!in_array($userRoleType, $allowedRolesForEpicAndHistory)) {
                 throw new IncidenceException(
