@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\Auth;
 use App\Http\Middleware\RequirePasswordToken;
+use Illuminate\Support\Facades\Route;
 
 Route::get('/profile', [Auth\ProfileController::class, 'show']);
 Route::patch('/profile', [Auth\ProfileController::class, 'update']);
