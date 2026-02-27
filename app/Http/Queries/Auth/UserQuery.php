@@ -16,7 +16,7 @@ class UserQuery extends QueryBuilder
 
         $this
             ->allowedFilters([
-                AllowedFilter::custom('global', new GlobalFilter([
+                AllowedFilter::custom('search', new GlobalFilter([
                     'id',
                     'name',
                     'agreement_id',
