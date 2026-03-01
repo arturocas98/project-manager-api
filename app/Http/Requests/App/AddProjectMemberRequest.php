@@ -15,7 +15,7 @@ class AddProjectMemberRequest extends FormRequest
     {
         return [
             'user_id' => 'required|integer|exists:users,id',
-            'role_type' => 'required|string|in:administrators,developer'
+            'role_type' => 'required|string|in:administrators,project manager,team member,supervisor,external contributor,owner,developer,tester,guest,client',
         ];
     }
 
@@ -25,7 +25,7 @@ class AddProjectMemberRequest extends FormRequest
             'user_id.required' => 'El ID del usuario es obligatorio',
             'user_id.exists' => 'El usuario no existe en el sistema',
             'role_type.required' => 'El rol es obligatorio',
-            'role_type.in' => 'Rol inválido. Roles permitidos: Administrators, Developers, Users, bug, subtask',
+            'role_type.in' => 'Rol inválido. Roles permitidos: administrators, project manager, team member, supervisor, external contributor, owner, developer, tester, guest, client.',
         ];
     }
 

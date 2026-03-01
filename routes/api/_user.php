@@ -5,6 +5,7 @@ use App\Http\Middleware\RequirePasswordToken;
 use Illuminate\Support\Facades\Route;
 
 Route::get('/profile', [Auth\ProfileController::class, 'show']);
+Route::get('/profiles', [Auth\ProfileController::class, 'index']);
 Route::patch('/profile', [Auth\ProfileController::class, 'update']);
 
 Route::post('/confirm-password', [Auth\ConfirmablePasswordController::class, 'store'])
