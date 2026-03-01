@@ -51,7 +51,7 @@ class UserRequest extends FormRequest
         if ($this->isMethod(FormRequest::METHOD_POST)) {
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();
         }
-        // $rules = array_merge($rules, $this->passwordRules());
+        $rules = array_merge($rules, $this->passwordRules());
 
         return $rules;
     }

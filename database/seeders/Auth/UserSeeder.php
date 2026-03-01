@@ -43,7 +43,7 @@ class UserSeeder extends Seeder
     {
         return [
             Role::findByName(RoleName::Admin->value),
-            Role::findByName(RoleName::ItSupport->value),
+            Role::findByName(RoleName::Admin->value),
         ];
     }
 }

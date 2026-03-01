@@ -21,7 +21,7 @@ test('API documentation is not accessible if not authorized', function () {
 
 test('API documentation is accessible with "It Support" role', function () {
     $user = User::factory()->create();
-    $role = Role::findOrCreate(RoleName::ItSupport->value);
+    $role = Role::findOrCreate(RoleName::Admin->value);
 
     $user->assignRole($role);
 

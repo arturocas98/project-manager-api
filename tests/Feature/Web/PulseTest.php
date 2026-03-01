@@ -21,7 +21,7 @@ test('pulse is not accessible if not authorized', function () {
 
 test('pulse is accessible with "It Support" role', function () {
     $user = User::factory()->create();
-    $role = Role::findOrCreate(RoleName::ItSupport->value);
+    $role = Role::findOrCreate(RoleName::Admin->value);
 
     $user->assignRole($role);
 

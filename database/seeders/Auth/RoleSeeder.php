@@ -11,6 +11,7 @@ class RoleSeeder extends Seeder
     public function run(): void
     {
         Role::findOrCreate(RoleName::Admin->value);
-        Role::findOrCreate(RoleName::ItSupport->value);
+        Role::findOrCreate(RoleName::ProjectManager->value);
+        Role::findOrCreate(RoleName::Collaborator->value);
     }
 }

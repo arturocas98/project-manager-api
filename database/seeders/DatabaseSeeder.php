@@ -20,6 +20,9 @@ class DatabaseSeeder extends Seeder
             IncidenceTypesSeeder::class,
             IncidenceStateSeeder::class,
             IncidencePrioritySeeder::class,
+            LinkSeeder::class,
+            MenuTableSeeder::class,
+            MenuItemTableSeeder::class
         ]);
     }
 }

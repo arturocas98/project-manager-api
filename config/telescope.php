@@ -94,7 +94,7 @@ return [
     'middleware' => [
         'web',
         'auth:web',
-        'role:'.RoleName::ItSupport->value,
+        'role:' . RoleName::Admin->value,
     ],
 
     /*

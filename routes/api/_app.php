@@ -2,6 +2,7 @@
 
 use App\Http\Controllers\IncidenceAssignedController;
 use App\Http\Controllers\IncidenceController;
+use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Middleware\CheckProjectAdmin;
@@ -59,4 +60,6 @@ Route::middleware(['auth:api'])->group(function () {
     });
 
     Route::apiResource('teams', App\Http\Controllers\ProjectController::class);
+
+    Route::apiResource('menus', MenuController::class);
 });
