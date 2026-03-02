@@ -25,7 +25,7 @@ class MenuItemTableSeeder extends Seeder
             [
                 'id' => 1,
                 'menu_id' => 1,
-                'link_id' => 1,
+                'link_id' => 4,
                 'sequence' => 1,
                 'parent_menu_item_id' => null,
                 'created_at' => $now,
@@ -52,7 +52,7 @@ class MenuItemTableSeeder extends Seeder
             [
                 'id' => 4,
                 'menu_id' => 1,
-                'link_id' => 4,
+                'link_id' => 1,
                 'sequence' => 4,
                 'parent_menu_item_id' => null,
                 'created_at' => $now,
