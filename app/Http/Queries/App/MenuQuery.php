@@ -13,8 +13,12 @@ class MenuQuery extends QueryBuilder
 {
     public function __construct(Request $request)
     {
+        $query =  Menu::query();
+        if (auth()->user()) {
+            $query->whereIn('role_id', auth()->user()->roles->pluck('id')->toArray());
+        }
         parent::__construct(
-            Menu::query(),
+            $query,
             $request
         );
 
