@@ -91,11 +91,12 @@ class ProjectMemberController extends Controller
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
-    public function destroy(int $projectId, int $memberId)
+    public function destroy($projectId, $memberId)
     {
-        $project = Project::findOrFail($projectId);
+        $project = Project::findOrFail((int) $projectId);
 
-        $result = $this->deletProjectMemberService->removeMember($project, $memberId);
+        $result = $this->deletProjectMemberService
+            ->removeMember($project, (int) $memberId);
 
         return new ProjectMemberRemovedResource($result);
     }

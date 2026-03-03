@@ -38,7 +38,7 @@ class UpdateIncidenceService
     private const ALLOWED_STATE_TRANSITIONS = [
         self::STATE_OPEN => [self::STATE_IN_PROGRESS, self::STATE_CLOSED],
         self::STATE_IN_PROGRESS => [self::STATE_OPEN, self::STATE_REVIEW, self::STATE_CLOSED],
-        self::STATE_REVIEW => [self::STATE_IN_PROGRESS, self::STATE_CLOSED, self::STATE_LOCKED],
+        self::STATE_REVIEW => [self::STATE_IN_PROGRESS, self::STATE_CLOSED, self::STATE_LOCKED, self::STATE_FINISHED],
         self::STATE_CLOSED => [self::STATE_LOCKED],
         self::STATE_LOCKED => [self::STATE_FINISHED],
         self::STATE_FINISHED => [],

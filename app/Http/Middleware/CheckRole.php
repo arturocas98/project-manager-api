@@ -2,6 +2,9 @@
 
 namespace App\Http\Middleware;
 
+use App\Models\ProjectPermission;
+use App\Models\ProjectUser;
+use App\Models\ProjectRole;
 use Closure;
 use Illuminate\Http\Request;
 
@@ -31,19 +34,19 @@ class CheckRole
             return $this->unauthorizedResponse('Usuario no autenticado');
         }
 
-        // Obtener el rol del usuario y sus permisos
-        $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
+        // Obtener el rol del usuario
+        $roleData = $this->getUserRoleData($projectId, $userId);
 
         if (! $roleData) {
             return $this->unauthorizedResponse('Usuario no tiene un rol asignado en este proyecto');
         }
 
         // Verificar si el usuario tiene permiso para realizar esta acción
-        if (! $this->hasRequiredPermission($roleData->permissions, $method, $request)) {
+        if (! $this->hasRequiredPermission($roleData, $method, $request)) {
             return $this->forbiddenResponse($roleData, $method);
         }
 
-        // Adjuntar información del rol al request para uso posterior
+        // Adjuntar información del rol al request
         $request->merge([
             'user_role_id' => $roleData->role_id,
             'user_role_name' => $roleData->role_name,
@@ -60,145 +63,136 @@ class CheckRole
     private function getProjectId(Request $request)
     {
         $projectId = $request->route('project');
-
-        // Si es modelo route binding, puede ser objeto
-        if (is_object($projectId)) {
-            $projectId = $projectId->id;
-        }
-
-        return $projectId;
+        return is_object($projectId) ? $projectId->id : $projectId;
     }
 
     /**
-     * Obtiene el rol del usuario y sus permisos en el proyecto
+     * Obtiene los datos del rol del usuario usando MÉTODOS EXPLÍCITOS
      */
-    private function getUserRoleWithPermissions($projectId, $userId)
+    private function getUserRoleData($projectId, $userId)
     {
         try {
-            // Obtener el rol del usuario a través de project_users
-            $userRole = \DB::table('project_users')
-                ->join('project_roles', 'project_users.project_role_id', '=', 'project_roles.id')
-                ->where('project_roles.project_id', $projectId)
-                ->where('project_users.user_id', $userId)
-                ->whereNull('project_users.deleted_at')
-                ->select(
-                    'project_roles.id as role_id',
-                    'project_roles.type as role_type'
-                )
+            // Cargar con la relación directa permissions (BelongsToMany)
+            $projectUser = ProjectUser::with([
+                'role.permissionScheme.scheme.permissions'  // ← Cambio aquí
+            ])
+                ->where('user_id', $userId)
+                ->whereHas('role', function($query) use ($projectId) {
+                    $query->where('project_id', $projectId);
+                })
                 ->first();
 
-            if (! $userRole) {
-                return $this->getAdminRole($projectId, $userId);
+            if (! $projectUser || ! $projectUser->role) {
+                return $this->getAdminRoleData($projectId, $userId);
             }
 
-            // Obtener el esquema de permisos asociado al rol
-            $permissionScheme = \DB::table('project_role_permissions')
-                ->join('project_permission_schemes', 'project_role_permissions.permission_scheme_id', '=', 'project_permission_schemes.id')
-                ->where('project_role_permissions.project_role_id', $userRole->role_id)
-                ->select(
-                    'project_permission_schemes.id as scheme_id',
-                    'project_permission_schemes.name as scheme_name'
-                )
-                ->first();
+            $role = $projectUser->role;
 
-            if (! $permissionScheme) {
-                return (object) [
-                    'role_id' => $userRole->role_id,
-                    'role_name' => $this->mapRoleTypeToName($userRole->role_type),
-                    'role_type' => $userRole->role_type,
-                    'permissions' => [],
-                ];
-            }
-
-            // Obtener los permisos del esquema
-            $permissions = \DB::table('scheme_permissions')
-                ->join('project_permissions', 'scheme_permissions.project_permission_id', '=', 'project_permissions.id')
-                ->where('scheme_permissions.permission_scheme_id', $permissionScheme->scheme_id)
-                ->pluck('project_permissions.key')
-                ->toArray();
+            // Obtener permisos usando la relación directa
+            $permissions = $this->getPermissionsFromRole($role);
 
             return (object) [
-                'role_id' => $userRole->role_id,
-                'role_name' => $permissionScheme->scheme_name,
-                'role_type' => $userRole->role_type,
+                'role_id' => $role->id,
+                'role_name' => $role->type,
+                'role_type' => $role->type,
+                'role_model' => $role,
                 'permissions' => $permissions,
             ];
 
         } catch (\Exception $e) {
+            \Log::error('Error en getUserRoleData: ' . $e->getMessage());
+            return null;
+        }
+    }
+
+// VERSIÓN MEJORADA - Usando la relación directa permissions()
+    private function getPermissionsFromRole($role)
+    {
+        $permissions = [];
+
+        if ($role->permissionScheme && $role->permissionScheme->scheme) {
+            $scheme = $role->permissionScheme->scheme;
+
+            // ¡DIRECTO! permissions ya es una colección de ProjectPermission
+            if ($scheme->permissions) {
+                foreach ($scheme->permissions as $permission) {
+                    $permissions[] = $permission->key;
+                }
+            }
+        }
+
+        return $permissions;
+    }
+
+    /**
+     * Verifica si el usuario es administrador
+     */
+    private function getAdminRoleData($projectId, $userId)
+    {
+        try {
+            $adminUser = ProjectUser::with('role')
+                ->where('user_id', $userId)
+                ->whereHas('role', function($query) use ($projectId) {
+                    $query->where('project_id', $projectId)
+                        ->where('type', 'administrators');
+                })
+                ->first();
+
+            if ($adminUser && $adminUser->role) {
+                // Los admins tienen TODOS los permisos
+                $allPermissions = ProjectPermission::pluck('key')->toArray();
+
+                return (object) [
+                    'role_id' => $adminUser->role->id,
+                    'role_name' => 'administrators',
+                    'role_type' => 'administrators',
+                    'role_model' => $adminUser->role,
+                    'permissions' => $allPermissions,
+                ];
+            }
+
+            return null;
+
+        } catch (\Exception $e) {
+            \Log::error('Error en getAdminRoleData: ' . $e->getMessage());
             return null;
         }
     }
 
     /**
-     * Verifica si el usuario es administrador del proyecto
+     * Verifica si el usuario tiene el permiso requerido
      */
-    private function getAdminRole($projectId, $userId)
+    private function hasRequiredPermission($roleData, $method, Request $request)
     {
-        // Verificar si es administrador (type = 'Administrators')
-        $isAdmin = \DB::table('project_roles')
-            ->join('project_users', 'project_roles.id', '=', 'project_users.project_role_id')
-            ->where('project_roles.project_id', $projectId)
-            ->where('project_roles.type', 'Administrators')
-            ->where('project_users.user_id', $userId)
-            ->whereNull('project_users.deleted_at')
-            ->exists();
+        $permissions = $roleData->permissions;
 
-        if ($isAdmin) {
-            // Obtener todos los permisos existentes
-            $allPermissions = \DB::table('project_permissions')->pluck('key')->toArray();
-
-            return (object) [
-                'role_id' => null,
-                'role_name' => 'Administrators',
-                'role_type' => 'Administrators',
-                'permissions' => $allPermissions,
-            ];
-        }
-
-        return null;
-    }
-
-    /**
-     * Mapea el tipo de rol a un nombre legible
-     */
-    private function mapRoleTypeToName($roleType)
-    {
-        $map = [
-            'Administrators' => 'Administrators',
-            'Project_gestor' => 'Gestor de Proyecto',
-            'Developer' => 'Desarrollador',
-            'User' => 'Miembro del Equipo',
-        ];
-
-        return $map[$roleType] ?? $roleType;
-    }
-
-    /**
-     * Verifica si el usuario tiene el permiso requerido para el método HTTP
-     */
-    private function hasRequiredPermission($permissions, $method, Request $request)
-    {
-        // Si el usuario no tiene permisos, denegar
         if (empty($permissions)) {
             return false;
         }
 
-        // Obtener permisos requeridos para este método
+        // También podemos usar el método hasPermission del modelo ProjectRole
+        // si necesitamos verificaciones más específicas
+        if (isset($roleData->role_model)) {
+            // Ejemplo de uso del método explícito del modelo
+            // foreach ($this->methodPermissions[$method] as $permissionKey) {
+            //     if ($roleData->role_model->hasPermission($permissionKey)) {
+            //         return true;
+            //     }
+            // }
+        }
+
         $requiredPermissions = $this->methodPermissions[$method] ?? [];
 
-        // Si no hay permisos definidos para este método, permitir por defecto
         if (empty($requiredPermissions)) {
             return true;
         }
 
-        // Verificar si tiene ALGUNO de los permisos requeridos
         foreach ($requiredPermissions as $permission) {
             if (in_array($permission, $permissions)) {
                 return true;
             }
         }
 
-        // Verificaciones específicas por ruta (opcional)
         return $this->checkSpecificRoutePermissions($request, $permissions);
     }
 
@@ -208,9 +202,7 @@ class CheckRole
     private function checkSpecificRoutePermissions(Request $request, $permissions)
     {
         $route = $request->route()->getName();
-        $method = $request->method();
 
-        // Ejemplo de verificaciones específicas
         $routePermissions = [
             'projects.members.invite' => ['invite_users', 'manage_members'],
             'projects.members.remove' => ['remove_users', 'manage_members'],
@@ -227,6 +219,15 @@ class CheckRole
         }
 
         return false;
+    }
+
+    /**
+     * Método de utilidad para verificar permisos usando el modelo ProjectRole
+     */
+    private function roleHasPermission($role, $permissionKey)
+    {
+        // Usamos el método explícito del modelo
+        return $role->hasPermission($permissionKey);
     }
 
     /**
@@ -254,46 +255,8 @@ class CheckRole
             'role_type' => $roleData->role_type,
             'method' => $method,
             'required_permissions' => $this->methodPermissions[$method] ?? [],
+            'user_permissions' => $roleData->permissions,
+            'user_permissions_count' => count($roleData->permissions),
         ], 403);
-    }
-
-    /**
-     * Verifica si el usuario tiene un permiso específico
-     */
-    public function hasPermission($projectId, $userId, $permissionKey)
-    {
-        $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
-
-        return $roleData && in_array($permissionKey, $roleData->permissions);
-    }
-
-    /**
-     * Verifica si el usuario tiene un rol específico por nombre
-     */
-    public function hasRole($projectId, $userId, $roleName)
-    {
-        $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
-
-        return $roleData && $roleData->role_name === $roleName;
-    }
-
-    /**
-     * Verifica si el usuario tiene un tipo de rol específico
-     */
-    public function hasRoleType($projectId, $userId, $roleType)
-    {
-        $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
-
-        return $roleData && $roleData->role_type === $roleType;
-    }
-
-    /**
-     * Obtiene todos los permisos del usuario
-     */
-    public function getUserPermissions($projectId, $userId)
-    {
-        $roleData = $this->getUserRoleWithPermissions($projectId, $userId);
-
-        return $roleData ? $roleData->permissions : [];
     }
 }

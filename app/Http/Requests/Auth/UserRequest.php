@@ -26,9 +26,9 @@ class UserRequest extends FormRequest
                 'email',
                 'max:255',
             ],
-            'rols' => [
+            'role_id' => [
                 'nullable',
-                'array',
+                'exists:roles,id'
             ],
             'status' => [
                 'nullable',

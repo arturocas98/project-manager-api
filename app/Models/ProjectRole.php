@@ -45,13 +45,6 @@ class ProjectRole extends Model
             ->with('scheme');
     }
 
-    /**
-     * Obtener todos los permisos atómicos de este rol
-     */
-    public function getPermissionsAttribute(): array
-    {
-        return $this->permissionScheme?->scheme?->permissionsList ?? [];
-    }
 
     /**
      * Verificar si el rol tiene un permiso específico

@@ -129,7 +129,7 @@ class UpdateIncidenceAction
         $allowedTransitions = [
             1 => [2, 4],       // Open -> In Progress, Closed
             2 => [1, 3, 4],    // In Progress -> Open, Review, Closed
-            3 => [2, 4, 5],    // Review -> In Progress, Closed, Locked
+            3 => [2, 4, 5, 6],    // Review -> In Progress, Closed, Locked
             4 => [5],          // Closed -> Locked
             5 => [6],          // Locked -> Finished
             6 => [],           // Finished -> (final)

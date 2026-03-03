@@ -9,7 +9,9 @@ use App\Http\Resources\App\IncidenceResource;
 use App\Models\Incidence;
 use App\Models\Project;
 use App\Services\Incidence\CreateIndiceService;
+use App\Services\Incidence\DeleteIncidenceService;
 use App\Services\Incidence\IncidenceService;
+use App\Services\Incidence\ShowIncidenceService;
 use App\Services\Incidence\UpdateIncidenceService;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -29,6 +31,8 @@ class IncidenceController extends Controller
         private IncidenceService $incidenceService,
         private CreateIndiceService $createIndiceService,
         private UpdateIncidenceService $updateIncidenceService,
+        private DeleteIncidenceService $deleteIncidenceService,
+        private ShowIncidenceService $showIncidenceService,
     ) {}
     #[ResponseFromApiResource(IncidenceCollection::class, Incidence::class, collection: true)]
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
@@ -68,13 +72,8 @@ class IncidenceController extends Controller
     }
     public function show(int $project, int $incidence): IncidenceResource
     {
-        $projectModel = Project::findOrFail($project);
-
-        $this->incidenceService->validateProjectAccess($projectModel);
-
-        $incidenceModel = Incidence::where('project_id', $project)
-            ->where('id', $incidence)
-            ->firstOrFail();
+        $incidenceModel = $this->showIncidenceService
+            ->getIncidenceWithChildren($project, $incidence);
 
         return new IncidenceResource($incidenceModel);
     }
@@ -84,7 +83,7 @@ class IncidenceController extends Controller
 
         $this->createIndiceService->validateProjectAccess($project);
 
-        $incidence = $this->updateIncidenceService->update(
+        $incidence = $this->updateIncidenceService->update( 
             $incidenceId,
             $request->validated(),
             auth()->id()
@@ -94,5 +93,12 @@ class IncidenceController extends Controller
 
         return new IncidenceResource($incidence);
     }
-    public function destroy($id) {}
+    public function destroy(int $proyectId, int $incidenceId): JsonResponse
+    {
+        $result = $this->deleteIncidenceService->delete($incidenceId);
+
+        return response()->json([
+            'data' => $result,
+        ]);
+    }
 }

@@ -22,8 +22,7 @@ Route::middleware(['auth:api'])->group(function () {
         Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
             ->name('projects.destroy');
 
-        Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
-            ->name('projects.members.index');
+
         Route::get('projects/{project}/members/{member}', [ProjectMemberController::class, 'show'])
             ->name('projects.members.show');
         Route::post('projects/{project}/members', [ProjectMemberController::class, 'store'])
@@ -35,6 +34,8 @@ Route::middleware(['auth:api'])->group(function () {
     });
 
     Route::middleware([CheckRole::class])->group(function () {
+        Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
+        ->name('projects.members.index');
         Route::get('projects/{project}/incidences', [IncidenceController::class, 'index'])
             ->name('projects.incidences.index');
         Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])

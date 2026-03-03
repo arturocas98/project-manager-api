@@ -4,6 +4,7 @@ namespace App\Services\Project;
 
 use App\Actions\App\Project\RemoveProjectMemberAction;
 use App\Exceptions\ProjectException;
+use App\Models\Incidence;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use Illuminate\Support\Facades\DB;
@@ -15,23 +16,23 @@ class DeletProjectMemberService
     ) {}
 
     /**
-     * Eliminar un miembro del proyecto
+     * Eliminar un miembro del proyecto usando su user_id
      */
-    public function removeMember(Project $project, int $assignmentId): array
+    public function removeMember(Project $project, int $userId): array
     {
         // VALIDACIONES DE NEGOCIO
         $this->validateProject($project);
         $this->validateAdminPermissions($project);
 
-        // Obtener la asignación
-        $assignment = $this->getAssignment($project, $assignmentId);
+        // Obtener la asignación del usuario en el proyecto
+        $assignment = $this->getUserAssignment($project, $userId);
 
         // Validaciones específicas
         $this->validateNotLastAdmin($project, $assignment);
         $this->validateNotSelf($assignment);
 
         // TRANSACCIÓN
-        return DB::transaction(function () use ($assignment, $project) {
+        return DB::transaction(function () use ($assignment, $project, $userId) {
 
             // Guardar datos antes de eliminar para la respuesta
             $memberData = [
@@ -44,15 +45,60 @@ class DeletProjectMemberService
                 'assigned_at' => $assignment->created_at->toDateTimeString(),
             ];
 
-            // Eliminar miembro
-            $this->removeMember->execute($assignment->id);
+            // 1. Desasignar incidencias del usuario en este proyecto
+            $unassignedIncidences = $this->unassignUserIncidences($project, $userId);
+
+            // 2. Verificar si hay otros usuarios con el mismo rol
+            $otherUsersWithSameRole = ProjectUser::where('project_role_id', $assignment->project_role_id)
+                ->where('id', '!=', $assignment->id)
+                ->whereNull('deleted_at')
+                ->exists();
+
+            // 3. Eliminar el registro del usuario
+            $assignment->delete();
+
+            // 4. Si no hay más usuarios con este rol, eliminar también el rol
+            if (!$otherUsersWithSameRole) {
+                $assignment->role->delete();
+            }
 
             return [
                 'removed_member' => $memberData,
                 'project' => $project,
+                'unassigned_incidences' => $unassignedIncidences,
+                'role_deleted' => !$otherUsersWithSameRole,
                 'timestamp' => now()->toDateTimeString(),
             ];
         });
+    }
+
+    /**
+     * Desasignar al usuario de todas las incidencias del proyecto
+     */
+    private function unassignUserIncidences(Project $project, int $userId): array
+    {
+        // Buscar todas las incidencias del proyecto asignadas a este usuario
+        $incidences = Incidence::where('project_id', $project->id)
+            ->where('assigned_user_id', $userId)
+            ->get();
+
+        $incidenceData = $incidences->map(fn($incidence) => [
+            'id' => $incidence->id,
+            'title' => $incidence->title,
+            'state' => $incidence->incidenceState?->name,
+            'priority' => $incidence->incidencePriority?->name,
+            'previous_assigned_user_id' => $userId,
+        ])->toArray();
+
+        // Actualizar las incidencias: asignado_user_id = null
+        Incidence::where('project_id', $project->id)
+            ->where('assigned_user_id', $userId)
+            ->update(['assigned_user_id' => null]);
+
+        return [
+            'count' => $incidences->count(),
+            'incidences' => $incidenceData,
+        ];
     }
 
     /**
@@ -117,12 +163,12 @@ class DeletProjectMemberService
     }
 
     /**
-     * Obtener la asignación y verificar que pertenece al proyecto
+     * Obtener la asignación del usuario en el proyecto
      */
-    private function getAssignment(Project $project, int $assignmentId): ProjectUser
+    private function getUserAssignment(Project $project, int $userId): ProjectUser
     {
         $assignment = ProjectUser::with(['user', 'role'])
-            ->where('id', $assignmentId)
+            ->where('user_id', $userId)
             ->whereHas('role', fn($q) => $q->where('project_id', $project->id))
             ->first();
 
@@ -130,8 +176,8 @@ class DeletProjectMemberService
             throw new ProjectException(
                 json_encode([
                     'error' => 'Miembro no encontrado',
-                    'reason' => 'El miembro no existe en este proyecto',
-                    'assignment_id' => $assignmentId,
+                    'reason' => 'El usuario no es miembro de este proyecto',
+                    'user_id' => $userId,
                     'project_id' => $project->id,
                 ]),
                 404
@@ -142,8 +188,8 @@ class DeletProjectMemberService
             throw new ProjectException(
                 json_encode([
                     'error' => 'Miembro ya eliminado',
-                    'reason' => 'Este miembro ya ha sido eliminado del proyecto',
-                    'assignment_id' => $assignmentId,
+                    'reason' => 'Este usuario ya ha sido eliminado del proyecto',
+                    'user_id' => $userId,
                     'deleted_at' => $assignment->deleted_at?->toDateTimeString(),
                 ]),
                 400
@@ -163,29 +209,31 @@ class DeletProjectMemberService
             return;
         }
 
-        // Contar administradores actuales
-        $adminCount = $project->roles()
-            ->where('type', 'administrators')
-            ->withCount('users')
-            ->get()
-            ->sum('users_count');
+        // Contar administradores actuales (solo los no eliminados)
+        $adminCount = ProjectUser::whereHas('role', function($q) use ($project) {
+            $q->where('project_id', $project->id)
+                ->where('type', 'administrators');
+        })
+            ->whereNull('deleted_at')
+            ->count();
 
         // Si es el último admin, no permitir
         if ($adminCount === 1) {
             // Buscar candidatos para sugerir
-            $candidates = $project->roles()
-                ->where('type', '!=', 'administrators')
-                ->with('users')
+            $candidates = ProjectUser::whereHas('role', function($q) use ($project) {
+                $q->where('project_id', $project->id)
+                    ->where('type', '!=', 'administrators');
+            })
+                ->with(['user', 'role'])
+                ->whereNull('deleted_at')
                 ->get()
-                ->pluck('users')
-                ->flatten()
-                ->unique('id')
-                ->map(fn($user) => [
-                    'id' => $user->id,
-                    'name' => $user->name,
-                    'email' => $user->email,
-                    'current_role' => $this->getUserRoleInProject($project, $user->id),
+                ->map(fn($pu) => [
+                    'id' => $pu->user->id,
+                    'name' => $pu->user->name,
+                    'email' => $pu->user->email,
+                    'current_role' => $pu->role->type,
                 ])
+                ->unique('id')
                 ->values()
                 ->toArray();
 
@@ -210,7 +258,7 @@ class DeletProjectMemberService
     }
 
     /**
-     * Validar que no se elimine a sí mismo (opcional)
+     * Validar que no se elimine a sí mismo
      */
     private function validateNotSelf(ProjectUser $assignment): void
     {
@@ -226,17 +274,5 @@ class DeletProjectMemberService
                 400
             );
         }
-    }
-
-    /**
-     * Obtener rol de un usuario en el proyecto
-     */
-    private function getUserRoleInProject(Project $project, int $userId): ?string
-    {
-        $role = $project->roles()
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
-            ->first();
-
-        return $role?->type;
     }
 }

@@ -45,7 +45,9 @@ class ProfileController extends Controller
 
     public function show(): ProfileResource
     {
-        return ProfileResource::make($this->user);
+        return ProfileResource::make(
+            $this->user->load('roles', 'permissions')
+        );
     }
 
     /**
