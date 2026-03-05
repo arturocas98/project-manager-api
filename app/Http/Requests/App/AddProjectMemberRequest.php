@@ -4,6 +4,7 @@ namespace App\Http\Requests\App;
 
 use Illuminate\Foundation\Http\FormRequest;
 
+
 class AddProjectMemberRequest extends FormRequest
 {
     public function authorize(): bool
@@ -15,7 +16,7 @@ class AddProjectMemberRequest extends FormRequest
     {
         return [
             'user_id' => 'required|integer|exists:users,id',
-            'role_type' => 'required|string|in:administrators,project manager,team member,supervisor,external contributor,owner,developer,tester,guest,client',
+            'role_code' => 'required|string|in:ADM,LDR,DEV,TST,DOC',
         ];
     }
 
@@ -24,8 +25,8 @@ class AddProjectMemberRequest extends FormRequest
         return [
             'user_id.required' => 'El ID del usuario es obligatorio',
             'user_id.exists' => 'El usuario no existe en el sistema',
-            'role_type.required' => 'El rol es obligatorio',
-            'role_type.in' => 'Rol inválido. Roles permitidos: administrators, project manager, team member, supervisor, external contributor, owner, developer, tester, guest, client.',
+            'role_code.required' => 'El rol es obligatorio',
+            'role_code.in' => 'Rol inválido. Roles permitidos: ADM (Administrador), LDR (Líder), DEV (Desarrollador), TST (Tester), DOC (Documentador).',
         ];
     }
 
@@ -33,17 +34,17 @@ class AddProjectMemberRequest extends FormRequest
     {
         return [
             'user_id' => [
-                'description' => 'ID of the user to be added to the project',
+                'description' => 'ID del usuario que se añadirá al proyecto',
                 'example' => 5,
                 'required' => true,
                 'type' => 'integer',
             ],
-            'role_type' => [
-                'description' => 'Role that the user will have in the project',
-                'example' => 'Developers',
+            'role_code' => [
+                'description' => 'Código del rol que tendrá el usuario en el proyecto',
+                'example' => 'DEV',
                 'required' => true,
                 'type' => 'string',
-                'enum' => ['administrators', 'developers', 'users'],
+                'enum' => ['ADM', 'LDR', 'DEV', 'TST', 'DOC'],
             ],
         ];
     }

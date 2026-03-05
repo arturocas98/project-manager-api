@@ -79,11 +79,7 @@ class IncidenceController extends Controller
     }
     public function update(UpdateIncidenceRequest $request, int $projectId, int $incidenceId): IncidenceResource
     {
-        $project = Project::findOrFail($projectId);
-
-        $this->createIndiceService->validateProjectAccess($project);
-
-        $incidence = $this->updateIncidenceService->update( 
+        $incidence = $this->updateIncidenceService->update(
             $incidenceId,
             $request->validated(),
             auth()->id()

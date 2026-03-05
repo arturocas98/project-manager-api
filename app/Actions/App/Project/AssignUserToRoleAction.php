@@ -4,7 +4,6 @@ namespace App\Actions\App\Project;
 
 use App\Exceptions\ProjectException;
 use App\Models\ProjectUser;
-
 class AssignUserToRoleAction
 {
     public function execute(int $projectRoleId, int $userId): ProjectUser

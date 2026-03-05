@@ -1,6 +1,7 @@
 <?php
 
 namespace App\Services\Incidence;
+use App\Actions\App\Incidence\UpdateIncidenceAction;
 use App\Models\Incidence;
 use App\Exceptions\IncidenceException;
 use Carbon\Carbon;
@@ -27,25 +28,10 @@ class UpdateIncidenceService
         self::TYPE_EPIC,
     ];
 
-    // Estados permitidos (esto debería venir de la base de datos idealmente)
-    private const STATE_OPEN = 1;
-    private const STATE_IN_PROGRESS = 2;
-    private const STATE_REVIEW = 3;
-    private const STATE_CLOSED = 4;
-    private const STATE_LOCKED = 5;
-    private const STATE_FINISHED = 6;
-
-    private const ALLOWED_STATE_TRANSITIONS = [
-        self::STATE_OPEN => [self::STATE_IN_PROGRESS, self::STATE_CLOSED],
-        self::STATE_IN_PROGRESS => [self::STATE_OPEN, self::STATE_REVIEW, self::STATE_CLOSED],
-        self::STATE_REVIEW => [self::STATE_IN_PROGRESS, self::STATE_CLOSED, self::STATE_LOCKED, self::STATE_FINISHED],
-        self::STATE_CLOSED => [self::STATE_LOCKED],
-        self::STATE_LOCKED => [self::STATE_FINISHED],
-        self::STATE_FINISHED => [],
-    ];
-
     public function __construct(
-        private \App\Actions\App\Incidence\UpdateIncidenceAction $updateIncidenceAction
+        private UpdateIncidenceAction $updateIncidenceAction,
+        private IncidenceStateTransitionService $stateTransitionService,
+        private CreateIndiceService $createIndiceService
     ) {}
 
     /**
@@ -61,6 +47,11 @@ class UpdateIncidenceService
     {
         // Obtener la incidencia actual con sus relaciones
         $incidence = $this->getIncidenceWithRelations($incidenceId);
+
+        // ✅ VALIDAR CAMBIO DE ESTADO usando el servicio especializado
+        if (isset($data['incidence_state_id'])) {
+            $this->stateTransitionService->validateStateChange($incidenceId, $data);
+        }
 
         // Validar reglas de negocio antes de actualizar
         $this->validateUpdate($incidence, $data);
@@ -98,28 +89,6 @@ class UpdateIncidenceService
                 if ($startCarbon->gt($dueCarbon)) {
                     throw new IncidenceException(
                         'La fecha de inicio no puede ser posterior a la fecha de vencimiento',
-                        422
-                    );
-                }
-            }
-
-            // Validaciones específicas por estado
-            if ($incidence->incidence_state_id === self::STATE_CLOSED) {
-                if (isset($data['due_date']) || isset($data['start_date'])) {
-                    throw new IncidenceException(
-                        'No se pueden modificar las fechas de una incidencia cerrada',
-                        422
-                    );
-                }
-            }
-
-            // Validar que due_date no sea en el pasado si la incidencia está en progreso
-            if ($incidence->incidence_state_id === self::STATE_IN_PROGRESS && isset($data['due_date'])) {
-                $newDueDate = Carbon::parse($data['due_date']);
-
-                if ($newDueDate->lt(now())) {
-                    throw new IncidenceException(
-                        'No se puede establecer una fecha de vencimiento en el pasado para una incidencia en progreso',
                         422
                     );
                 }
@@ -183,13 +152,10 @@ class UpdateIncidenceService
         // 4. Validar cambios de padre
         $this->validateParentChange($incidence, $data);
 
-        // 5. Validar cambios de estado
-        $this->validateStateChange($incidence, $data);
-
-        // 6. Validar cambios de asignación
+        // 5. Validar cambios de asignación
         $this->validateAssignmentChange($incidence, $data);
 
-        // 7. Validar campos obligatorios según el tipo
+        // 6. Validar campos obligatorios según el tipo
         $this->validateRequiredFields($incidence, $data);
     }
 
@@ -387,56 +353,6 @@ class UpdateIncidenceService
             $this->validateNoCycle($newParentId, $incidence->id);
         }
     }
-
-    /**
-     * Validar cambio de estado
-     */
-    private function validateStateChange(Incidence $incidence, array $data): void
-    {
-        if (!isset($data['incidence_state_id']) ||
-            $data['incidence_state_id'] === $incidence->incidence_state_id) {
-            return;
-        }
-
-        $currentState = $incidence->incidence_state_id;
-        $newState = $data['incidence_state_id'];
-
-        // Validar que la transición sea permitida
-        if (!isset(self::ALLOWED_STATE_TRANSITIONS[$currentState]) ||
-            !in_array($newState, self::ALLOWED_STATE_TRANSITIONS[$currentState])) {
-
-            $currentStateName = $this->getStateName($currentState);
-            $newStateName = $this->getStateName($newState);
-
-            throw new IncidenceException(
-                "No se puede cambiar el estado de {$currentStateName} a {$newStateName}",
-                422
-            );
-        }
-
-        // Validaciones específicas por estado
-        if ($newState === self::STATE_CLOSED) {
-            $this->validateCanClose($incidence);
-        }
-    }
-    /**
-     * Validar que se pueda cerrar la incidencia
-     */
-    private function validateCanClose(Incidence $incidence): void
-    {
-        // Verificar que todas las incidencias hijas estén cerradas
-        $openChildren = $incidence->childIncidences()
-            ->where('incidence_state_id', '!=', self::STATE_CLOSED)
-            ->count();
-
-        if ($openChildren > 0) {
-            throw new IncidenceException(
-                'No se puede cerrar una incidencia que tiene incidencias hijas abiertas',
-                422
-            );
-        }
-    }
-
     /**
      * Validar cambio de asignación
      */
@@ -451,8 +367,11 @@ class UpdateIncidenceService
             return;
         }
 
-        // Validar que el usuario asignado exista y tenga acceso al proyecto
-        // Esta validación dependerá de tu lógica de negocio
+        $this->createIndiceService->validateAssignedUser(
+            $incidence->project_id,
+            $data['assigned_user_id'],
+            $incidence->incidence_type_id
+        );
     }
 
     /**
@@ -505,24 +424,6 @@ class UpdateIncidenceService
     }
 
     /**
-     * Registrar cambios en log
-     */
-    private function logChanges(int $incidenceId, int $updatedById, array $oldData, Incidence $newIncidence): void
-    {
-        $changes = [];
-
-        foreach ($oldData as $field => $oldValue) {
-            $newValue = $newIncidence->$field;
-            if ($oldValue != $newValue) {
-                $changes[$field] = [
-                    'old' => $oldValue,
-                    'new' => $newValue
-                ];
-            }
-        }
-    }
-
-    /**
      * Obtener nombre del tipo
      */
     private function getTypeName(int $typeId): string
@@ -533,23 +434,7 @@ class UpdateIncidenceService
             self::TYPE_TASK => 'Task',
             self::TYPE_BUG => 'Bug',
             self::TYPE_SUBTASK => 'Subtask',
-            default => 'Desconocido'
-        };
-    }
-
-    /**
-     * Obtener nombre del estado
-     */
-    private function getStateName(int $stateId): string
-    {
-        return match($stateId) {
-            self::STATE_OPEN => 'Abierto',
-            self::STATE_IN_PROGRESS => 'En Progreso',
-            self::STATE_REVIEW => 'En Revisión',
-            self::STATE_CLOSED => 'Cerrado',
-            self::STATE_LOCKED => 'Bloqueado',
-            self::STATE_FINISHED => 'Finalizado',
-            default => 'Desconocido',
+            default => 'Unknown'
         };
     }
 }

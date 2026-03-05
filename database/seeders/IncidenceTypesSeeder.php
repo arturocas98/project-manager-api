@@ -17,9 +17,22 @@ class IncidenceTypesSeeder extends Seeder
             'subtask',
         ];
 
-        foreach ($types as $type) {
+        $codes = [
+            'EPC',
+            'USR',
+            'TSK',
+            'BUG',
+            'SUB',
+        ];
+
+        foreach ($types as $index => $type) {
             IncidenceType::firstOrCreate(
                 ['type' => $type],
+                [
+                    'code' => $codes[$index],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
             );
         }
 

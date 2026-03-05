@@ -12,40 +12,29 @@ use App\Models\ProjectUser;
 use Carbon\Carbon;
 use Illuminate\Support\Collection;
 
-
 class CreateIndiceService
 {
-    // Constantes para los tipos de incidencia
     public const TYPE_EPIC = 1;
     public const TYPE_HISTORY_USER = 2;
     public const TYPE_TASK = 3;
     public const TYPE_BUG = 4;
     public const TYPE_SUBTASK = 5;
 
-    // Mapa de jerarquía: [tipo_hijo => tipo_padre_requerido]
     private const HIERARCHY_RULES = [
-        self::TYPE_HISTORY_USER => self::TYPE_EPIC,           // history_user -> epic
-        self::TYPE_TASK => self::TYPE_HISTORY_USER,           // task -> history_user
-        self::TYPE_BUG => self::TYPE_TASK,                     // bug -> task
-        self::TYPE_SUBTASK => self::TYPE_TASK,                 // subtask -> task (mismo nivel que bug)
+        self::TYPE_HISTORY_USER => self::TYPE_EPIC,
+        self::TYPE_TASK => self::TYPE_HISTORY_USER,
+        self::TYPE_BUG => self::TYPE_TASK,
+        self::TYPE_SUBTASK => self::TYPE_TASK,
     ];
 
-    // Tipos que pueden ser raíces (sin padre)
     private const ROOT_TYPES = [
         self::TYPE_EPIC,
     ];
 
-    // Roles permitidos para crear incidencias
-    private const ALLOWED_CREATOR_ROLES = [
-        'project manager',
-        'administrators',
-        'supervisor',
-        'external contributor'
-    ];
-
     public function __construct(
         private IncidenceQuery $incidenceQuery,
-        private CreateIncidenceAction $createIncidenceAction
+        private CreateIncidenceAction $createIncidenceAction,
+        private IncidenceStateTransitionService $stateTransitionService
     ) {}
 
     public function getProjectIncidences(int $projectId): Collection
@@ -59,16 +48,14 @@ class CreateIndiceService
 
     public function createIncidence(int $projectId, array $data, int $createdById): Incidence
     {
-        // Validar que el creador tenga un rol permitido
-        $this->validateCreatorRole($projectId, $createdById);
+        if (isset($data['assigned_user_id'])) {
+            $this->stateTransitionService->validateInitialAssignment($projectId, $data);
+        }
 
-        // Validar jerarquía antes de crear
         $this->validateIncidenceHierarchy($projectId, $data);
 
-        // Validar fechas
         $this->validateDates($data);
 
-        // Validar usuario asignado si se proporciona
         if (isset($data['assigned_user_id']) && $data['assigned_user_id']) {
             $this->validateAssignedUser($projectId, $data['assigned_user_id'], $data['incidence_type_id']);
         }
@@ -77,51 +64,17 @@ class CreateIndiceService
     }
 
     /**
-     * Validar que el usuario creador tenga un rol permitido
-     */
-    private function validateCreatorRole(int $projectId, int $creatorId): void
-    {
-        // Buscar el rol del creador en el proyecto
-        $creatorProject = ProjectUser::where('user_id', $creatorId)
-            ->whereHas('role', function ($query) use ($projectId) {
-                $query->where('project_id', $projectId);
-            })
-            ->with('role')
-            ->first();
-
-        // Si no tiene rol en el proyecto
-        if (!$creatorProject || !$creatorProject->role) {
-            throw new IncidenceException(
-                "No tienes un rol asignado en este proyecto",
-                403
-            );
-        }
-
-        $creatorRoleType = strtolower($creatorProject->role->type);
-
-        // Verificar si el rol está permitido
-        if (!in_array($creatorRoleType, self::ALLOWED_CREATOR_ROLES)) {
-            throw new IncidenceException(
-                "No tienes permisos para crear incidencias en este proyecto. Tu rol '{$creatorProject->role->type}' no está autorizado. Roles permitidos: " . implode(', ', self::ALLOWED_CREATOR_ROLES),
-                403
-            );
-        }
-    }
-
-    /**
      * Validar que el usuario asignado tenga un rol permitido según el tipo de incidencia
      */
-    private function validateAssignedUser(int $projectId, int $assignedUserId, int $incidenceTypeId): void
+    public function validateAssignedUser(int $projectId, int $assignedUserId, int $incidenceTypeId): void
     {
-        // Buscar el rol del usuario en el proyecto
         $projectUser = ProjectUser::where('user_id', $assignedUserId)
             ->whereHas('role', function ($query) use ($projectId) {
                 $query->where('project_id', $projectId);
             })
-            ->with('role')
+            ->with('role.permissionScheme.scheme')
             ->first();
 
-        // Si no tiene rol en el proyecto
         if (!$projectUser || !$projectUser->role) {
             throw new IncidenceException(
                 "El usuario seleccionado no tiene un rol asignado en este proyecto",
@@ -129,26 +82,23 @@ class CreateIndiceService
             );
         }
 
-        $userRoleType = strtolower($projectUser->role->type);
+        $userRoleCode = $projectUser->role->permissionScheme->scheme->code ?? null;
 
-        // Validaciones específicas según el tipo de incidencia
         if (in_array($incidenceTypeId, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
-            // Epic (1) o History (2) - solo project manager o supervisor
-            $allowedRolesForEpicAndHistory = ['project manager', 'supervisor', 'administrators'];
+            $allowedCodesForEpicAndHistory = ['LDR', 'ADM'];
 
-            if (!in_array($userRoleType, $allowedRolesForEpicAndHistory)) {
+            if (!in_array($userRoleCode, $allowedCodesForEpicAndHistory)) {
                 throw new IncidenceException(
-                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol Project Manager o Supervisor. El usuario seleccionado tiene rol: {$projectUser->role->type}",
+                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol de Líder o Administrador. El usuario seleccionado tiene rol: {$projectUser->role->type}",
                     422
                 );
             }
         } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
-            // Task (3), Bug (4), Subtask (5) - cualquier rol excepto client, guest, owner
-            $forbiddenRoles = ['client', 'guest', 'owner'];
+            $allowedCodesForTasks = ['DEV', 'TST', 'DOC'];
 
-            if (in_array($userRoleType, $forbiddenRoles)) {
+            if (!in_array($userRoleCode, $allowedCodesForTasks)) {
                 throw new IncidenceException(
-                    "No se puede asignar una tarea a un usuario con rol {$projectUser->role->type}",
+                    "Las tareas solo pueden ser asignadas a desarrolladores, testers o documentadores. El usuario seleccionado tiene rol: {$projectUser->role->type}",
                     422
                 );
             }
@@ -157,7 +107,6 @@ class CreateIndiceService
 
     private function validateDates(array $data): void
     {
-        // Si ambas fechas están presentes, validar que start_date <= due_date
         if (isset($data['start_date']) && isset($data['due_date'])) {
             $startDate = Carbon::parse($data['start_date']);
             $dueDate = Carbon::parse($data['due_date']);
@@ -170,10 +119,9 @@ class CreateIndiceService
             }
         }
 
-        // Validar que due_date no sea demasiado lejano (opcional)
         if (isset($data['due_date'])) {
             $dueDate = Carbon::parse($data['due_date']);
-            $maxDueDate = now()->addMonths(6); // Máximo 6 meses
+            $maxDueDate = now()->addMonths(6);
 
             if ($dueDate->gt($maxDueDate)) {
                 throw new IncidenceException(
@@ -183,7 +131,6 @@ class CreateIndiceService
             }
         }
 
-        // Validaciones específicas por tipo
         $typeId = $data['incidence_type_id'] ?? null;
 
         if ($typeId === self::TYPE_TASK && !isset($data['due_date'])) {
@@ -202,7 +149,6 @@ class CreateIndiceService
         $incidenceTypeId = $data['incidence_type_id'];
         $parentId = $data['parent_incidence_id'] ?? null;
 
-        // Caso 1: Es un tipo raíz (Epic)
         if (in_array($incidenceTypeId, self::ROOT_TYPES)) {
             if (!is_null($parentId)) {
                 throw new IncidenceException(
@@ -210,10 +156,9 @@ class CreateIndiceService
                     422
                 );
             }
-            return; // ✅ Válido: Epic sin padre
+            return;
         }
 
-        // Caso 2: No es raíz, debe tener padre
         if (is_null($parentId)) {
             $typeName = $this->getTypeName($incidenceTypeId);
             throw new IncidenceException(
@@ -222,7 +167,6 @@ class CreateIndiceService
             );
         }
 
-        // Verificar que el padre existe y pertenece al proyecto
         $parentIncidence = Incidence::find($parentId);
         if (!$parentIncidence) {
             throw new IncidenceException(
@@ -238,7 +182,6 @@ class CreateIndiceService
             );
         }
 
-        // Validar que el tipo del padre sea el requerido según la jerarquía
         $this->validateParentType($incidenceTypeId, $parentIncidence);
     }
 
@@ -247,7 +190,6 @@ class CreateIndiceService
      */
     private function validateParentType(int $childTypeId, Incidence $parentIncidence): void
     {
-        // Verificar si el tipo hijo tiene una regla de jerarquía definida
         if (!isset(self::HIERARCHY_RULES[$childTypeId])) {
             $childTypeName = $this->getTypeName($childTypeId);
             throw new IncidenceException(
@@ -270,7 +212,6 @@ class CreateIndiceService
             );
         }
 
-        // Validaciones adicionales específicas
         $this->validateSpecificRules($childTypeId, $parentIncidence);
     }
 
@@ -282,12 +223,9 @@ class CreateIndiceService
         switch ($childTypeId) {
             case self::TYPE_BUG:
             case self::TYPE_SUBTASK:
-                // Bugs y Subtasks pueden estar al mismo nivel (ambos hijos de Task)
-                // No hay validaciones adicionales específicas
                 break;
 
             case self::TYPE_TASK:
-                // Las Tasks deben verificar que su padre (History User) no tenga ya muchas tareas
                 $taskCount = Incidence::where('parent_incidence_id', $parentIncidence->id)
                     ->whereIn('incidence_type_id', [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])
                     ->count();
@@ -307,7 +245,6 @@ class CreateIndiceService
      */
     public function validateCanDeleteIncidence(Incidence $incidence): void
     {
-        // Verificar si tiene hijos
         $childrenCount = $incidence->childIncidences()->count();
 
         if ($childrenCount > 0) {
@@ -317,7 +254,6 @@ class CreateIndiceService
             );
         }
 
-        // Verificar si es padre de algún bug o subtask (dependiendo del tipo)
         if (in_array($incidence->incidence_type_id, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
             $dependentCount = Incidence::where('parent_incidence_id', $incidence->id)->count();
             if ($dependentCount > 0) {
@@ -349,7 +285,6 @@ class CreateIndiceService
      */
     public function getIncidenceTree(int $projectId): Collection
     {
-        // Obtener todas las Epics (raíces)
         return $this->incidenceQuery
             ->byProject($projectId)
             ->byType(self::TYPE_EPIC)

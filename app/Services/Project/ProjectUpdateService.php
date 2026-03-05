@@ -90,7 +90,12 @@ class ProjectUpdateService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'administrators')
+            ->where('type', function($query) {
+                $query->select('name')
+                    ->from('project_permission_schemes')
+                    ->where('code', 'ADM')
+                    ->limit(1);
+            })
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 

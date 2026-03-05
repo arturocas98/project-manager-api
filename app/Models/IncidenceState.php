@@ -13,6 +13,8 @@ class IncidenceState extends Model
 
     protected $fillable = [
         'state',
+        'code',
+        'color',
     ];
 
     protected $casts = [

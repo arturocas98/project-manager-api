@@ -6,7 +6,6 @@ use Illuminate\Http\Resources\Json\JsonResource;
 
 class ProjectResource extends JsonResource
 {
-
     public function toArray($request)
     {
         $userRole = $this->roles->first();
@@ -29,21 +28,42 @@ class ProjectResource extends JsonResource
                     ];
                 }),
 
-                // Rol del usuario autenticado
+
                 'user_role' => $userRole ? [
                     'id' => $userRole->id,
                     'type' => $userRole->type,
+                    'code' => $userRole->code,
                 ] : null,
 
-                // Estadísticas
+
+                'members' => $this->whenLoaded('projectUsers', function () {
+                    return $this->projectUsers->map(function ($projectUser) {
+                        return [
+                            'id' => $projectUser->user->id,
+                            'name' => $projectUser->user->name,
+                            'email' => $projectUser->user->email,
+                            'role' => [
+                                'id' => $projectUser->role->id,
+                                'type' => $projectUser->role->type,
+                                'code' => $projectUser->role->code,
+                            ],
+                            'assigned_at' => $projectUser->created_at?->format('Y-m-d H:i:s'),
+                        ];
+                    })->values();
+                }, []),
+
+
                 'stats' => [
-                    'members_count' => $this->whenLoaded('roles', function () {
-                        return $this->roles->sum(function ($role) {
-                            return $role->users->count();
-                        });
+                    'members_count' => $this->whenLoaded('projectUsers', function () {
+                        return $this->projectUsers->count();
+                    }, 0),
+
+                    'total_incidences' => $this->whenLoaded('incidences', function () {
+                        return $this->incidences->count();
                     }, 0),
                 ],
             ],
+
             'meta' => [
                 'timestamps' => [
                     'created' => $this->created_at?->toIso8601String(),
@@ -51,18 +71,19 @@ class ProjectResource extends JsonResource
                 ],
                 'type' => 'project',
             ],
+
             'links' => [
                 'self' => route('projects.show', $this->id),
                 'update' => route('projects.update', $this->id),
                 'delete' => route('projects.destroy', $this->id),
-                // Relaciones
                 'members' => route('projects.members.index', $this->id),
+                'incidences' => route('projects.incidences.index', $this->id),
             ],
         ];
     }
 
     /**
-     * Método adicional para cuando se necesita metadata personalizada
+     * Método adicional para metadata personalizada
      */
     public function with($request)
     {

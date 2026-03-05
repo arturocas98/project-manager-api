@@ -10,17 +10,44 @@ class IncidenceStateSeeder extends Seeder
     public function run(): void
     {
         $states = [
-            'open',
-            'progress',
-            'review',
-            'closed',
-            'locked',
-            'finished',
+            'Asignado',
+            'Ejecutando',
+            'Suspendido',
+            'Terminada',
+            'Terminada (fuera de plazo)',
+            'En Revisión',
+            'Finalizada',
         ];
 
-        foreach ($states as $state) {
+        $codes = [
+            'ASG',
+            'EJE',
+            'SUS',
+            'TER',
+            'TER-T',
+            'REV',
+            'FIN',
+        ];
+
+        $colors = [
+            'D6E4F0',
+            'D9E2F3',
+            'FFF2CC',
+            'C6EFCE',
+            'F2DCDB',
+            'FFF9C4',
+            'DAEEF3',
+        ];
+
+        foreach ($states as $index => $state) {
             IncidenceState::firstOrCreate(
                 ['state' => $state],
+                [
+                    'code' => $codes[$index],
+                    'color' => $colors[$index],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
             );
         }
 

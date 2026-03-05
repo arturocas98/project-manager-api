@@ -15,44 +15,41 @@ class ProjectSummaryResource extends JsonResource
      */
     public function toArray($request)
     {
-        // Generate pagination meta (even though this is a single resource, we follow the standard)
-        $meta = [
-            'current_page' => 1,
-            'from' => 1,
-            'last_page' => 1,
-            'links' => [
-                [
-                    'url' => null,
-                    'label' => '&laquo; Previous',
-                    'active' => false
-                ],
-                [
-                    'url' => $request->url(),
-                    'label' => '1',
-                    'active' => true
-                ],
-                [
-                    'url' => null,
-                    'label' => 'Next &raquo;',
-                    'active' => false
-                ]
-            ],
-            'path' => $request->url(),
-            'per_page' => 15,
-            'to' => 1,
-            'total' => 1
-        ];
-
-        // Generate links
-        $links = [
-            'self' => $request->url(),
-            'project' => route('projects.show', ['project' => $request->route('project')]),
-        ];
+        $projectId = $request->route('project');
 
         return [
             'data' => $this->resource,
-            'meta' => $meta,
-            'links' => $links,
+            'meta' => [
+                'api_version' => '1.0',
+                'timestamp' => now()->toIso8601String(),
+                'project' => [
+                    'id' => $projectId,
+                    'url' => route('projects.show', $projectId),
+                ],
+                'cache' => [
+                    'ttl' => 300, // 5 minutos en segundos
+                    'stale_at' => now()->addMinutes(5)->toIso8601String(),
+                ],
+            ],
+            'links' => [
+                'self' => $request->fullUrl(),
+                'project' => route('projects.show', $projectId),
+                'incidences' => route('projects.incidences.index', $projectId),
+                'members' => route('projects.members.index', $projectId),
+            ],
         ];
+    }
+
+    /**
+     * Customize the response for the resource.
+     *
+     * @param  \Illuminate\Http\Request  $request
+     * @param  \Illuminate\Http\Response  $response
+     * @return void
+     */
+    public function withResponse($request, $response)
+    {
+        $response->header('X-Project-Summary-Version', '1.0');
+        $response->header('X-Generated-At', now()->toIso8601String());
     }
 }

@@ -6,8 +6,6 @@ use App\Http\Requests\App\AddProjectMemberRequest;
 use App\Http\Requests\App\UpdateMemberRoleRequest;
 use App\Http\Resources\App\ProjectMemberRemovedResource;
 use App\Http\Resources\App\ProjectMemberResource;
-use App\Http\Resources\App\ProjectMemberRoleUpdatedResource;
-use App\Http\Resources\App\ProjectMembersResource;
 use App\Models\Project;
 use App\Models\ProjectUser;
 use App\Services\Project\DeletProjectMemberService;
@@ -77,7 +75,7 @@ class ProjectMemberController extends Controller
         $result = $this->projectMemberService->addMember(
             $project,
             $request->user_id,
-            $request->role_type
+            $request->role_code
         );
 
         return response()->json([

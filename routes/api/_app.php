@@ -9,16 +9,21 @@ use App\Http\Middleware\CheckProjectAdmin;
 use App\Http\Middleware\CheckRole;
 
 Route::middleware(['auth:api'])->group(function () {
-    Route::apiResource('projects', ProjectController::class)->except(['update', 'destroy']);
-    Route::get('projects/{project}/summary', [ProjectController::class, 'summary'])
-        ->name('projects.summary');
-    Route::get('projects/{project}/unassigned-users', [ProjectController::class, 'getUnassignedUsers'])
-        ->name('projects.unassigned-users');
-    Route::middleware([CheckProjectAdmin::class])->group(function () {
+    Route::middleware([CheckRole::class])->group(function () {
+        Route::get('projects', [ProjectController::class, 'index'])
+            ->name('projects.index');
+        Route::get('projects/{project}', [ProjectController::class, 'show'])
+            ->name('projects.show');
+        Route::post('projects', [ProjectController::class, 'store'])
+            ->name('projects.store');
+
+        Route::get('projects/{project}/summary', [ProjectController::class, 'summary'])
+            ->name('projects.summary');
+        Route::get('projects/{project}/unassigned-users', [ProjectController::class, 'getUnassignedUsers'])
+            ->name('projects.unassigned-users');
+
         Route::put('projects/{project}', [ProjectController::class, 'update'])
-            ->name('projects.update');
-        Route::patch('projects/{project}', [ProjectController::class, 'update'])
-            ->name('projects.patch');
+            ->  name('projects.update');
         Route::delete('projects/{project}', [ProjectController::class, 'destroy'])
             ->name('projects.destroy');
 
@@ -31,11 +36,11 @@ Route::middleware(['auth:api'])->group(function () {
             ->name('projects.members.updateRole');
         Route::delete('projects/{project}/members/{member}', [ProjectMemberController::class, 'destroy'])
             ->name('projects.members.destroy');
-    });
-
-    Route::middleware([CheckRole::class])->group(function () {
         Route::get('projects/{project}/members', [ProjectMemberController::class, 'index'])
-        ->name('projects.members.index');
+            ->name('projects.members.index');
+
+
+
         Route::get('projects/{project}/incidences', [IncidenceController::class, 'index'])
             ->name('projects.incidences.index');
         Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])
@@ -46,6 +51,8 @@ Route::middleware(['auth:api'])->group(function () {
             ->name('projects.incidences.update');
         Route::delete('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'destroy'])
             ->name('projects.incidences.destroy');
+
+
 
         Route::get('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'show'])
             ->name('incidences.assignment.show');

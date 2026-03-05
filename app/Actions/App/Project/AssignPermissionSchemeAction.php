@@ -4,16 +4,15 @@ namespace App\Actions\App\Project;
 
 use App\Models\ProjectPermissionScheme;
 use App\Models\ProjectRolePermission;
-
 class AssignPermissionSchemeAction
 {
-    public function execute(int $projectRoleId, string $schemeName): ProjectRolePermission
+    public function execute(int $projectRoleId, string $schemeCode): ProjectRolePermission
     {
         try {
-            $scheme = ProjectPermissionScheme::where('name', $schemeName)->first();
+            $scheme = ProjectPermissionScheme::where('code', $schemeCode)->first();
 
             if (! $scheme) {
-                throw new \Exception("Esquema de permisos '{$schemeName}' no encontrado");
+                throw new \Exception("Esquema de permisos con código '{$schemeCode}' no encontrado");
             }
 
             $permission = ProjectRolePermission::create([

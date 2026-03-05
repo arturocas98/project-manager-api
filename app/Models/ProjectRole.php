@@ -17,6 +17,7 @@ class ProjectRole extends Model
     protected $fillable = [
         'project_id',
         'type',
+        'code',
     ];
 
     protected $casts = [

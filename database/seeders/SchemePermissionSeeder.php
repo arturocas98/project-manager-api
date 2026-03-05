@@ -11,35 +11,27 @@ class SchemePermissionSeeder extends Seeder
 {
     public function run(): void
     {
-        // Obtener todos los permisos
         $permissions = ProjectPermission::all()->keyBy('key');
 
-        // Obtener todos los esquemas
         $schemes = ProjectPermissionScheme::all()->keyBy('name');
 
         SchemePermission::truncate();
 
-        // 1. administrators - todos los permisos
-        if (isset($schemes['administrators'])) {
+        //administrator - todos los permisos
+        if (isset($schemes['administrator'])) {
             foreach ($permissions as $permission) {
                 SchemePermission::create([
-                    'permission_scheme_id' => $schemes['administrators']->id,
+                    'permission_scheme_id' => $schemes['administrator']->id,
                     'project_permission_id' => $permission->id,
                 ]);
             }
-            $this->command->info('administrators: ' . $permissions->count() . 'permissions');
+            $this->command->info('administrator: ' . $permissions->count() . 'permissions');
         }
 
-        // 2. project manager
-        if (isset($schemes['project manager'])) {
+        // leader
+        if (isset($schemes['leader'])) {
             $managerPermissions = [
                 'view_projects',
-                'create_projects',
-                'edit_projects',
-                'delete_projects',
-                'manage_members',
-                'invite_users',
-                'remove_users',
                 'view_tasks',
                 'create_tasks',
                 'edit_tasks',
@@ -49,8 +41,8 @@ class SchemePermissionSeeder extends Seeder
                 'upload_files',
                 'download_files',
                 'delete_files',
-                'view_reports',
-                'generate_reports',
+                'view_comments',
+                'generate_comments',
                 'manage_settings',
             ];
 
@@ -58,141 +50,25 @@ class SchemePermissionSeeder extends Seeder
             foreach ($managerPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['project manager']->id,
+                        'permission_scheme_id' => $schemes['leader']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('project manager: ' . $count . 'permissions');
+            $this->command->info('leader: ' . $count . 'permissions');
         }
 
-        // 3. team member
-        if (isset($schemes['team member'])) {
-            $memberPermissions = [
-                'view_projects',
-                'view_tasks',
-                'create_tasks',
-                'edit_tasks',
-                'assign_tasks',
-                'comment_tasks',
-                'view_files',
-                'upload_files',
-                'download_files',
-                'view_reports',
-            ];
-
-            $count = 0;
-            foreach ($memberPermissions as $key) {
-                if (isset($permissions[$key])) {
-                    SchemePermission::create([
-                        'permission_scheme_id' => $schemes['team member']->id,
-                        'project_permission_id' => $permissions[$key]->id,
-                    ]);
-                    $count++;
-                }
-            }
-            $this->command->info('team member: ' . $count . 'permissions');
-        }
-
-        // 4. guest
-        if (isset($schemes['guest'])) {
-            $guestPermissions = [
-                'view_projects',
-                'view_tasks',
-                'comment_tasks',
-                'view_files',
-                'download_files',
-                'view_reports',
-            ];
-
-            $count = 0;
-            foreach ($guestPermissions as $key) {
-                if (isset($permissions[$key])) {
-                    SchemePermission::create([
-                        'permission_scheme_id' => $schemes['guest']->id,
-                        'project_permission_id' => $permissions[$key]->id,
-                    ]);
-                    $count++;
-                }
-            }
-            $this->command->info('guest: ' . $count . 'permissions');
-        }
-
-        // 5. supervisor
-        if (isset($schemes['supervisor'])) {
-            $supervisorPermissions = [
-                'view_projects',
-                'view_tasks',
-                'assign_tasks',
-                'comment_tasks',
-                'view_files',
-                'download_files',
-                'view_reports',
-                'generate_reports',
-            ];
-
-            $count = 0;
-            foreach ($supervisorPermissions as $key) {
-                if (isset($permissions[$key])) {
-                    SchemePermission::create([
-                        'permission_scheme_id' => $schemes['supervisor']->id,
-                        'project_permission_id' => $permissions[$key]->id,
-                    ]);
-                    $count++;
-                }
-            }
-            $this->command->info('supervisor: ' . $count . 'permissions');
-        }
-
-        // 6. external contributor
-        if (isset($schemes['external contributor'])) {
-            $externalPermissions = [
-                'view_projects',
-                'view_tasks',
-                'comment_tasks',
-                'view_files',
-                'download_files',
-                'upload_files',
-            ];
-
-            $count = 0;
-            foreach ($externalPermissions as $key) {
-                if (isset($permissions[$key])) {
-                    SchemePermission::create([
-                        'permission_scheme_id' => $schemes['external contributor']->id,
-                        'project_permission_id' => $permissions[$key]->id,
-                    ]);
-                    $count++;
-                }
-            }
-            $this->command->info('external contributor: ' . $count . 'permissions');
-        }
-
-        // 7. owner (dueño del proyecto) - mismos permisos que admin
-        if (isset($schemes['owner'])) {
-            foreach ($permissions as $permission) {
-                SchemePermission::create([
-                    'permission_scheme_id' => $schemes['owner']->id,
-                    'project_permission_id' => $permission->id,
-                ]);
-            }
-            $this->command->info('owner: ' . $permissions->count() . 'permissions');
-        }
-
-        // 8. developer
+        // developer
         if (isset($schemes['developer'])) {
             $developerPermissions = [
                 'view_projects',
                 'view_tasks',
-                'create_tasks',
-                'edit_tasks',
-                'assign_tasks',
-                'comment_tasks',
+                'view_comments',
+                'generate_comments',
                 'view_files',
                 'upload_files',
                 'download_files',
-                'view_reports',
             ];
 
             $count = 0;
@@ -208,16 +84,15 @@ class SchemePermissionSeeder extends Seeder
             $this->command->info('developer: ' . $count . 'permissions');
         }
 
-        // 9. tester
+        // tester
         if (isset($schemes['tester'])) {
             $testerPermissions = [
                 'view_projects',
                 'view_tasks',
-                'comment_tasks',
                 'view_files',
                 'download_files',
-                'view_reports',
-                'generate_reports',
+                'view_comments',
+                'generate_comments',
             ];
 
             $count = 0;
@@ -233,30 +108,29 @@ class SchemePermissionSeeder extends Seeder
             $this->command->info('tester: ' . $count . 'permissions');
         }
 
-        // 10. client
-        if (isset($schemes['client'])) {
-            $clientPermissions = [
+        // documente
+        if (isset($schemes['documenter'])) {
+            $documenterPermissions = [
                 'view_projects',
                 'view_tasks',
-                'comment_tasks',
                 'view_files',
                 'download_files',
-                'view_reports',
+                'view_comments',
+                'generate_comments',
             ];
 
             $count = 0;
-            foreach ($clientPermissions as $key) {
+            foreach ($documenterPermissions as $key) {
                 if (isset($permissions[$key])) {
                     SchemePermission::create([
-                        'permission_scheme_id' => $schemes['client']->id,
+                        'permission_scheme_id' => $schemes['documenter']->id,
                         'project_permission_id' => $permissions[$key]->id,
                     ]);
                     $count++;
                 }
             }
-            $this->command->info('client: ' . $count . 'permissions');
+            $this->command->info('documenter: ' . $count . 'permissions');
         }
-
         $this->command->info('====================================');
         $this->command->info('Project permissions assigned to schemes successfully!');
 
