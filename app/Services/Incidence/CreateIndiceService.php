@@ -109,7 +109,7 @@ class CreateIndiceService
             }
         } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
             // Task (3), Bug (4), Subtask (5) - cualquier rol excepto client, guest, owner
-            $forbiddenRolescode = ['DOC'];
+            $forbiddenRolescode = ['DOC','LDR'];
 
             if (in_array($userRoleTypecode, $forbiddenRolescode)) {
                 throw new IncidenceException(

@@ -25,10 +25,9 @@ class ProfileResource extends JsonResource
                 ->pluck('name')
                 ->toArray()
             ),
-            'roles' => $this->whenLoaded('roles', fn () => $this->roles
+            'role' => $this->whenLoaded('roles', fn () => $this->roles
                 ->where('guard_name', 'api')
-                ->pluck('name')
-                ->toArray()
+                ->first()?->name ?? null
             ),
             'access_permissions' => $this->getAccessPermissions(),
         ];

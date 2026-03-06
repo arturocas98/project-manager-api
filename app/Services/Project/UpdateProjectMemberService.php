@@ -5,73 +5,106 @@ namespace App\Services\Project;
 
 namespace App\Services\Project;
 
+use App\Actions\App\Project\CleanupOrphanedRolesAction;
 use App\Actions\App\Project\UpdateMemberRoleAction;
 use App\Exceptions\ProjectException;
 use App\Models\Project;
 use App\Models\ProjectPermissionScheme;
 use App\Models\ProjectRole;
+use App\Models\ProjectRolePermission;
 use App\Models\ProjectUser;
 
 class UpdateProjectMemberService
 {
     public function __construct(
-        private UpdateMemberRoleAction $updateMemberRole
+        private UpdateMemberRoleAction $updateMemberRole,
+        private CleanupOrphanedRolesAction $cleanupOrphanedRolesAction,
     ) {}
 
     /**
-     * Cambiar el rol de un miembro del proyecto
+     * Codes válidos para roles de proyecto
      */
-    public function updateRole(Project $project, int $assignmentId, string $newRoleType): ProjectUser
+    private const VALID_ROLE_CODES = [
+        'ADM', // Administrator
+        'LDR', // Leader
+        'DEV', // Developer
+        'TST', // Tester
+        'DOC'  // Documenter
+    ];
+
+    public function updateRole(Project $project, int $assignmentId, string $newRoleCode): ProjectUser
     {
-        // VALIDACIONES DE NEGOCIO
         $this->validateProject($project);
         $this->validateAdminPermissions($project);
 
-        // 1️⃣ Validar que el nuevo rol existe en el catálogo global
-        $permissionScheme = $this->validateRoleExistsInCatalog($newRoleType);
+        // Validar que el code es válido
+        $this->validateRoleCode($newRoleCode);
 
-        // 2️⃣ Obtener la asignación actual (ProjectUser)
+        $permissionScheme = $this->validateRoleExistsInCatalog($newRoleCode);
+
         $assignment = $this->getAssignment($project, $assignmentId);
 
-        // 3️⃣ Validar que no sea el mismo rol
-        $this->validateNotSameRole($assignment, $newRoleType);
+        $this->validateNotSameRole($assignment, $newRoleCode);
 
-        // 4️⃣ Validar que no sea el último administrador
-        $this->validateNotLastAdminChange($project, $assignment, $newRoleType);
+        $this->validateNotLastAdminChange($project, $assignment, $newRoleCode);
 
-        // 5️⃣ Validar que no se cambie a sí mismo
         $this->validateNotSelf($assignment);
 
-        // 6️⃣ Obtener o crear el ProjectRole para este proyecto con el nuevo tipo
-        $projectRole = $this->getOrCreateProjectRole($project, $newRoleType, $permissionScheme);
+        $oldProjectRole = $assignment->role;
 
-        // TRANSACCIÓN
-        return \DB::transaction(function () use ($assignment, $projectRole) {
-            // Cambiar rol actualizando project_role_id en ProjectUser
+        $projectRole = $this->getOrCreateProjectRole($project, $newRoleCode, $permissionScheme);
+
+        return \DB::transaction(function () use ($assignment, $projectRole, $oldProjectRole) {
+            $assignment->lockForUpdate();
+
             $updatedAssignment = $this->updateMemberRole->execute(
                 $assignment->id,
                 $projectRole->id
             );
 
-            return $updatedAssignment->load(['user', 'role.permissionScheme.scheme.permissions']);
-        });
+            $this->cleanupOrphanedRolesAction->execute($oldProjectRole);
+
+            return $updatedAssignment->load([
+                'user',
+                'role.permissionScheme.scheme.permissions'
+            ]);
+        }, 5);
+    }
+
+    /**
+     * Validar que el code del rol es válido
+     */
+    private function validateRoleCode(string $roleCode): void
+    {
+        if (!in_array($roleCode, self::VALID_ROLE_CODES)) {
+            throw new ProjectException(
+                json_encode([
+                    'error' => 'Code de rol no válido',
+                    'reason' => 'El code especificado no es válido para roles de proyecto',
+                    'requested_code' => $roleCode,
+                    'valid_codes' => self::VALID_ROLE_CODES
+                ]),
+                400
+            );
+        }
     }
 
     /**
      * Validar que el rol existe en el catálogo global (ProjectPermissionScheme)
+     * Ahora busca por code en lugar de name
      */
-    private function validateRoleExistsInCatalog(string $roleType): ProjectPermissionScheme
+    private function validateRoleExistsInCatalog(string $roleCode): ProjectPermissionScheme
     {
-        $permissionScheme = ProjectPermissionScheme::where('name', $roleType)->first();
+        $permissionScheme = ProjectPermissionScheme::where('code', $roleCode)->first();
 
         if (!$permissionScheme) {
-            $availableRoles = ProjectPermissionScheme::pluck('name')->toArray();
+            $availableRoles = ProjectPermissionScheme::pluck('code')->toArray();
 
             throw new ProjectException(
                 json_encode([
                     'error' => 'Rol no válido',
                     'reason' => 'El tipo de rol especificado no existe en el catálogo de roles',
-                    'requested_role' => $roleType,
+                    'requested_role' => $roleCode,
                     'available_roles' => $availableRoles
                 ]),
                 400
@@ -83,34 +116,46 @@ class UpdateProjectMemberService
 
     /**
      * Obtener o crear el ProjectRole para este proyecto
+     * Ahora usa code en lugar de type
      */
-    private function getOrCreateProjectRole(Project $project, string $roleType, ProjectPermissionScheme $permissionScheme): ProjectRole
+    private function getOrCreateProjectRole(Project $project, string $roleCode, ProjectPermissionScheme $permissionScheme): ProjectRole
     {
-        // Buscar si ya existe este rol en el proyecto
-        $projectRole = $project->roles()
-            ->where('type', $roleType)
-            ->first();
+        return \DB::transaction(function () use ($project, $roleCode, $permissionScheme) {
+            $projectRole = $project->roles()
+                ->where('code', $roleCode)
+                ->lockForUpdate()
+                ->first();
 
-        // Si no existe, crearlo con el esquema de permisos correspondiente
-        if (!$projectRole) {
-            $projectRole = \DB::transaction(function () use ($project, $roleType, $permissionScheme) {
-                // Crear el rol del proyecto
-                $newRole = ProjectRole::create([
+            if (!$projectRole) {
+                $projectRole = ProjectRole::create([
                     'project_id' => $project->id,
-                    'type' => $roleType
+                    'code' => $roleCode,
+                    'type' => $this->getRoleTypeFromCode($roleCode) // Mantener type para compatibilidad
                 ]);
 
-                // Asignarle el esquema de permisos
-                // Asumiendo que tienes una tabla project_role_permissions que relaciona roles con esquemas
-                $newRole->permissionScheme()->create([
+                ProjectRolePermission::create([
+                    'project_role_id' => $projectRole->id,
                     'permission_scheme_id' => $permissionScheme->id
                 ]);
+            }
 
-                return $newRole;
-            });
-        }
+            return $projectRole;
+        });
+    }
 
-        return $projectRole;
+    /**
+     * Obtener el tipo de rol legible desde el code
+     */
+    private function getRoleTypeFromCode(string $code): string
+    {
+        return match($code) {
+            'ADM' => 'administrator',
+            'LDR' => 'leader',
+            'DEV' => 'developer',
+            'TST' => 'tester',
+            'DOC' => 'documenter',
+            default => 'member'
+        };
     }
 
     /**
@@ -133,6 +178,7 @@ class UpdateProjectMemberService
 
     /**
      * Validar que el usuario actual es administrador
+     * Ahora busca por code 'ADM' en lugar de type 'administrators'
      */
     private function validateAdminPermissions(Project $project): void
     {
@@ -149,7 +195,7 @@ class UpdateProjectMemberService
         }
 
         $isAdmin = $project->roles()
-            ->where('type', 'administrators')
+            ->where('code', 'ADM')
             ->whereHas('users', fn($q) => $q->where('user_id', $userId))
             ->exists();
 
@@ -158,16 +204,16 @@ class UpdateProjectMemberService
                 ->whereHas('users', fn($q) => $q->where('user_id', $userId))
                 ->first();
 
-            $roleName = $userRole?->type ?? 'Sin rol asignado';
+            $roleCode = $userRole?->code ?? 'Sin rol asignado';
 
             throw new ProjectException(
                 json_encode([
                     'error' => 'Permiso denegado',
                     'reason' => 'Solo los administradores pueden cambiar roles',
                     'user_id' => $userId,
-                    'user_role' => $roleName,
+                    'user_role' => $roleCode,
                     'project_id' => $project->id,
-                    'required_role' => 'administrators'
+                    'required_role' => 'ADM'
                 ]),
                 403
             );
@@ -201,18 +247,18 @@ class UpdateProjectMemberService
     }
 
     /**
-     * Validar que no sea el mismo rol (comparando tipos, no IDs)
+     * Validar que no sea el mismo rol (comparando codes, no types)
      */
-    private function validateNotSameRole(ProjectUser $assignment, string $newRoleType): void
+    private function validateNotSameRole(ProjectUser $assignment, string $newRoleCode): void
     {
-        if ($assignment->role->type === $newRoleType) {
+        if ($assignment->role->code === $newRoleCode) {
             throw new ProjectException(
                 json_encode([
                     'error' => 'Mismo rol',
                     'reason' => 'El miembro ya tiene este rol asignado',
                     'user_id' => $assignment->user_id,
-                    'current_role' => $assignment->role->type,
-                    'attempted_role' => $newRoleType
+                    'current_role' => $assignment->role->code,
+                    'attempted_role' => $newRoleCode
                 ]),
                 400
             );
@@ -221,22 +267,23 @@ class UpdateProjectMemberService
 
     /**
      * Validar cambio de último administrador
+     * Ahora usa code 'ADM' en lugar de type 'administrators'
      */
-    private function validateNotLastAdminChange(Project $project, ProjectUser $assignment, string $newRoleType): void
+    private function validateNotLastAdminChange(Project $project, ProjectUser $assignment, string $newRoleCode): void
     {
         // Si el usuario no es admin actualmente, no hay problema
-        if ($assignment->role->type !== 'administrators') {
+        if ($assignment->role->code !== 'ADM') {
             return;
         }
 
         // Si el nuevo rol también es admin, no hay problema
-        if ($newRoleType === 'administrators') {
+        if ($newRoleCode === 'ADM') {
             return;
         }
 
-        // Contar administradores actuales
+        // Contar administradores actuales (por code 'ADM')
         $adminCount = $project->roles()
-            ->where('type', 'administrators')
+            ->where('code', 'ADM')
             ->withCount('users')
             ->get()
             ->sum('users_count');
@@ -246,7 +293,7 @@ class UpdateProjectMemberService
             // Buscar otros miembros que podrían ser administradores
             $candidates = ProjectUser::whereHas('role', function ($q) use ($project) {
                 $q->where('project_id', $project->id)
-                    ->where('type', '!=', 'administrators');
+                    ->where('code', '!=', 'ADM');
             })
                 ->with(['user', 'role'])
                 ->get()
@@ -254,7 +301,7 @@ class UpdateProjectMemberService
                     'id' => $member->user_id,
                     'name' => $member->user?->name,
                     'email' => $member->user?->email,
-                    'current_role' => $member->role->type,
+                    'current_role' => $member->role->code,
                     'assignment_id' => $member->id
                 ])
                 ->values()
@@ -271,10 +318,10 @@ class UpdateProjectMemberService
                         'name' => $assignment->user?->name,
                         'email' => $assignment->user?->email,
                     ],
-                    'current_role' => 'administrators',
-                    'attempted_role' => $newRoleType,
+                    'current_role' => 'ADM',
+                    'attempted_role' => $newRoleCode,
                     'admin_count' => $adminCount,
-                    'suggestion' => 'Antes de cambiar, promueve a otro usuario a Administrador',
+                    'suggestion' => 'Antes de cambiar, promueve a otro usuario a Administrador (ADM)',
                     'candidates' => $candidates,
                 ]),
                 400

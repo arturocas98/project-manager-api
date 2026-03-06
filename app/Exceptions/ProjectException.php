@@ -3,11 +3,9 @@
 namespace App\Exceptions;
 
 use Exception;
-
 class ProjectException extends Exception
 {
     protected $message;
-
     protected $code;
 
     public function __construct(string $message, int $code = 400)
@@ -19,10 +17,15 @@ class ProjectException extends Exception
 
     public function render($request)
     {
-        return response()->json([
-            'error' => true,
-            'message' => $this->message,
-            'code' => $this->code,
-        ], $this->code);
+        return response()->json(
+            [
+                'error' => true,
+                'message' => $this->message,
+                'code' => $this->code,
+            ],
+            $this->code,
+            [],
+            JSON_UNESCAPED_UNICODE
+        );
     }
 }
