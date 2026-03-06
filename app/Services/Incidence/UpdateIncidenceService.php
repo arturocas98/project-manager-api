@@ -3,6 +3,7 @@
 namespace App\Services\Incidence;
 use App\Models\Incidence;
 use App\Exceptions\IncidenceException;
+use App\Models\Project;
 use Carbon\Carbon;
 
 class UpdateIncidenceService
@@ -13,6 +14,15 @@ class UpdateIncidenceService
     public const TYPE_TASK = 3;
     public const TYPE_BUG = 4;
     public const TYPE_SUBTASK = 5;
+
+    // Constantes para los estados
+    private const STATE_NEW = 1;           // Nueva
+    private const STATE_ASSIGNED = 2;       // Asignado
+    private const STATE_IN_PROGRESS = 3;    // Ejecutando
+    private const STATE_SUSPENDED = 4;      // Suspendido
+    private const STATE_FINISHED = 5;        // Terminada
+    private const STATE_REVIEW = 6;          // En Revisión
+    private const STATE_COMPLETED = 7;       // Finalizada
 
     // Mapa de jerarquía: [tipo_hijo => tipo_padre_requerido]
     private const HIERARCHY_RULES = [
@@ -27,21 +37,39 @@ class UpdateIncidenceService
         self::TYPE_EPIC,
     ];
 
-    // Estados permitidos (esto debería venir de la base de datos idealmente)
-    private const STATE_OPEN = 1;
-    private const STATE_IN_PROGRESS = 2;
-    private const STATE_REVIEW = 3;
-    private const STATE_CLOSED = 4;
-    private const STATE_LOCKED = 5;
-    private const STATE_FINISHED = 6;
+    // Mapa de transiciones con roles permitidos
+    private const STATE_FLOW_RULES = [
+        self::STATE_NEW => [
+            self::STATE_ASSIGNED => ['ADM', 'LDR'], // Líder o Administrador
+        ],
+        self::STATE_ASSIGNED => [
+            self::STATE_IN_PROGRESS => ['DEV'], // Solo el colaborador asignado
+            self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
+        ],
+        self::STATE_IN_PROGRESS => [
+            self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
+            self::STATE_FINISHED => ['DEV'], // Colaborador cuando completa
+        ],
+        self::STATE_SUSPENDED => [
+            self::STATE_IN_PROGRESS => ['ADM', 'LDR'], // Líder/Admin cuando se resuelve
+        ],
+        self::STATE_FINISHED => [
+            self::STATE_REVIEW => ['TST'], // Tester inicia validación
+        ],
+        self::STATE_REVIEW => [
+            self::STATE_IN_PROGRESS => ['TST'], // Tester rechaza (requiere corrección)
+            self::STATE_COMPLETED => ['TST'], // Tester aprueba
+        ],
+        self::STATE_COMPLETED => [], // Estado final, no más transiciones
+    ];
 
-    private const ALLOWED_STATE_TRANSITIONS = [
-        self::STATE_OPEN => [self::STATE_IN_PROGRESS, self::STATE_CLOSED],
-        self::STATE_IN_PROGRESS => [self::STATE_OPEN, self::STATE_REVIEW, self::STATE_CLOSED],
-        self::STATE_REVIEW => [self::STATE_IN_PROGRESS, self::STATE_CLOSED, self::STATE_LOCKED],
-        self::STATE_CLOSED => [self::STATE_LOCKED],
-        self::STATE_LOCKED => [self::STATE_FINISHED],
-        self::STATE_FINISHED => [],
+    // Mapeo de códigos de rol a nombres (para mensajes)
+    private const ROLE_CODE_TO_NAME = [
+        'ADM' => 'Administrador',
+        'LDR' => 'Líder',
+        'DEV' => 'Desarrollador',
+        'TST' => 'Tester',
+        'DOC' => 'Documentador',
     ];
 
     public function __construct(
@@ -63,11 +91,8 @@ class UpdateIncidenceService
         $incidence = $this->getIncidenceWithRelations($incidenceId);
 
         // Validar reglas de negocio antes de actualizar
-        $this->validateUpdate($incidence, $data);
+        $this->validateUpdate($incidence, $data, $updatedById);
         $this->validateDateUpdate($incidence, $data);
-
-        // Registrar cambios para auditoría
-        $oldData = $this->captureOldData($incidence);
 
         // Ejecutar la actualización
         $updatedIncidence = $this->updateIncidenceAction->execute($incidenceId, $data, $updatedById);
@@ -82,94 +107,16 @@ class UpdateIncidenceService
 
         return $updatedIncidence;
     }
-    private function validateDateUpdate(Incidence $incidence, array $data): void
-    {
-        $startDate = $data['start_date'] ?? $incidence->start_date;
-        $dueDate = $data['due_date'] ?? $incidence->due_date;
-
-        // Si se están actualizando las fechas
-        if (isset($data['start_date']) || isset($data['due_date'])) {
-
-            // Validar que start_date <= due_date si ambos están presentes
-            if ($startDate && $dueDate) {
-                $startCarbon = Carbon::parse($startDate);
-                $dueCarbon = Carbon::parse($dueDate);
-
-                if ($startCarbon->gt($dueCarbon)) {
-                    throw new IncidenceException(
-                        'La fecha de inicio no puede ser posterior a la fecha de vencimiento',
-                        422
-                    );
-                }
-            }
-
-            // Validaciones específicas por estado
-            if ($incidence->incidence_state_id === self::STATE_CLOSED) {
-                if (isset($data['due_date']) || isset($data['start_date'])) {
-                    throw new IncidenceException(
-                        'No se pueden modificar las fechas de una incidencia cerrada',
-                        422
-                    );
-                }
-            }
-
-            // Validar que due_date no sea en el pasado si la incidencia está en progreso
-            if ($incidence->incidence_state_id === self::STATE_IN_PROGRESS && isset($data['due_date'])) {
-                $newDueDate = Carbon::parse($data['due_date']);
-
-                if ($newDueDate->lt(now())) {
-                    throw new IncidenceException(
-                        'No se puede establecer una fecha de vencimiento en el pasado para una incidencia en progreso',
-                        422
-                    );
-                }
-            }
-        }
-
-        // Validaciones específicas por tipo al actualizar
-        $newTypeId = $data['incidence_type_id'] ?? $incidence->incidence_type_id;
-
-        if ($newTypeId === self::TYPE_TASK) {
-            $finalDueDate = $data['due_date'] ?? $incidence->due_date;
-
-            if (!$finalDueDate) {
-                throw new IncidenceException(
-                    'Las tareas deben tener una fecha de vencimiento',
-                    422
-                );
-            }
-        }
-    }
-
-    /**
-     * Validar que se pueda cerrar la incidencia (actualizado)
-     */
-    /**
-     * Capturar datos antiguos para auditoría (actualizado)
-     */
-    private function captureOldData(Incidence $incidence): array
-    {
-        return [
-            'title' => $incidence->title,
-            'description' => $incidence->description,
-            'incidence_type_id' => $incidence->incidence_type_id,
-            'incidence_state_id' => $incidence->incidence_state_id,
-            'parent_incidence_id' => $incidence->parent_incidence_id,
-            'assigned_user_id' => $incidence->assigned_user_id,
-            'date' => $incidence->date,
-            'start_date' => $incidence->start_date,
-            'due_date' => $incidence->due_date,
-        ];
-    }
 
     /**
      * Validar todas las reglas de negocio para la actualización
      *
      * @param Incidence $incidence
      * @param array $data
+     * @param int $updatedById
      * @throws IncidenceException
      */
-    private function validateUpdate(Incidence $incidence, array $data): void
+    private function validateUpdate(Incidence $incidence, array $data, int $updatedById): void
     {
         // 1. Validar que no se intente cambiar el proyecto
         $this->validateProjectNotChanged($incidence, $data);
@@ -183,8 +130,8 @@ class UpdateIncidenceService
         // 4. Validar cambios de padre
         $this->validateParentChange($incidence, $data);
 
-        // 5. Validar cambios de estado
-        $this->validateStateChange($incidence, $data);
+        // 5. Validar cambios de estado (CON ROLES)
+        $this->validateStateChange($incidence, $data, $updatedById);
 
         // 6. Validar cambios de asignación
         $this->validateAssignmentChange($incidence, $data);
@@ -389,9 +336,9 @@ class UpdateIncidenceService
     }
 
     /**
-     * Validar cambio de estado
+     * Validar cambio de estado considerando roles
      */
-    private function validateStateChange(Incidence $incidence, array $data): void
+    private function validateStateChange(Incidence $incidence, array $data, int $updatedById): void
     {
         if (!isset($data['incidence_state_id']) ||
             $data['incidence_state_id'] === $incidence->incidence_state_id) {
@@ -401,40 +348,214 @@ class UpdateIncidenceService
         $currentState = $incidence->incidence_state_id;
         $newState = $data['incidence_state_id'];
 
-        // Validar que la transición sea permitida
-        if (!isset(self::ALLOWED_STATE_TRANSITIONS[$currentState]) ||
-            !in_array($newState, self::ALLOWED_STATE_TRANSITIONS[$currentState])) {
+        // Validar que la transición exista en las reglas
+        $this->validateStateTransitionExists($currentState, $newState);
 
+        // Validar que el usuario tenga el rol adecuado para esta transición
+        $this->validateUserCanPerformTransition($incidence, $currentState, $newState, $updatedById);
+
+        // Validaciones específicas por estado
+        if ($newState === self::STATE_REVIEW) {
+            $this->validateCanMoveToReview($incidence);
+        }
+
+        if ($newState === self::STATE_COMPLETED) {
+            $this->validateCanComplete($incidence);
+        }
+
+        if ($newState === self::STATE_IN_PROGRESS && $currentState === self::STATE_REVIEW) {
+            $this->validateReopenFromReview($incidence);
+        }
+    }
+
+    /**
+     * Validar que la transición de estado exista en las reglas
+     */
+    private function validateStateTransitionExists(int $currentState, int $newState): void
+    {
+        if (!isset(self::STATE_FLOW_RULES[$currentState])) {
+            $currentStateName = $this->getStateName($currentState);
+            throw new IncidenceException(
+                "El estado {$currentStateName} no tiene transiciones definidas",
+                422
+            );
+        }
+
+        if (!isset(self::STATE_FLOW_RULES[$currentState][$newState])) {
             $currentStateName = $this->getStateName($currentState);
             $newStateName = $this->getStateName($newState);
 
             throw new IncidenceException(
-                "No se puede cambiar el estado de {$currentStateName} a {$newStateName}",
+                "No se puede cambiar de {$currentStateName} a {$newStateName}: " .
+                "transición no permitida en el flujo de trabajo",
                 422
             );
-        }
-
-        // Validaciones específicas por estado
-        if ($newState === self::STATE_CLOSED) {
-            $this->validateCanClose($incidence);
         }
     }
-    /**
-     * Validar que se pueda cerrar la incidencia
-     */
-    private function validateCanClose(Incidence $incidence): void
-    {
-        // Verificar que todas las incidencias hijas estén cerradas
-        $openChildren = $incidence->childIncidences()
-            ->where('incidence_state_id', '!=', self::STATE_CLOSED)
-            ->count();
 
-        if ($openChildren > 0) {
+    /**
+     * Validar que el usuario tenga el rol adecuado para la transición
+     */
+    private function validateUserCanPerformTransition(
+        Incidence $incidence,
+        int $currentState,
+        int $newState,
+        int $userId
+    ): void {
+        // Obtener los roles permitidos para esta transición
+        $allowedRoleCodes = self::STATE_FLOW_RULES[$currentState][$newState];
+
+        // Si no hay restricción de roles, permitir a todos
+        if (empty($allowedRoleCodes)) {
+            return;
+        }
+
+        // Obtener los roles del usuario en el proyecto
+        $userRoles = $this->getUserRolesInProject($userId, $incidence->project_id);
+
+        if (empty($userRoles)) {
             throw new IncidenceException(
-                'No se puede cerrar una incidencia que tiene incidencias hijas abiertas',
+                'El usuario no tiene roles asignados en este proyecto',
+                403
+            );
+        }
+
+        // Verificar si alguno de los roles del usuario está permitido
+        $hasAllowedRole = collect($userRoles)
+            ->pluck('code')
+            ->intersect($allowedRoleCodes)
+            ->isNotEmpty();
+
+        if (!$hasAllowedRole) {
+            $currentStateName = $this->getStateName($currentState);
+            $newStateName = $this->getStateName($newState);
+            $allowedRolesNames = $this->getRoleNamesFromCodes($allowedRoleCodes);
+
+            throw new IncidenceException(
+                "No tienes permisos para cambiar de {$currentStateName} a {$newStateName}. " .
+                "Esta acción solo puede ser realizada por: " . implode(', ', $allowedRolesNames),
+                403
+            );
+        }
+
+        // Validaciones adicionales específicas por rol
+        $this->validateSpecificRoleConstraints($incidence, $newState, $userId, $userRoles);
+    }
+
+    /**
+     * Obtener los roles del usuario en el proyecto
+     */
+    private function getUserRolesInProject(int $userId, int $projectId): array
+    {
+        $project = Project::with(['roles' => function($query) use ($userId) {
+            $query->whereHas('users', fn($q) => $q->where('user_id', $userId));
+        }])->find($projectId);
+
+        if (!$project) {
+            return [];
+        }
+
+        return $project->roles->map(function($role) {
+            return [
+                'id' => $role->id,
+                'code' => $role->code,
+                'type' => $role->type,
+            ];
+        })->toArray();
+    }
+
+    /**
+     * Validaciones específicas según el rol y contexto
+     */
+    private function validateSpecificRoleConstraints(
+        Incidence $incidence,
+        int $newState,
+        int $userId,
+        array $userRoles
+    ): void {
+        // Si el nuevo estado es IN_PROGRESS (Ejecutando) y viene de ASIGNADO
+        if ($newState === self::STATE_IN_PROGRESS &&
+            $incidence->incidence_state_id === self::STATE_ASSIGNED) {
+
+            // Verificar que el usuario sea el asignado a la tarea
+            if ($incidence->assigned_user_id !== $userId) {
+                // A menos que sea Admin o Líder
+                $isAdminOrLeader = collect($userRoles)
+                    ->whereIn('code', ['ADM', 'LDR'])
+                    ->isNotEmpty();
+
+                if (!$isAdminOrLeader) {
+                    throw new IncidenceException(
+                        'Solo el usuario asignado a la tarea puede cambiar el estado a Ejecutando',
+                        403
+                    );
+                }
+            }
+        }
+
+        // Si el nuevo estado es FINISHED (Terminada)
+        if ($newState === self::STATE_FINISHED) {
+            // Verificar que el usuario sea el asignado (para DEV)
+            $isDev = collect($userRoles)->where('code', 'DEV')->isNotEmpty();
+
+            if ($isDev && $incidence->assigned_user_id !== $userId) {
+                throw new IncidenceException(
+                    'Un desarrollador solo puede marcar como terminada una tarea asignada a él',
+                    403
+                );
+            }
+        }
+    }
+
+    /**
+     * Validar que se pueda mover a revisión
+     */
+    private function validateCanMoveToReview(Incidence $incidence): void
+    {
+        // Verificar que la tarea esté en estado "Terminada"
+        if ($incidence->incidence_state_id !== self::STATE_FINISHED) {
+            throw new IncidenceException(
+                'Solo las tareas en estado "Terminada" pueden pasar a revisión',
                 422
             );
         }
+
+        // Verificar que tenga descripción de lo realizado
+        if (empty($incidence->description)) {
+            throw new IncidenceException(
+                'Debe proporcionar una descripción del trabajo realizado antes de pasar a revisión',
+                422
+            );
+        }
+    }
+
+    /**
+     * Validar que se pueda completar la tarea
+     */
+    private function validateCanComplete(Incidence $incidence): void
+    {
+        // Verificar que todas las subtareas estén completadas si existen
+        if ($incidence->childIncidences()->count() > 0) {
+            $openChildren = $incidence->childIncidences()
+                ->whereNotIn('incidence_state_id', [self::STATE_COMPLETED, self::STATE_FINISHED])
+                ->count();
+
+            if ($openChildren > 0) {
+                throw new IncidenceException(
+                    'No se puede finalizar una tarea que tiene subtareas pendientes',
+                    422
+                );
+            }
+        }
+    }
+
+    /**
+     * Validar reapertura desde revisión
+     */
+    private function validateReopenFromReview(Incidence $incidence): void
+    {
+        // El tester debe proporcionar un motivo de rechazo (validar en request aparte)
+        // Esta validación se hace a nivel de controller/request
     }
 
     /**
@@ -452,7 +573,15 @@ class UpdateIncidenceService
         }
 
         // Validar que el usuario asignado exista y tenga acceso al proyecto
-        // Esta validación dependerá de tu lógica de negocio
+        $userHasAccess = Project::find($incidence->project_id)
+            ?->hasUserAccess($data['assigned_user_id']);
+
+        if (!$userHasAccess) {
+            throw new IncidenceException(
+                'El usuario asignado no tiene acceso al proyecto',
+                422
+            );
+        }
     }
 
     /**
@@ -464,24 +593,77 @@ class UpdateIncidenceService
 
         switch ($typeId) {
             case self::TYPE_BUG:
-                // Los bugs podrían requerir campos adicionales
-                if (isset($data['description']) && empty($data['description'])) {
+                // Los bugs requieren descripción
+                $description = $data['description'] ?? $incidence->description;
+                if (empty($description)) {
                     throw new IncidenceException(
                         'Los bugs requieren una descripción detallada',
                         422
                     );
                 }
                 break;
+        }
+    }
 
-            case self::TYPE_TASK:
-                // Las tasks podrían requerir fecha límite
-                if (isset($data['date']) && empty($data['date'])) {
+    /**
+     * Validar actualización de fechas
+     */
+    private function validateDateUpdate(Incidence $incidence, array $data): void
+    {
+        $startDate = $data['start_date'] ?? $incidence->start_date;
+        $dueDate = $data['due_date'] ?? $incidence->due_date;
+
+        // Si se están actualizando las fechas
+        if (isset($data['start_date']) || isset($data['due_date'])) {
+
+            // Validar que start_date <= due_date si ambos están presentes
+            if ($startDate && $dueDate) {
+                $startCarbon = Carbon::parse($startDate);
+                $dueCarbon = Carbon::parse($dueDate);
+
+                if ($startCarbon->gt($dueCarbon)) {
                     throw new IncidenceException(
-                        'Las tareas requieren una fecha asignada',
+                        'La fecha de inicio no puede ser posterior a la fecha de vencimiento',
                         422
                     );
                 }
-                break;
+            }
+
+            // Validaciones específicas por estado
+            if ($incidence->incidence_state_id === self::STATE_COMPLETED) {
+                if (isset($data['due_date']) || isset($data['start_date'])) {
+                    throw new IncidenceException(
+                        'No se pueden modificar las fechas de una incidencia finalizada',
+                        422
+                    );
+                }
+            }
+
+            // Validar que due_date no sea en el pasado si la incidencia está en progreso
+            if ($incidence->incidence_state_id === self::STATE_IN_PROGRESS && isset($data['due_date'])) {
+                $newDueDate = Carbon::parse($data['due_date']);
+
+                if ($newDueDate->lt(now())) {
+                    throw new IncidenceException(
+                        'No se puede establecer una fecha de vencimiento en el pasado para una incidencia en progreso',
+                        422
+                    );
+                }
+            }
+        }
+
+        // Validaciones específicas por tipo al actualizar
+        $newTypeId = $data['incidence_type_id'] ?? $incidence->incidence_type_id;
+
+        if ($newTypeId === self::TYPE_TASK) {
+            $finalDueDate = $data['due_date'] ?? $incidence->due_date;
+
+            if (!$finalDueDate) {
+                throw new IncidenceException(
+                    'Las tareas deben tener una fecha de vencimiento',
+                    422
+                );
+            }
         }
     }
 
@@ -505,21 +687,21 @@ class UpdateIncidenceService
     }
 
     /**
-     * Registrar cambios en log
+     * Capturar datos antiguos para auditoría
      */
-    private function logChanges(int $incidenceId, int $updatedById, array $oldData, Incidence $newIncidence): void
+    private function captureOldData(Incidence $incidence): array
     {
-        $changes = [];
-
-        foreach ($oldData as $field => $oldValue) {
-            $newValue = $newIncidence->$field;
-            if ($oldValue != $newValue) {
-                $changes[$field] = [
-                    'old' => $oldValue,
-                    'new' => $newValue
-                ];
-            }
-        }
+        return [
+            'title' => $incidence->title,
+            'description' => $incidence->description,
+            'incidence_type_id' => $incidence->incidence_type_id,
+            'incidence_state_id' => $incidence->incidence_state_id,
+            'parent_incidence_id' => $incidence->parent_incidence_id,
+            'assigned_user_id' => $incidence->assigned_user_id,
+            'date' => $incidence->date,
+            'start_date' => $incidence->start_date,
+            'due_date' => $incidence->due_date,
+        ];
     }
 
     /**
@@ -529,10 +711,10 @@ class UpdateIncidenceService
     {
         return match($typeId) {
             self::TYPE_EPIC => 'Epic',
-            self::TYPE_HISTORY_USER => 'History User',
-            self::TYPE_TASK => 'Task',
+            self::TYPE_HISTORY_USER => 'Historia de Usuario',
+            self::TYPE_TASK => 'Tarea',
             self::TYPE_BUG => 'Bug',
-            self::TYPE_SUBTASK => 'Subtask',
+            self::TYPE_SUBTASK => 'Subtarea',
             default => 'Desconocido'
         };
     }
@@ -543,13 +725,24 @@ class UpdateIncidenceService
     private function getStateName(int $stateId): string
     {
         return match($stateId) {
-            self::STATE_OPEN => 'Abierto',
-            self::STATE_IN_PROGRESS => 'En Progreso',
+            self::STATE_NEW => 'Nueva',
+            self::STATE_ASSIGNED => 'Asignado',
+            self::STATE_IN_PROGRESS => 'Ejecutando',
+            self::STATE_SUSPENDED => 'Suspendido',
+            self::STATE_FINISHED => 'Terminada',
             self::STATE_REVIEW => 'En Revisión',
-            self::STATE_CLOSED => 'Cerrado',
-            self::STATE_LOCKED => 'Bloqueado',
-            self::STATE_FINISHED => 'Finalizado',
+            self::STATE_COMPLETED => 'Finalizada',
             default => 'Desconocido',
         };
+    }
+
+    /**
+     * Obtener nombres de roles a partir de códigos
+     */
+    private function getRoleNamesFromCodes(array $roleCodes): array
+    {
+        return array_map(function($code) {
+            return self::ROLE_CODE_TO_NAME[$code] ?? $code;
+        }, $roleCodes);
     }
 }

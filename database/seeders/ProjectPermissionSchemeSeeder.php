@@ -10,22 +10,29 @@ class ProjectPermissionSchemeSeeder extends Seeder
     public function run(): void
     {
         $schemes = [
-            'administrators',
-            'project manager',
-            'team member',
-            'guest',
-            'supervisor',
-            'external contributor',
-            'owner',
+            'administrator',
+            'leader',
             'developer',
             'tester',
-            'client',
+            'documenter'
         ];
 
-        foreach ($schemes as $scheme) {
+        $codes = [
+            'ADM',
+            'LDR',
+            'DEV',
+            'TST',
+            'DOC'
+        ];
+
+        foreach ($schemes as $index => $scheme) {
             ProjectPermissionScheme::firstOrCreate(
                 ['name' => $scheme],
-                ['created_at' => now(), 'updated_at' => now()]
+                [
+                    'code' => $codes[$index],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
             );
         }
 

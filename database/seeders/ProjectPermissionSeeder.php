@@ -30,7 +30,6 @@ class ProjectPermissionSeeder extends Seeder
             'edit_tasks',
             'delete_tasks',
             'assign_tasks',
-            'comment_tasks',
 
             // Archivos
             'view_files',
@@ -39,8 +38,8 @@ class ProjectPermissionSeeder extends Seeder
             'delete_files',
 
             // Reportes
-            'view_reports',
-            'generate_reports',
+            'view_comments',
+            'generate_comments',
 
             // Configuración
             'manage_settings',

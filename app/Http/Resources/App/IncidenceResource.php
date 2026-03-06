@@ -14,7 +14,7 @@ class IncidenceResource extends JsonResource
                 'id' => $this->id,
                 'title' => $this->title,
                 'description' => $this->description,
-                'priority' => $this->incidencePriority->priority,
+                'priority' => $this->incidencePriority?->priority,
                 'project_id' => $this->project_id,
                 'created_at' => $this->created_at,
                 'updated_at' => $this->updated_at,
@@ -43,30 +43,71 @@ class IncidenceResource extends JsonResource
                     'email' => $this->assignedUser->email,
                     'role_name' => $this->assignedUser
                         ->projectRoles()
-                        ->where('project_id', $this->project_id)  // Filtramos por el proyecto de la incidencia
+                        ->where('project_id', $this->project_id)
                         ->first()
-                        ?->type  // El campo 'type' en ProjectRole tiene el nombre del rol
+                        ?->type
                 ] : null,
 
                 'parent' => $this->parentIncidence ? [
                     'id' => $this->parentIncidence->id,
                     'title' => $this->parentIncidence->title,
                 ] : null,
-            ],
-            'meta' => [
-                'api_version' => '1.0.0',
-                'timestamp' => now()->toIso8601String(),
-                'resource_type' => 'incidence',
-            ],
-            'links' => [
-                'self' => route('projects.incidences.store', [
-                    'project' => $this->project_id,
-                    'incidence' => $this->id,
-                ]),
-                'parent' => route('projects.incidences.index', [
-                    'project' => $this->project_id,
-                ]),
+
+                // Aquí van los hijos ordenados cronológicamente
+                'children' => $this->childIncidences->map(function ($child) {
+                    return [
+                        'id' => $child->id,
+                        'title' => $child->title,
+                        'description' => $child->description,
+                        'priority' => $child->incidencePriority?->priority,
+                        'created_at' => $child->created_at,
+                        'start_date' => $child->start_date,
+                        'due_date' => $child->due_date,
+
+                        'type' => $child->incidenceType ? [
+                            'id' => $child->incidenceType->id,
+                            'type' => $child->incidenceType->type,
+                        ] : null,
+
+                        'state' => $child->incidenceState ? [
+                            'id' => $child->incidenceState->id,
+                            'state' => $child->incidenceState->state,
+                        ] : null,
+
+                        'children' => $this->nestedChildren($child->childIncidences),
+                    ];
+                })->toArray(),
             ],
         ];
+    }
+
+    private function nestedChildren($children): array
+    {
+        return $children->map(function ($child) {
+
+            return [
+                'id' => $child->id,
+                'title' => $child->title,
+                'description' => $child->description,
+                'priority' => $child->incidencePriority?->priority,
+                'created_at' => $child->created_at,
+                'start_date' => $child->start_date,
+                'due_date' => $child->due_date,
+
+                'type' => $child->incidenceType ? [
+                    'id' => $child->incidenceType->id,
+                    'type' => $child->incidenceType->type,
+                ] : null,
+
+                'state' => $child->incidenceState ? [
+                    'id' => $child->incidenceState->id,
+                    'state' => $child->incidenceState->state,
+                ] : null,
+
+                // aquí está la recursividad
+                'children' => $this->nestedChildren($child->childIncidences)
+            ];
+
+        })->values()->toArray();
     }
 }

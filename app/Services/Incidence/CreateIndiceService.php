@@ -59,9 +59,6 @@ class CreateIndiceService
 
     public function createIncidence(int $projectId, array $data, int $createdById): Incidence
     {
-        // Validar que el creador tenga un rol permitido
-        $this->validateCreatorRole($projectId, $createdById);
-
         // Validar jerarquía antes de crear
         $this->validateIncidenceHierarchy($projectId, $data);
 
@@ -74,38 +71,6 @@ class CreateIndiceService
         }
 
         return $this->createIncidenceAction->execute($projectId, $data, $createdById);
-    }
-
-    /**
-     * Validar que el usuario creador tenga un rol permitido
-     */
-    private function validateCreatorRole(int $projectId, int $creatorId): void
-    {
-        // Buscar el rol del creador en el proyecto
-        $creatorProject = ProjectUser::where('user_id', $creatorId)
-            ->whereHas('role', function ($query) use ($projectId) {
-                $query->where('project_id', $projectId);
-            })
-            ->with('role')
-            ->first();
-
-        // Si no tiene rol en el proyecto
-        if (!$creatorProject || !$creatorProject->role) {
-            throw new IncidenceException(
-                "No tienes un rol asignado en este proyecto",
-                403
-            );
-        }
-
-        $creatorRoleType = strtolower($creatorProject->role->type);
-
-        // Verificar si el rol está permitido
-        if (!in_array($creatorRoleType, self::ALLOWED_CREATOR_ROLES)) {
-            throw new IncidenceException(
-                "No tienes permisos para crear incidencias en este proyecto. Tu rol '{$creatorProject->role->type}' no está autorizado. Roles permitidos: " . implode(', ', self::ALLOWED_CREATOR_ROLES),
-                403
-            );
-        }
     }
 
     /**
@@ -129,24 +94,24 @@ class CreateIndiceService
             );
         }
 
-        $userRoleType = strtolower($projectUser->role->type);
+        $userRoleTypecode = $projectUser->role->code;
 
         // Validaciones específicas según el tipo de incidencia
         if (in_array($incidenceTypeId, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
             // Epic (1) o History (2) - solo project manager o supervisor
-            $allowedRolesForEpicAndHistory = ['project manager', 'supervisor', 'administrators'];
+            $allowedRolesForEpicAndHistory = ['ADM', 'LDR'];
 
-            if (!in_array($userRoleType, $allowedRolesForEpicAndHistory)) {
+            if (!in_array($userRoleTypecode, $allowedRolesForEpicAndHistory)) {
                 throw new IncidenceException(
-                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol Project Manager o Supervisor. El usuario seleccionado tiene rol: {$projectUser->role->type}",
+                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol ADM o LDR. El usuario seleccionado tiene rol: {$projectUser->role->code}",
                     422
                 );
             }
         } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
             // Task (3), Bug (4), Subtask (5) - cualquier rol excepto client, guest, owner
-            $forbiddenRoles = ['client', 'guest', 'owner'];
+            $forbiddenRolescode = ['DOC'];
 
-            if (in_array($userRoleType, $forbiddenRoles)) {
+            if (in_array($userRoleTypecode, $forbiddenRolescode)) {
                 throw new IncidenceException(
                     "No se puede asignar una tarea a un usuario con rol {$projectUser->role->type}",
                     422

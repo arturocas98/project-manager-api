@@ -38,8 +38,6 @@ class IncidenceController extends Controller
     {
         $project = Project::findOrFail($projectId);
 
-        $this->incidenceService->validateProjectAccess($project);
-
         $incidences = $this->incidenceService->getProjectIncidences($projectId);
 
         return new IncidenceCollection($incidences, $project->id, $project->name);

@@ -6,7 +6,7 @@ use App\Models\ProjectRole;
 
 class CreateProjectRoleAction
 {
-    public function execute(int $projectId, string $roleType): ProjectRole
+    public function execute(int $projectId, string $roleType, string $rolecode): ProjectRole
     {
         try {
             // Verificar si el rol ya existe
@@ -21,6 +21,7 @@ class CreateProjectRoleAction
             $role = ProjectRole::create([
                 'project_id' => $projectId,
                 'type' => $roleType,
+                'code' => $rolecode,
             ]);
 
             if (! $role) {

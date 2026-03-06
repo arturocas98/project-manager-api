@@ -13,6 +13,7 @@ class IncidencePriority extends Model
 
     protected $fillable = [
         'priority',
+        'code',
     ];
 
     protected $casts = [

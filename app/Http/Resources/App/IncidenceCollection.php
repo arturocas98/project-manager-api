@@ -35,11 +35,14 @@ class IncidenceCollection extends ResourceCollection
                     'type' => $incidence->incidenceType ? [
                         'id' => $incidence->incidenceType->id,
                         'type' => $incidence->incidenceType->type,
+                        'code' => $incidence->incidenceState->code
                     ] : null,
 
                     'state' => $incidence->incidenceState ? [
                         'id' => $incidence->incidenceState->id,
                         'state' => $incidence->incidenceState->state,
+                        'code' => $incidence->incidenceState->code,
+                        'color' => $incidence->incidenceState->color
                     ] : null,
 
                     'created_by' => $incidence->createdBy ? [

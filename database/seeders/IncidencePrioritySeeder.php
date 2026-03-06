@@ -9,20 +9,32 @@ class IncidencePrioritySeeder extends Seeder
 {
     public function run(): void
     {
-        $states = [
+        $priorities = [
             'low',
             'medium',
             'high',
             'critical',
         ];
 
-        foreach ($states as $state) {
+        $codes = [
+            'BAJ',
+            'MED',
+            'ALT',
+            'CRT',
+        ];
+
+        foreach ($priorities as $index => $priority) {
             IncidencePriority::firstOrCreate(
-                ['priority' => $state],
+                ['priority' => $priority],
+                [
+                    'code' => $codes[$index],
+                    'created_at' => now(),
+                    'updated_at' => now()
+                ]
             );
         }
 
         $this->command->info('priorities of incidence created successfully!');
-        $this->command->info('Total states: '.count($states));
+        $this->command->info('Total states: '.count($priorities));
     }
 }

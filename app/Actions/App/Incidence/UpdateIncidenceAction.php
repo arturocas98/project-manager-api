@@ -96,6 +96,8 @@ class UpdateIncidenceAction
             'incidence_state_id',
             'parent_incidence_id',
             'assigned_user_id',
+            'start_date',
+            'due_date'
         ];
 
         $updateData = [];
