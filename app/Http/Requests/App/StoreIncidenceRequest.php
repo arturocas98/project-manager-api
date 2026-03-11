@@ -12,7 +12,7 @@ class StoreIncidenceRequest extends FormRequest
      */
     public function authorize(): bool
     {
-        return true;
+        return auth()->check();
     }
 
     public function rules(): array
@@ -22,6 +22,7 @@ class StoreIncidenceRequest extends FormRequest
             'description' => 'nullable|string',
             'start_date' => 'nullable|date|before_or_equal:due_date',
             'due_date' => 'nullable|date|after_or_equal:start_date',
+            'incidence_category_id' => 'required|exists:incidence_categories,id',
             'incidence_priority_id' => 'required|exists:incidence_priorities,id',
             'incidence_type_id' => 'required|exists:incidence_types,id',
             'incidence_state_id' => 'nullable|exists:incidence_states,id',
@@ -29,7 +30,6 @@ class StoreIncidenceRequest extends FormRequest
                 'nullable',
                 'exists:users,id',
                 function ($attribute, $value, $fail) {
-                    // Solo validar si se proporciona un usuario asignado
                     if ($value) {
                         $this->validateAssignedUserRole($value, $fail);
                     }
@@ -53,10 +53,31 @@ class StoreIncidenceRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'title.required' => 'El título es obligatorio',
+            'title.required' => 'El título es obligatorio','description' => 'nullable|string',
+            'title.string' => 'El título debe ser un texto válido',
             'title.max' => 'El título no puede exceder los 255 caracteres',
+
+            'description.string' => 'La descripción debe ser un texto válido',
+
+            'start_date.date' => 'La fecha de inicio debe ser una fecha válida',
+            'start_date.before_or_equal' => 'La fecha de inicio debe ser menor o igual a la fecha límite',
+
+            'due_date.date' => 'La fecha límite debe ser una fecha válida',
+            'due_date.after_or_equal' => 'La fecha límite debe ser mayor o igual a la fecha de inicio',
+
+            'incidence_category_id.required' => 'La categoría de la incidencia es obligatoria',
+            'incidence_category_id.exists' => 'La categoría de incidencia seleccionada no es válida',
+
+            'incidence_priority_id.required' => 'La prioridad de la incidencia es obligatoria',
+            'incidence_priority_id.exists' => 'La prioridad seleccionada no es válida',
+
             'incidence_type_id.required' => 'El tipo de incidencia es obligatorio',
             'incidence_type_id.exists' => 'El tipo de incidencia seleccionado no es válido',
+
+            'incidence_state_id.exists' => 'El estado de incidencia seleccionado no es válido',
+
+            'assigned_user_id.exists' => 'El usuario asignado seleccionado no es válido',
+
             'parent_incidence_id.exists' => 'La incidencia padre seleccionada no es válida',
         ];
     }

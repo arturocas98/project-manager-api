@@ -1,6 +1,7 @@
 <?php
 
 use App\Http\Controllers\IncidenceAssignedController;
+use App\Http\Controllers\IncidenceComentController;
 use App\Http\Controllers\IncidenceController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProjectController;
@@ -36,6 +37,17 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.index');
     Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])
         ->name('projects.incidences.show');
+    // Obtener todos los comentarios de una incidencia
+    Route::get('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'index']);
+
+// Crear un nuevo comentario
+    Route::post('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'store']);
+
+// Actualizar un comentario existente
+    Route::put('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'update']);
+
+// Eliminar un comentario
+    Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy']);
     Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
         ->name('projects.incidences.store');
     Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])

@@ -233,7 +233,6 @@ class ProjectSummaryQuery
                 'incidences.title',
                 'incidence_priorities.priority',
                 'users.name as assigned_user_name',
-                'projects.name as project_name',
                 'incidence_states.state as status' // 👈 agregado
             ])
             ->leftJoin('incidence_priorities', 'incidences.incidence_priority_id', '=', 'incidence_priorities.id')

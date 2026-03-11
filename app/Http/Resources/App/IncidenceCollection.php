@@ -9,13 +9,10 @@ class IncidenceCollection extends ResourceCollection
 {
     private int $projectId;
 
-    private string $projectName;
-
-    public function __construct($resource, int $projectId, string $projectName)
+    public function __construct($resource, int $projectId)
     {
         parent::__construct($resource);
         $this->projectId = $projectId;
-        $this->projectName = $projectName;
     }
 
     public function toArray(Request $request): array
@@ -36,6 +33,13 @@ class IncidenceCollection extends ResourceCollection
                         'id' => $incidence->incidenceType->id,
                         'type' => $incidence->incidenceType->type,
                         'code' => $incidence->incidenceState->code
+                    ] : null,
+
+                    'category' => $incidence->category ? [
+                        'id' => $incidence->category->id,
+                        'name' => $incidence->category->name,
+                        'description' => $incidence->category->description,
+                        'code' => $incidence->category->code,
                     ] : null,
 
                     'state' => $incidence->incidenceState ? [
@@ -70,10 +74,6 @@ class IncidenceCollection extends ResourceCollection
             }),
             'meta' => [
                 'total' => $this->collection->count(),
-                'project' => [
-                    'id' => $this->projectId,
-                    'name' => $this->projectName,
-                ],
             ],
             'links' => [
                 'self' => route('projects.incidences.index', ['project' => $this->projectId]),

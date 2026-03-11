@@ -5,19 +5,15 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 
-class IncidenceCategory extends Model
+class ProjectState extends Model
 {
-    protected $table = 'incidence_categories';
+    protected $table = 'project_states';
 
     protected $fillable = [
-        'name',
-        'code',
-        'description',
+        'name'
     ];
 
     protected $casts = [
         'created_at' => 'datetime',
-        'updated_at' => 'datetime',
-        'deleted_at' => 'datetime'
     ];
 }

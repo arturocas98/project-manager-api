@@ -25,6 +25,7 @@ class UpdateIncidenceRequest extends FormRequest
             'description' => ['sometimes', 'nullable', 'string'],
             'incidence_type_id' => ['sometimes', 'integer', Rule::exists('incidence_types', 'id')],
             'incidence_priority_id' => ['sometimes', 'nullable', 'integer', Rule::exists('incidence_priorities', 'id')],
+            'incidence_category_id' => ['sometimes', 'nullable', 'integer', Rule::exists('incidence_categories', 'id')],
             'incidence_state_id' => ['sometimes', 'integer', Rule::exists('incidence_states', 'id')],
             'parent_incidence_id' => ['sometimes', 'nullable', 'integer', Rule::exists('incidences', 'id')],
             'assigned_user_id' => ['sometimes', 'nullable', 'integer', Rule::exists('users', 'id')],
@@ -44,6 +45,9 @@ class UpdateIncidenceRequest extends FormRequest
 
             'incidence_type_id.sometimes' => 'El tipo de incidencia solo debe enviarse cuando se desea actualizar',
             'incidence_type_id.exists' => 'El tipo de incidencia seleccionado no existe',
+
+            'incidence_category_id.sometimes' => 'La categoria de incidencia solo debe enviarse cuando se desea actualizar',
+            'incidence_category_id.exists' => 'La categoria de incidencia seleccionada no existe',
 
             'incidence_priority_id.exists' => 'La prioridad seleccionada no existe',
 

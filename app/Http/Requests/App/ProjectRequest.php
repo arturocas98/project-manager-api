@@ -5,136 +5,143 @@ namespace App\Http\Requests\App;
 use Illuminate\Contracts\Validation\Validator;
 use Illuminate\Foundation\Http\FormRequest;
 use Illuminate\Http\Exceptions\HttpResponseException;
-use Illuminate\Validation\Rule;
 
 class ProjectRequest extends FormRequest
 {
-    /**
-     * Determine if the user is authorized to make this request.
-     */
     public function authorize(): bool
     {
         return auth()->check();
     }
 
-    /**
-     * Prepare the data for validation.
-     */
     protected function prepareForValidation(): void
     {
         $this->merge([
-            'name' => $this->name ? trim($this->name) : null,
-            'description' => $this->description ? trim($this->description) : null,
+            'ContractNo' => $this->ContractNo ? trim($this->ContractNo) : null,
+            'objectContract' => $this->objectContract ? trim($this->objectContract) : null,
+            'client' => $this->client ? trim($this->client) : null,
+            'project_type' => $this->project_type ? trim($this->project_type) : null,
+            'administrator_email' => $this->administrator_email ? trim($this->administrator_email) : null,
+            'contracted_company' => $this->contracted_company ? trim($this->contracted_company) : null,
+            'last_phase' => $this->last_phase ? trim($this->last_phase) : null,
+            'project_state_id' => $this->project_state_id,
         ]);
     }
 
-    /**
-     * Get the validation rules that apply to the request.
-     */
     public function rules(): array
     {
         return [
-            'name' => [
+            'ContractNo' => [
                 'required',
                 'string',
-                'max:255',
-                Rule::unique('projects', 'name')
-                    ->ignore($this->route('project')?->id), // Esto funciona para store y update
             ],
-            'description' => [
+
+            'client' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+
+            'project_type' => [
+                'required',
+                'string',
+                'max:255'
+            ],
+
+            'start_date' => [
+                'required',
+                'date'
+            ],
+
+            'duration_days' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'required_without:end_date'
+            ],
+
+            'end_date' => [
+                'nullable',
+                'date',
+                'after_or_equal:start_date',
+                'required_without:duration_days'
+            ],
+
+            'administrator_email' => [
+                'nullable',
+                'email',
+                'max:255'
+            ],
+
+            'contracted_company' => [
                 'nullable',
                 'string',
-                'max:1000', // Añadido límite máximo para descripción
+                'max:255'
+            ],
+
+            'last_phase' => [
+                'nullable',
+                'string',
+                'max:255'
+            ],
+
+            'project_state_id' => [
+                'required',
+                'exists:project_states,id'
+            ],
+
+            'objectContract' => [
+                'nullable',
+                'string',
+                'max:2000'
             ],
         ];
     }
 
-    /**
-     * Get custom messages for validator errors.
-     */
     public function messages(): array
     {
         return [
-            'name.string' => 'El nombre debe ser texto válido',
-            'name.max' => 'El nombre no puede exceder los 255 caracteres',
-            'name.unique' => 'Ya existe un proyecto con ese nombre',
-            'name.required' => 'Se necesita el nombre para el proyecto',
+            'ContractNo.required' => 'El numero de contrato es obligatorio',
 
-            'description.string' => 'La descripción debe ser texto válido',
-            'description.max' => 'La descripción no puede exceder los 1000 caracteres',
+            'client.required' => 'El cliente es obligatorio',
+
+            'project_type.required' => 'El tipo de proyecto es obligatorio',
+
+            'start_date.required' => 'La fecha de inicio es obligatoria',
+            'start_date.date' => 'La fecha de inicio no es válida',
+
+            'duration_days.integer' => 'El plazo debe ser un número',
+
+            'end_date.after_or_equal' => 'La fecha de finalización debe ser posterior o igual a la fecha de inicio',
+
+            'administrator_email.email' => 'El correo del administrador no es válido',
         ];
     }
 
-    /**
-     * Get custom attributes for validator errors.
-     */
     public function attributes(): array
     {
         return [
-            'name' => 'nombre del proyecto',
-            'description' => 'descripción',
+            'ContractNo' => 'numero de contrato',
+            'client' => 'cliente',
+            'project_type' => 'tipo de proyecto',
+            'start_date' => 'fecha de inicio',
+            'duration_days' => 'plazo',
+            'end_date' => 'fecha de finalización',
+            'administrator_email' => 'correo del administrador',
+            'contracted_company' => 'empresa contratada',
+            'last_phase' => 'última fase',
+            'project_state_id' => 'estado',
+            'objectContract' => 'objeto del contrato',
         ];
     }
 
-    /**
-     * Handle a failed validation attempt.
-     */
     protected function failedValidation(Validator $validator)
     {
         throw new HttpResponseException(
             response()->json([
                 'success' => false,
-                'mensaje' => 'Error de validación en el proyecto',
+                'message' => 'Error de validación en el proyecto',
                 'errors' => $validator->errors(),
             ], 422)
         );
-    }
-
-    /**
-     * Configure the validator instance.
-     */
-    public function withValidator(Validator $validator): void
-    {
-        $validator->after(function ($validator) {
-            // Validaciones adicionales después de las reglas principales
-            if ($this->name && strlen($this->name) < 3) {
-                $validator->errors()->add(
-                    'name',
-                    'El nombre del proyecto debe tener al menos 3 caracteres si se proporciona'
-                );
-            }
-        });
-    }
-
-    /**
-     * Get data to be validated from the request.
-     */
-    public function validationData(): array
-    {
-        // Filtra campos nulos o vacíos si es necesario
-        $data = parent::validationData();
-
-        // Elimina campos vacíos si son null o strings vacíos
-        return array_filter($data, function ($value) {
-            return $value !== null && $value !== '';
-        });
-    }
-
-    public function bodyParameters()
-    {
-        return [
-            'name' => [
-                'description' => 'Project name',
-                'example' => 'E-commerce Platform',
-                'required' => true,
-                'type' => 'string',
-            ],
-            'description' => [
-                'description' => 'Detailed description of the project',
-                'example' => 'Online store with payment gateway and inventory management',
-                'required' => false,
-                'type' => 'string',
-            ],
-        ];
     }
 }

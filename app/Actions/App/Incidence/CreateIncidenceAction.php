@@ -26,6 +26,7 @@ class CreateIncidenceAction
                 'incidence_priority_id' => $data['incidence_priority_id'],
                 'project_id' => $projectId,
                 'incidence_type_id' => $data['incidence_type_id'],
+                'incidence_category_id' => $data['incidence_category_id'],
                 'incidence_state_id' => $data['incidence_state_id']??1,
                 'created_by_id' => $createdById,
                 'start_date' => $data['start_date'],

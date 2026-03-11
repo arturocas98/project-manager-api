@@ -38,12 +38,14 @@ class ProjectQuery
      */
     public function applyFilters(): self
     {
-        // Búsqueda por nombre, key o descripción
         if ($this->request->has('search')) {
-            $this->query->where(function ($q) {
-                $q->where('name', 'like', '%'.$this->request->search.'%')
-                    ->orWhere('key', 'like', '%'.$this->request->search.'%')
-                    ->orWhere('description', 'like', '%'.$this->request->search.'%');
+            $search = $this->request->search;
+
+            $this->query->where(function ($q) use ($search) {
+                $q->where('project_type', 'like', "%{$search}%")
+                    ->orWhere('ContractNo', 'like', "%{$search}%")
+                    ->orWhere('client', 'like', "%{$search}%")
+                    ->orWhere('objectContract', 'like', "%{$search}%");
             });
         }
 
@@ -75,7 +77,13 @@ class ProjectQuery
         $sortField = $this->request->get('sort_by', 'created_at');
         $sortDirection = $this->request->get('sort_direction', 'desc');
 
-        $allowedFields = ['name', 'key', 'created_at', 'updated_at'];
+        $allowedFields = [
+            'ContractNo',
+            'client',
+            'project_type',
+            'created_at',
+            'updated_at'
+        ];
 
         if (in_array($sortField, $allowedFields)) {
             $this->query->orderBy($sortField, $sortDirection);
@@ -97,7 +105,8 @@ class ProjectQuery
                 $q->whereHas('users', fn ($q) => $q->where('user_id', $this->userId))
                     ->with(['permissionScheme.scheme.permissions']);
             },
-            'createdBy',
+            'admin',
+            'projectState'
         ]);
 
         return $this;
@@ -141,7 +150,7 @@ class ProjectQuery
                     $q->whereHas('users', fn ($q) => $q->where('user_id', $this->userId))
                         ->with(['permissionScheme.scheme.permissions']);
                 },
-                'createdBy',
+                'admin',
             ])
             ->first();
     }
@@ -170,8 +179,8 @@ class ProjectQuery
                     ->with(['permissionScheme.scheme.permissions']);
             },
             // Creador del proyecto
-            'createdBy',
-            // Todos los roles del proyecto (para stats)
+            'admin',
+            'projectState',
             'roles.users' => function ($q) {
                 $q->select('users.id', 'users.name', 'users.email');
             },

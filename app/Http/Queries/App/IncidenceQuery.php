@@ -59,6 +59,7 @@ class IncidenceQuery
         $this->query->with([
             'incidenceType',
             'incidenceState',
+            'category',
             'createdBy:id,name,email',
             'assignedUser:id,name,email',
             'parentIncidence:id,title',

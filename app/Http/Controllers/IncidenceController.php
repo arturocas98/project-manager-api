@@ -93,4 +93,5 @@ class IncidenceController extends Controller
         return new IncidenceResource($incidence);
     }
     public function destroy($id) {}
+
 }

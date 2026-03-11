@@ -17,6 +17,7 @@ class Incidence extends Model
         'title',
         'project_id',
         'incidence_type_id',
+        'incidence_category_id',
         'incidence_priority_id',
         'incidence_state_id',
         'parent_incidence_id',
@@ -36,6 +37,11 @@ class Incidence extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function category(): BelongsTo
+    {
+        return $this->belongsTo(IncidenceCategory::class, 'incidence_category_id');
     }
 
     public function assignedUser(): BelongsTo

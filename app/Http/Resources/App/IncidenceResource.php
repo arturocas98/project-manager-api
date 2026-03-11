@@ -31,6 +31,13 @@ class IncidenceResource extends JsonResource
                     'state' => $this->incidenceState->state,
                 ] : null,
 
+                'category' => $this->category ? [
+                    'id' => $this->category->id,
+                    'name' => $this->category->name,
+                    'description' => $this->category->description,
+                    'code' => $this->category->code,
+                ] : null,
+
                 'created_by' => $this->createdBy ? [
                     'id' => $this->createdBy->id,
                     'name' => $this->createdBy->name,

@@ -3,7 +3,6 @@
 namespace App\Actions\App\Project;
 
 use App\Models\Project;
-
 class UpdateProjectAction
 {
     /**
@@ -14,27 +13,32 @@ class UpdateProjectAction
     public function execute(Project $project, array $data): Project
     {
         try {
-            // Solo actualizar los campos permitidos
+
             $fillable = array_intersect_key($data, array_flip([
-                'name',
-                'key',
-                'description',
+                'ContractNo',
+                'client',
+                'project_type',
+                'start_date',
+                'duration_days',
+                'end_date',
+                'administrator_email',
+                'contracted_company',
+                'last_phase',
+                'project_state_id',
+                'objectContract',
             ]));
 
-            // Si no hay nada para actualizar
             if (empty($fillable)) {
                 throw new \Exception('No hay datos para actualizar');
             }
 
-            // Actualizar el proyecto
             $project->update($fillable);
 
-            // Refrescar para obtener datos actualizados
             $project->refresh();
 
             return $project;
 
-        } catch (\Exception $e) {
+        } catch (\Throwable $e) {
             throw new \Exception('Error al actualizar el proyecto: '.$e->getMessage());
         }
     }

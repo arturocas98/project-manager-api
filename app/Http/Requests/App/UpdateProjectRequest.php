@@ -8,8 +8,7 @@ class UpdateProjectRequest extends FormRequest
 {
     public function authorize(): bool
     {
-        // La autorización se maneja por middleware, pero dejamos true
-        return true;
+        return auth()->check();
     }
 
     /**
@@ -18,9 +17,24 @@ class UpdateProjectRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => 'sometimes|string|max:255',
-            'description' => 'nullable|string|max:1000',
-            'key' => 'sometimes|string|max:10|unique:projects,key,'.$this->route('project'),
+            'ContractNo' => 'sometimes|string',
+            'client' => 'sometimes|string|max:255',
+            'project_type' => 'sometimes|string|max:255',
+            'objectContract' => 'nullable|string|max:1000',
+
+            'start_date' => 'sometimes|date',
+            'end_date' => 'nullable|date|after_or_equal:start_date',
+
+            'duration_days' => [
+                'nullable',
+                'integer',
+                'min:1',
+                'required_without:end_date'
+            ],
+
+            'administrator_email' => 'sometimes|email|max:255',
+            'contracted_company' => 'sometimes|string|max:255',
+            'last_phase' => 'sometimes|string|max:255',
         ];
     }
 
@@ -30,42 +44,79 @@ class UpdateProjectRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'name.max' => 'El nombre no puede exceder los 255 caracteres',
-            'key.unique' => 'La clave del proyecto ya está en uso por otro proyecto',
-            'key.max' => 'La clave no puede exceder los 10 caracteres',
+            'client.max' => 'El cliente no puede exceder los 255 caracteres',
+            'project_type.max' => 'El tipo de proyecto no puede exceder los 255 caracteres',
+
+            'duration_days.required_without' => 'Debe proporcionar duration_days si no existe end_date',
+            'duration_days.min' => 'La duración debe ser al menos de 1 día',
+
+            'end_date.after_or_equal' => 'La fecha de finalización debe ser posterior o igual a start_date',
         ];
     }
 
     /**
-     * Preparar los datos para la validación
+     * Documentación API
      */
-    protected function prepareForValidation(): void
-    {
-        if ($this->has('key')) {
-            $this->merge([
-                'key' => strtoupper($this->key),
-            ]);
-        }
-    }
-
     public function bodyParameters()
     {
         return [
-            'name' => [
-                'description' => 'Project name',
-                'example' => 'E-commerce Platform',
+            'ContractNo' => [
+                'description' => 'Number of contract',
+                'example' => 'ERMNT-DC-003-2022',
                 'required' => false,
                 'type' => 'string',
             ],
-            'description' => [
-                'description' => 'Detailed description of the project',
-                'example' => 'Online store with payment gateway and inventory management',
+            'client' => [
+                'description' => 'Project client',
+                'example' => 'Empresa XYZ',
                 'required' => false,
                 'type' => 'string',
             ],
-            'key' => [
-                'description' => 'Unique project key (max 10 characters)',
-                'example' => 'ECOMM',
+            'project_type' => [
+                'description' => 'Type of project',
+                'example' => 'Infraestructura',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'objectContract' => [
+                'description' => 'Subject of the Contract',
+                'example' => 'Construcción de planta industrial',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'start_date' => [
+                'description' => 'Project start date',
+                'example' => '2026-03-10',
+                'required' => false,
+                'type' => 'date',
+            ],
+            'end_date' => [
+                'description' => 'Project end date',
+                'example' => '2027-03-10',
+                'required' => false,
+                'type' => 'date',
+            ],
+            'duration_days' => [
+                'description' => 'Duration of the project in days',
+                'example' => 365,
+                'required' => false,
+                'type' => 'integer',
+            ],
+            'administrator_email' => [
+                'description' => 'Administrator email',
+                'example' => 'admin@empresa.com',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'contracted_company' => [
+                'description' => 'Contracted company',
+                'example' => 'Constructora ABC',
+                'required' => false,
+                'type' => 'string',
+            ],
+            'last_phase' => [
+                'description' => 'Current project phase',
+                'example' => 'Fase II - Construcción',
                 'required' => false,
                 'type' => 'string',
             ],

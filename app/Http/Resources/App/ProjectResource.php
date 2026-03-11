@@ -14,28 +14,39 @@ class ProjectResource extends JsonResource
         return [
             'data' => [
                 'id' => $this->id,
-                'name' => $this->name,
-                'key' => $this->key,
-                'description' => $this->description,
+                'ContractNo' => $this->ContractNo,
+                'client' => $this->client,
+                'project_type' => $this->project_type,
+                'objectContract' => $this->objectContract,
 
-                'created_at' => optional($this->created_at)
-                    ?->format('Y-m-d H:i:s'),
+                'start_date' => optional($this->start_date)?->format('Y-m-d'),
+                'end_date' => optional($this->end_date)?->format('Y-m-d'),
+                'duration_days' => $this->duration_days,
 
-                'created_by' => $this->whenLoaded('createdBy', function () {
+                'administrator_email' => $this->administrator_email,
+                'contracted_company' => $this->contracted_company,
+                'last_phase' => $this->last_phase,
+
+                'administrator' => $this->whenLoaded('admin', function () {
                     return [
-                        'id' => $this->createdBy->id,
-                        'name' => $this->createdBy->name,
-                        'email' => $this->createdBy->email,
+                        'id' => $this->admin->id,
+                        'name' => $this->admin->name,
+                        'email' => $this->admin->email,
                     ];
                 }),
 
-                // Rol del usuario autenticado
+                'state' => $this->whenLoaded('projectState', function () {
+                    return [
+                        'id' => $this->projectState->id,
+                        'name' => $this->projectState->name,
+                    ];
+                }),
+
                 'user_role' => $userRole ? [
                     'id' => $userRole->id,
                     'type' => $userRole->type,
                 ] : null,
 
-                // Estadísticas
                 'stats' => [
                     'members_count' => $this->whenLoaded('roles', function () {
                         return $this->roles->sum(function ($role) {
@@ -55,7 +66,6 @@ class ProjectResource extends JsonResource
                 'self' => route('projects.show', $this->id),
                 'update' => route('projects.update', $this->id),
                 'delete' => route('projects.destroy', $this->id),
-                // Relaciones
                 'members' => route('projects.members.index', $this->id),
             ],
         ];

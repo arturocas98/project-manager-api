@@ -5,43 +5,40 @@ namespace App\Actions\App\Project;
 use App\Models\Project;
 use Illuminate\Support\Str;
 
+
 class CreateProjectAction
 {
     public function execute(array $data): Project
     {
         try {
+
             $project = Project::create([
-                'name' => $data['name'],
-                'key' => $this->generateKey($data['name']),
-                'description' => $data['description'] ?? null,
-                'created_by' => auth()->id(),
+                'ContractNo' => $data['ContractNo'],
+                'client' => $data['client'],
+                'project_type' => $data['project_type'],
+                'start_date' => $data['start_date'],
+
+                'duration_days' => $data['duration_days'] ?? null,
+                'end_date' => $data['end_date'] ?? null,
+
+                'administrator' => auth()->id(),
+                'administrator_email' => $data['administrator_email'] ?? null,
+
+                'contracted_company' => $data['contracted_company'] ?? null,
+                'last_phase' => $data['last_phase'] ?? null,
+                'project_state_id' => $data['project_state_id'] ?? null,
+
+                'objectContract' => $data['objectContract'] ?? null,
             ]);
 
-            if (! $project) {
+            if (!$project) {
                 throw new \Exception('No se pudo crear el proyecto');
             }
 
             return $project;
 
-        } catch (\Exception $e) {
-            throw new \Exception('Error al crear proyecto: '.$e->getMessage());
+        } catch (\Throwable $e) {
+            throw new \Exception('Error al crear proyecto: ' . $e->getMessage());
         }
-    }
-
-    private function generateKey(string $name): string
-    {
-        // Tomar primeras 3 letras del nombre
-        $baseKey = strtoupper(Str::substr($name, 0, 3));
-
-        // Verificar si ya existe
-        $originalKey = $baseKey;
-        $counter = 1;
-
-        while (Project::withTrashed()->where('key', $baseKey)->exists()) {
-            $baseKey = $originalKey.$counter;
-            $counter++;
-        }
-
-        return $baseKey;
     }
 }

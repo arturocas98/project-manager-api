@@ -20,7 +20,6 @@ class ProjectUpdateService
     {
         // VALIDACIONES DE NEGOCIO
         $this->validateProject($project);
-        $this->validatePermissions($project);
         $this->validateData($data);
 
         // TRANSACCIÓN
@@ -73,50 +72,6 @@ class ProjectUpdateService
     }
 
     /**
-     * Validar permisos de administrador
-     */
-    private function validatePermissions(Project $project): void
-    {
-        $userId = auth()->id();
-
-        if (! $userId) {
-            throw new ProjectException(
-                json_encode([
-                    'error' => 'Usuario no autenticado',
-                    'reason' => 'Se requiere un usuario autenticado para esta acción',
-                ]),
-                401
-            );
-        }
-
-        $isAdmin = $project->roles()
-            ->where('type', 'administrators')
-            ->whereHas('users', fn($q) => $q->where('user_id', $userId))
-            ->exists();
-
-        if (! $isAdmin) {
-            // Obtener el rol del usuario para mejor mensaje
-            $userRole = $project->roles()
-                ->whereHas('users', fn($q) => $q->where('user_id', $userId))
-                ->first();
-
-            $roleName = $userRole?->type ?? 'Sin rol asignado';
-
-            throw new ProjectException(
-                json_encode([
-                    'error' => 'Permiso denegado',
-                    'reason' => 'Se requiere rol de Administrador',
-                    'user_id' => $userId,
-                    'user_role' => $roleName,
-                    'project_id' => $project->id,
-                    'required_role' => 'administrators'
-                ]),
-                403
-            );
-        }
-    }
-
-    /**
      * Validar que hay datos para actualizar
      */
     private function validateData(array $data): void
@@ -132,7 +87,7 @@ class ProjectUpdateService
             );
         }
 
-        $allowedFields = ['name', 'description', 'key'];
+        $allowedFields = ['project_type', 'description', 'ContractNo'];
         $receivedFields = array_keys($data);
         $validFields = array_intersect($receivedFields, $allowedFields);
 
@@ -168,52 +123,6 @@ class ProjectUpdateService
                     'reason' => 'Los campos enviados están vacíos',
                     'empty_fields' => $emptyFields,
                     'suggestion' => 'Los campos no pueden estar vacíos',
-                ]),
-                400
-            );
-        }
-
-        // Validaciones específicas por campo
-        if (isset($data['key'])) {
-            if (! preg_match('/^[A-Z0-9]{2,10}$/', $data['key'])) {
-                throw new ProjectException(
-                    json_encode([
-                        'error' => 'Formato de clave inválido',
-                        'reason' => 'La clave debe tener 2-10 caracteres alfanuméricos en mayúsculas',
-                        'received' => $data['key'],
-                        'examples' => ['WEB', 'API', 'CRM23', 'TOC'],
-                    ]),
-                    400
-                );
-            }
-
-            // Verificar que la clave no exista en otro proyecto
-            $existingProject = Project::where('key', $data['key'])
-                ->where('id', '!=', $project->id ?? 0)
-                ->first();
-
-            if ($existingProject) {
-                throw new ProjectException(
-                    json_encode([
-                        'error' => 'Clave duplicada',
-                        'reason' => 'Ya existe otro proyecto con esta clave o la key es la misma a la anterior',
-                        'key' => $data['key'],
-                        'existing_project' => [
-                            'id' => $existingProject->id,
-                            'name' => $existingProject->name,
-                        ],
-                    ]),
-                    400
-                );
-            }
-        }
-
-        if (isset($data['name']) && strlen($data['name']) < 3) {
-            throw new ProjectException(
-                json_encode([
-                    'error' => 'Nombre muy corto',
-                    'reason' => 'El nombre debe tener al menos 3 caracteres',
-                    'received' => $data['name'],
                 ]),
                 400
             );

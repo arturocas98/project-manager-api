@@ -103,14 +103,6 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        $data = [
-            'title' => $project->name,
-            'link' => "project/$project->id",
-            'project_id' => $project->id,
-            'icon' => 'ph ph-rocket',
-        ];
-        $this->createRecent->execute($data);
-
         return new OneProjectResource($project);
     }
 
@@ -126,7 +118,6 @@ class ProjectController extends Controller
     {
         try {
             $result = $this->projectCreationService->create($request->validated());
-
             return new ProjectCreatedResource((object) $result);
         } catch (ProjectException $e) {
             throw $e;

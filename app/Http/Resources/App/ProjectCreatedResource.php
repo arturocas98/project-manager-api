@@ -22,10 +22,19 @@ class ProjectCreatedResource extends JsonResource
                 'message' => 'Proyecto creado exitosamente',
                 'project' => [
                     'id' => $this->project->id,
-                    'name' => $this->project->name,
-                    'key' => $this->project->key,
-                    'description' => $this->project->description,
-                    'created_at' => $this->project->created_at->format('Y-m-d H:i:s'),
+                    'ContractNo' => $this->project->ContractNo,
+                    'client' => $this->project->client,
+                    'project_type' => $this->project->project_type,
+                    'objectContract' => $this->project->objectContract,
+
+                    'start_date' => optional($this->project->start_date)?->format('Y-m-d'),
+                    'end_date' => optional($this->project->end_date)?->format('Y-m-d'),
+                    'duration_days' => $this->project->duration_days,
+
+                    'administrator_email' => $this->project->administrator_email,
+                    'contracted_company' => $this->project->contracted_company,
+                    'last_phase' => $this->project->last_phase,
+
                     'user_role' => [
                         'id' => $this->role->id,
                         'type' => $this->role->type,
@@ -33,12 +42,13 @@ class ProjectCreatedResource extends JsonResource
                         'assigned_at' => $this->assignment->created_at->format('Y-m-d H:i:s')
                     ]
                 ],
+
                 'available_roles' => collect($availableRoles)->map(function ($role) {
                     return [
                         'type' => $role['type'],
                         'description' => $role['description'],
                     ];
-                })->toArray(),
+                })->values()->toArray(),
             ],
 
             'meta' => [

@@ -23,7 +23,8 @@ class DatabaseSeeder extends Seeder
             LinkSeeder::class,
             MenuTableSeeder::class,
             MenuItemTableSeeder::class,
-            IncidenceCategorySeeder::class
+            IncidenceCategorySeeder::class,
+            ProjectStateSeeder::class,
         ]);
     }
 }

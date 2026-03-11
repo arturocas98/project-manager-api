@@ -35,11 +35,25 @@ class IncidenceCategorySeeder extends Seeder
             'MIG',
         ];
 
+        $descriptions = [
+            'Codificación, implementación de funcionalidades',
+            'Diseño UI/UX, maquetación, prototipos',
+            'Manuales, informes técnicos, actas',
+            'Testing, QA, validación funcional',
+            'Instalación, configuración de servidores',
+            'Formación a usuarios, talleres',
+            'Levantamiento de información, validación en sitio',
+            'Bugs, incidencias, hotfixes',
+            'Reuniones de seguimiento, planificación',
+            'Migración de datos, conversiones',
+        ];
+
         foreach ($categories as $index => $category) {
             IncidenceCategory::firstOrCreate(
                 ['name' => $category],
                 [
                     'code' => $codes[$index],
+                    'description' => $descriptions[$index],
                     'created_at' => now(),
                     'updated_at' => now()
                 ]

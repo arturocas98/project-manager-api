@@ -11,11 +11,9 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('incidence_categories', function (Blueprint $table) {
+        Schema::create('project_states', function (Blueprint $table) {
             $table->id();
-            $table->String('name');
-            $table->String('description');
-            $table->string('code')->unique();
+            $table->string('name');
             $table->timestamps();
         });
     }
@@ -25,6 +23,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('incidence_categories');
+        Schema::dropIfExists('project_states');
     }
 };

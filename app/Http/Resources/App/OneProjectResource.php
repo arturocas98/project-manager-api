@@ -13,18 +13,32 @@ class OneProjectResource extends JsonResource
 
         $data = [
             'id' => $this->id,
-            'name' => $this->name,
-            'key' => $this->key,
-            'description' => $this->description,
-            'created_at' => $this->created_at->format('Y-m-d H:i:s'),
-            'updated_at' => $this->updated_at?->format('Y-m-d H:i:s'),
+            'ContractNo' => $this->ContractNo,
+            'client' => $this->client,
+            'project_type' => $this->project_type,
+            'objectContract' => $this->objectContract,
 
-            // Usuario que creó el proyecto
-            'created_by' => $this->whenLoaded('createdBy', function () {
+            'start_date' => optional($this->start_date)?->format('Y-m-d'),
+            'end_date' => optional($this->end_date)?->format('Y-m-d'),
+            'duration_days' => $this->duration_days,
+
+            'administrator_email' => $this->administrator_email,
+            'contracted_company' => $this->contracted_company,
+            'last_phase' => $this->last_phase,
+
+            'administrator' => $this->whenLoaded('admin', function () {
                 return [
-                    'id' => $this->createdBy->id,
-                    'name' => $this->createdBy->name,
-                    'email' => $this->createdBy->email
+                    'id' => $this->admin->id,
+                    'name' => $this->admin->name,
+                    'email' => $this->admin->email
+                ];
+            }),
+
+            // Estado del proyecto
+            'state' => $this->whenLoaded('projectState', function () {
+                return [
+                    'id' => $this->projectState->id,
+                    'name' => $this->projectState->name
                 ];
             }),
 
@@ -34,6 +48,15 @@ class OneProjectResource extends JsonResource
                 'type' => $userRole->type,
                 'permissions' => $this->getPermissions($userRole)
             ] : null,
+
+            // Estadísticas
+            'stats' => [
+                'members_count' => $this->whenLoaded('roles', function () {
+                    return $this->roles->sum(function ($role) {
+                        return $role->users->count();
+                    });
+                }, 0),
+            ],
         ];
 
         // Si es SHOW, añadir más detalles
