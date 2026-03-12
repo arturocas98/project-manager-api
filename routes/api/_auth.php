@@ -3,6 +3,7 @@
 use App\Enums\RoleName;
 use App\Http\Controllers\Auth;
 use App\Http\Controllers\Auth\UserController;
+use App\Http\Controllers\TeamController;
 use Illuminate\Support\Facades\Route;
 
 Route::middleware(['guest:api'])->group(function () {
@@ -20,6 +21,16 @@ Route::middleware(['guest:api'])->group(function () {
 });
 
 Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(function () {
+    Route::get('/team', [TeamController::class, 'index']);          // Listar equipos
+    Route::post('/team', [TeamController::class, 'store']);         // Crear equipo
+    Route::get('/team/{team}', [TeamController::class, 'show']);     // Ver equipo
+    Route::put('/team/{team}', [TeamController::class, 'update']);   // Actualizar equipo
+    Route::delete('/team/{team}', [TeamController::class, 'destroy']);// Eliminar equipo
+
+    // Gestión de miembros
+    Route::post('/team/{team}/members', [TeamController::class, 'addMember']);    // Agregar miembro
+    Route::delete('/team/{team}/members', [TeamController::class, 'removeMember']);
+
     Route::get('/users', [UserController::class, 'index']);
 
     Route::get('/users/{id}', [UserController::class, 'show'])->whereNumber(['id']);

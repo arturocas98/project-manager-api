@@ -94,6 +94,15 @@ class MenuItemTableSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
             ],
+            [
+                'id' => 9,
+                'menu_id' => 1,
+                'link_id' => 6,
+                'sequence' => 9,
+                'parent_menu_item_id' => null,
+                'created_at' => $now,
+                'updated_at' => $now,
+            ],
         ], 'id');
     }
 }

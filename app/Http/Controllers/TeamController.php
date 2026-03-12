@@ -2,84 +2,175 @@
 
 namespace App\Http\Controllers;
 
-use App\Actions\App\SaveTeamAction;
-use App\Actions\App\SaveTeamUserAction;
+use App\Actions\App\AddTeamMemberAction;
+use App\Actions\App\CreateTeamAction;
+use App\Actions\App\RemoveTeamMemberAction;
 use App\Http\Queries\App\TeamQuery;
-use App\Http\Requests\App\FriendRequest;
+use App\Http\Requests\App\TeamMemberRequest;
 use App\Http\Requests\App\TeamRequest;
-use App\Http\Requests\App\TeamUserRequest;
+use App\Http\Resources\App\TeamCollection;
 use App\Http\Resources\App\TeamResource;
 use App\Models\Team;
 use Illuminate\Http\JsonResponse;
-use Illuminate\Http\Response;
+use Illuminate\Support\Facades\Auth;
 use Knuckles\Scribe\Attributes\Authenticated;
 use Knuckles\Scribe\Attributes\Group;
-use Knuckles\Scribe\Attributes\ResponseFromApiResource;
 use Knuckles\Scribe\Attributes\Subgroup;
+use Illuminate\Http\Request;
 
 #[Group('App')]
 #[Subgroup('Team')]
 #[Authenticated]
 class TeamController extends Controller
 {
+    public function __construct(
+        protected CreateTeamAction $createTeamAction,
+        protected AddTeamMemberAction $addTeamMemberAction,
+        protected RemoveTeamMemberAction $removeTeamMemberAction,
+        protected TeamQuery $teamQuery
+    ) {}
+
     /**
-     * Display a listing of the resource.
+     * Store - Solo crea el equipo
      */
-    #[ResponseFromApiResource(TeamResource::class, Team::class, collection: true)]
-    public function index(TeamQuery $query)
+    public function index(Request $request): TeamCollection
     {
-        return TeamResource::collection($query->result());
+        $teams = $this->teamQuery
+            ->withAllRelations()
+            ->when($request->has('search'), function ($query) use ($request) {
+                $query->where('name', 'like', '%' . $request->search . '%');
+            })
+            ->when($request->has('type'), function ($query) use ($request) {
+                $query->where('type', $request->type);
+            })
+            ->when($request->has('user_id'), function ($query) use ($request) {
+                // Filtrar equipos donde un usuario específico es miembro
+                $query->whereHas('users', function ($q) use ($request) {
+                    $q->where('users.id', $request->user_id);
+                });
+            })
+            ->when($request->has('created_by'), function ($query) use ($request) {
+                $query->where('created_by_id', $request->created_by);
+            })
+            ->orderBy($request->get('sort_by', 'created_at'), $request->get('sort_order', 'desc'))
+            ->paginate($request->get('per_page', 15));
+
+        return new TeamCollection($teams);
     }
 
     /**
-     * Store a newly created resource in storage.
+     * Display the specified team.
      */
-    public function store(TeamRequest $request, SaveTeamAction $save): TeamResource
+    public function show(int $id): TeamResource
     {
-        $team = $save($request->validated());
+        $team = $this->teamQuery->findWithRelations($id);
+
+        if (!$team) {
+            abort(404, 'Equipo no encontrado');
+        }
+
+        // Verificar permisos (opcional)
+        // if (!$this->authorize('view', $team)) {
+        //     abort(403, 'No tienes permiso para ver este equipo');
+        // }
 
         return new TeamResource($team);
     }
-
-    public function Team_add(TeamUserRequest $request, SaveTeamUserAction $save): TeamResource
+    public function store(TeamRequest $request): TeamResource
     {
-        $team_user = $save($request->validated());
+        $team = $this->createTeamAction->execute(
+            $request->validated(),
+            Auth::id()
+        );
 
-        return new TeamResource($team_user);
+        $teamWithRelations = $this->teamQuery->findWithRelations($team->id);
+
+        return new TeamResource($teamWithRelations);
     }
 
-    public function Friend_request_email(FriendRequest $request)
+    public function update(TeamRequest $request, Team $team): TeamResource
     {
-        //enviar el email al usuario para aceptar la solicitud
-    }
+        // Verificar permisos (opcional)
+        // $this->authorize('update', $team);
 
-    public function Friend() {}
+        $team->update([
+            'name' => $request->name,
+            'type' => $request->type ?? $team->type,
+        ]);
 
-    /**
-     * Display the specified resource.
-     */
-    public function show(Team $team): TeamResource
-    {
-        return new TeamResource($team);
-    }
+        // Refrescar con relaciones
+        $teamWithRelations = $this->teamQuery->findWithRelations($team->id);
 
-    /**
-     * Update the specified resource in storage.
-     */
-    public function update(TeamRequest $request, Team $team, SaveTeamAction $save): TeamResource
-    {
-        $team = $save($request->validated(), $team);
-
-        return new TeamResource($team);
+        return new TeamResource($teamWithRelations);
     }
 
     /**
-     * Remove the specified resource from storage.
+     * Add member al equipo
      */
-    public function destroy(Team $team)
+    public function addMember(Team $team, TeamMemberRequest $request): JsonResponse
     {
+        try {
+            $this->addTeamMemberAction->execute(
+                $team->id,
+                $request->user_id
+            );
+
+            $teamWithRelations = $this->teamQuery->findWithRelations($team->id);
+
+            return response()->json([
+                'message' => 'Miembro agregado correctamente',
+                'team' => new TeamResource($teamWithRelations),
+            ], 201);
+        } catch (\Exception $e) {
+            return response()->json([
+                'message' => 'Error al agregar miembro',
+                'error' => $e->getMessage(),
+            ], 400);
+        }
+    }
+
+    /**
+     * Remove member del equipo
+     */
+    public function removeMember(Team $team, TeamMemberRequest $request): JsonResponse
+    {
+        if ($team->created_by_id === $request->user_id) {
+            return response()->json([
+                'message' => 'No se puede eliminar al creador del equipo',
+            ], 400);
+        }
+
+        $deleted = $this->removeTeamMemberAction->execute(
+            $team->id,
+            $request->user_id
+        );
+
+        if ($deleted) {
+            $teamWithRelations = $this->teamQuery->findWithRelations($team->id);
+
+            return response()->json([
+                'message' => 'Miembro eliminado correctamente',
+                'team' => new TeamResource($teamWithRelations),
+            ]);
+        }
+
+        return response()->json([
+            'message' => 'El miembro no existe en este equipo',
+        ], 404);
+    }
+    public function destroy(Team $team): JsonResponse
+    {
+        // Verificar permisos (opcional)
+        // $this->authorize('delete', $team);
+
+        // Eliminar relaciones en team_user primero (por foreign key constraints)
+        $team->users()->detach();
+
+        // Eliminar el equipo
         $team->delete();
 
-        return new JsonResponse(status: Response::HTTP_NO_CONTENT);
+        return response()->json([
+            'message' => 'Equipo eliminado correctamente'
+        ]);
     }
 }

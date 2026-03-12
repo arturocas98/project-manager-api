@@ -3,8 +3,9 @@
 namespace App\Http\Requests\App;
 
 use Illuminate\Foundation\Http\FormRequest;
+use Illuminate\Validation\Rule;
 
-class TeamRequest extends FormRequest
+class TeamMemberRequest extends FormRequest
 {
     public function authorize(): bool
     {
@@ -14,8 +15,7 @@ class TeamRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255', 'unique:teams,name'],
-            'type' => ['nullable', 'string', 'in:default,premium,enterprise'],
+            'user_id' => ['required', 'exists:users,id'],
         ];
     }
 }

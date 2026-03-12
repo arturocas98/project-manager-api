@@ -4,7 +4,6 @@ namespace App\Http\Resources\App;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
-
 class TeamResource extends JsonResource
 {
     /**
@@ -15,10 +14,32 @@ class TeamResource extends JsonResource
     public function toArray(Request $request): array
     {
         return [
-            'id' => $this->id,
-            'name' => $this->name,
-            'created_at' => $this->created_at?->toDateTimeLocalString(),
-            'updated_at' => $this->updated_at?->toDateTimeLocalString(),
+            'data' => [
+                'id' => $this->id,
+                'name' => $this->name,
+                'type' => $this->type,
+                'members' => $this->whenLoaded('users', function () {
+                    return $this->users->map(function ($user) {
+                        return [
+                            'id' => $user->id,
+                            'name' => $user->name,
+                            'email' => $user->email,
+                            // El rol se manejaría aparte con Spatie
+                        ];
+                    });
+                }),
+                'created_by' => $this->whenLoaded('createdBy', fn() => [
+                    'id' => $this->createdBy->id,
+                    'name' => $this->createdBy->name,
+                    'email' => $this->createdBy->email,
+                ]),
+            ],
+            'meta' => [
+                'created_at' => $this->created_at?->toDateTimeLocalString(),
+                'updated_at' => $this->updated_at?->toDateTimeLocalString(),
+            ],
+            'links' => [
+            ],
         ];
     }
 }

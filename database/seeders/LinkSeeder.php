@@ -71,7 +71,17 @@ class LinkSeeder extends Seeder
                 'created_at' => $now,
                 'updated_at' => $now,
                 'deleted_at' => null
-            ]
+            ],
+            [
+            'id' => 6,
+            'type' => MenuType::Link->value,
+            'name' => 'Teams',
+            'route' => 'account-management/teams',
+            'icon' => 'pi pi-eye',
+            'created_at' => $now,
+            'updated_at' => $now,
+            'deleted_at' => null
+        ],
         ], 'id');
     }
 }
