@@ -135,19 +135,6 @@ class CreateIndiceService
             }
         }
 
-        // Validar que due_date no sea demasiado lejano (opcional)
-        if (isset($data['due_date'])) {
-            $dueDate = Carbon::parse($data['due_date']);
-            $maxDueDate = now()->addMonths(6); // Máximo 6 meses
-
-            if ($dueDate->gt($maxDueDate)) {
-                throw new IncidenceException(
-                    'La fecha de vencimiento no puede ser superior a 6 meses',
-                    422
-                );
-            }
-        }
-
         // Validaciones específicas por tipo
         $typeId = $data['incidence_type_id'] ?? null;
 
