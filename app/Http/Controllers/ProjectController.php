@@ -37,7 +37,6 @@ class ProjectController extends Controller
         private ProjectCreationService $projectCreationService,
         private ProjectUpdateService  $projectUpdateService,
         private ProjectDeleteService $projectDeleteService,
-        private CreateRecentAction $createRecent,
         private ProjectSummaryService $summaryService,
         private ProjectUsersServices $projectUserService,
     ) {}
@@ -58,9 +57,9 @@ class ProjectController extends Controller
         return ProjectResource::collection($projects);
     }
 
-    public function summary(int $projectId, Request $request)
+    public function summary(Project $project, Request $request)
     {
-        $summaryData = $this->summaryService->getSummary($projectId);
+        $summaryData = $this->summaryService->getSummary($project->id);
 
         return new ProjectSummaryResource($summaryData);
     }

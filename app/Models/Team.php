@@ -13,6 +13,13 @@ class Team extends Model
         'type',
     ];
 
+    // En app/Models/Team.php
+    public function users()
+    {
+        return $this->belongsToMany(User::class, 'team_user')
+            ->using(TeamUser::class);
+    }
+
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');

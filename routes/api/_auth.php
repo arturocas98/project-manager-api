@@ -22,6 +22,7 @@ Route::middleware(['guest:api'])->group(function () {
 
 Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(function () {
     Route::get('/team', [TeamController::class, 'index']);          // Listar equipos
+    Route::get('/team/management', [TeamController::class, 'management']);
     Route::post('/team', [TeamController::class, 'store']);         // Crear equipo
     Route::get('/team/{team}', [TeamController::class, 'show']);     // Ver equipo
     Route::put('/team/{team}', [TeamController::class, 'update']);   // Actualizar equipo
