@@ -13,9 +13,6 @@ class TeamQuery
     public function withAllRelations(): Builder
     {
         return Team::with([
-            'users' => function ($query) {
-                $query->select('users.id', 'users.name', 'users.email', 'users.profile_photo_path');
-            },
             'createdBy' => function ($query) {
                 $query->select('id', 'name', 'email');
             },
