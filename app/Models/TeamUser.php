@@ -8,7 +8,6 @@ use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class TeamUser extends Model
 {
-    use HasFactory;
 
     protected $table = 'team_user';
 
