@@ -30,6 +30,14 @@ class UserRequest extends FormRequest
                 'nullable',
                 'exists:roles,id'
             ],
+            'rols' => [
+                'required',
+                'array',
+            ],
+            'rols.*.name' => [
+                'required',
+                'string'
+            ],
             'status' => [
                 'nullable',
                 'boolean',

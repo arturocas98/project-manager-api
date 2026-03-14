@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Enums\UserModality;
 use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\SoftDeletes;
@@ -72,6 +73,7 @@ class User extends Authenticatable implements MustVerifyEmail
         return [
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
+            'modality_id' => UserModality::class,
         ];
     }
 

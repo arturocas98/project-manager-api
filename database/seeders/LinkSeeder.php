@@ -75,7 +75,7 @@ class LinkSeeder extends Seeder
             [
             'id' => 6,
             'type' => MenuType::Link->value,
-            'name' => 'Teams',
+            'name' => 'Equipos',
             'route' => 'account-management/teams',
             'icon' => 'pi pi-eye',
             'created_at' => $now,

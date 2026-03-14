@@ -2,6 +2,7 @@
 
 namespace App\Http\Resources\Auth;
 
+use App\Http\Resources\App\EnumResource;
 use App\Models\User;
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
@@ -20,6 +21,7 @@ class UserResource extends JsonResource
             'rols' => $this->roles,
             'telephone' => $this->telephone,
             'modality_id' => $this->modality_id,
+            'modality' => EnumResource::make($this->modality_id),
             'address' => $this->address,
             'policies_accepted_at' => $this->policies_accepted_at?->toDateTimeLocalString(),
             'expires_at' => $this->expires_at?->toDateString(),

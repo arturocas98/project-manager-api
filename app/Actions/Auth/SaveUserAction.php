@@ -16,7 +16,7 @@ class SaveUserAction
             $user ??= new User;
 
             $user->fill(
-                $input->except(['password', 'role_id', 'status'])->toArray()
+                $input->except(['password', 'role_id', 'status', 'rols'])->toArray()
             );
 
             if ($input->has('password') && $input->get('password')) {
@@ -28,6 +28,9 @@ class SaveUserAction
 
             if ($input->has('role_id')) {
                 $user->syncRoles([$input->get('role_id')]);
+            }
+            if ($input->has('rols')) {
+                $user->syncRoles($input->get('rols'));
             }
 
             if ($input->has('status') && ! $input->get('status')) {
