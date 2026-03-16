@@ -6,9 +6,16 @@ use App\Http\Controllers\IncidenceController;
 use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
+use App\Http\Controllers\NotificationController;
 use App\Http\Middleware\CheckRole;
 
 Route::middleware(['auth:api', CheckRole::class])->group(function () {
+    Route::get('notification', [NotificationController::class, 'index']);
+    Route::get('notifications', [NotificationController::class, 'notifications']);
+    Route::get('notification/{notification}', [NotificationController::class, 'show'])->whereNumber(['notification']);
+    Route::get('notification/user/{user}', [NotificationController::class, 'user'])->whereNumber(['user']);
+    //Route::post('/notification', [NotificationController::class, 'store']);
+    Route::patch('/notification/{notification}/read', [NotificationController::class, 'read'])->whereNumber(['notification']);
     Route::get('projects', [ProjectController::class, 'index'])
         ->name('projects.index');
     Route::get('projects/{project}', [ProjectController::class, 'show'])
@@ -37,16 +44,16 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.index');
     Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])
         ->name('projects.incidences.show');
-    // Obtener todos los comentarios de una incidencia
+
     Route::get('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'index']);
 
-// Crear un nuevo comentario
+
     Route::post('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'store']);
 
-// Actualizar un comentario existente
+
     Route::put('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'update']);
 
-// Eliminar un comentario
+
     Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy']);
     Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
         ->name('projects.incidences.store');
@@ -63,5 +70,5 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::delete('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'destroy'])
         ->name('incidences.assignment.destroy');
     Route::apiResource('menus', MenuController::class);
-    //Route::apiResource('teams', ProjectController::class);
+
 });

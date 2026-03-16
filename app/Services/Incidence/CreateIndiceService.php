@@ -78,42 +78,51 @@ class CreateIndiceService
      */
     private function validateAssignedUser(int $projectId, int $assignedUserId, int $incidenceTypeId): void
     {
-        // Buscar el rol del usuario en el proyecto
+        // Buscar el project_user a través de project_role para llegar al proyecto
         $projectUser = ProjectUser::where('user_id', $assignedUserId)
             ->whereHas('role', function ($query) use ($projectId) {
+                // Filtra por el project_id en el ProjectRole
                 $query->where('project_id', $projectId);
             })
-            ->with('role')
+            ->with('role') // Carga la relación del rol
             ->first();
 
-        // Si no tiene rol en el proyecto
-        if (!$projectUser || !$projectUser->role) {
+        // Si no tiene registro en el proyecto
+        if (!$projectUser) {
             throw new IncidenceException(
                 "El usuario seleccionado no tiene un rol asignado en este proyecto",
                 422
             );
         }
 
-        $userRoleTypecode = $projectUser->role->code;
+        // Si no tiene rol (por si acaso)
+        if (!$projectUser->role) {
+            throw new IncidenceException(
+                "El usuario seleccionado no tiene un rol definido",
+                422
+            );
+        }
+
+        // Asumiendo que ProjectRole tiene un campo 'code' o similar
+        // Puede que necesites ajustar esto según la estructura de ProjectRole
+        $userRoleCode = $projectUser->role->code ?? $projectUser->role->name; // Ajusta según tu campo
 
         // Validaciones específicas según el tipo de incidencia
         if (in_array($incidenceTypeId, [self::TYPE_EPIC, self::TYPE_HISTORY_USER])) {
-            // Epic (1) o History (2) - solo project manager o supervisor
             $allowedRolesForEpicAndHistory = ['ADM', 'LDR'];
 
-            if (!in_array($userRoleTypecode, $allowedRolesForEpicAndHistory)) {
+            if (!in_array($userRoleCode, $allowedRolesForEpicAndHistory)) {
                 throw new IncidenceException(
-                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol ADM o LDR. El usuario seleccionado tiene rol: {$projectUser->role->code}",
+                    "Las incidencias de tipo Epic o History solo pueden ser asignadas a usuarios con rol ADM o LDR. El usuario seleccionado tiene rol: {$userRoleCode}",
                     422
                 );
             }
         } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
-            // Task (3), Bug (4), Subtask (5) - cualquier rol excepto client, guest, owner
-            $forbiddenRolescode = ['DOC','LDR'];
+            $forbiddenRolesCode = ['DOC', 'LDR'];
 
-            if (in_array($userRoleTypecode, $forbiddenRolescode)) {
+            if (in_array($userRoleCode, $forbiddenRolesCode)) {
                 throw new IncidenceException(
-                    "No se puede asignar una tarea a un usuario con rol {$projectUser->role->type}",
+                    "No se puede asignar una tarea a un usuario con rol {$userRoleCode}",
                     422
                 );
             }

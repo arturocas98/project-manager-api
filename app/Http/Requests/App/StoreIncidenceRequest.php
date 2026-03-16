@@ -2,6 +2,7 @@
 
 namespace App\Http\Requests\App;
 
+use App\Models\Project;
 use App\Models\ProjectUser;
 use Illuminate\Foundation\Http\FormRequest;
 
@@ -84,17 +85,31 @@ class StoreIncidenceRequest extends FormRequest
 
     private function validateAssignedUserRole($userId, $fail): void
     {
-        $projectId = $this->route('project'); // <- aquí está la clave
+        $projectId = $this->route('project');
 
+        // Si $projectId es un objeto Project, obtener el ID
+        if ($projectId instanceof Project) {
+            $projectId = $projectId->id;
+        }
+
+        // Buscar el project_user a través de project_role
         $projectUser = ProjectUser::where('user_id', $userId)
             ->whereHas('role', function ($query) use ($projectId) {
+                // El project_id está en ProjectRole, no en Role
                 $query->where('project_id', $projectId);
             })
             ->with('role')
             ->first();
 
-        if (!$projectUser || !$projectUser->role) {
-            $fail('El usuario seleccionado no tiene un rol asignado en este proyecto.');
+        // Si no existe el usuario en el proyecto
+        if (!$projectUser) {
+            $fail('El usuario seleccionado no tiene un rol asignado en este proyecto');
+            return;
+        }
+
+        // Si no tiene rol
+        if (!$projectUser->role) {
+            $fail('El usuario seleccionado no tiene un rol definido');
             return;
         }
 
