@@ -19,6 +19,7 @@ return new class extends Migration
             $table->string('title');
             $table->string('message');
             $table->string('link');
+            $table->string('link_web');
             $table->boolean('read')->default(false);
 
             $table->timestamps();
@@ -34,3 +35,4 @@ return new class extends Migration
         Schema::dropIfExists('notifications');
     }
 };
+

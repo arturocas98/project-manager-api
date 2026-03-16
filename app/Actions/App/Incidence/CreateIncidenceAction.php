@@ -45,7 +45,8 @@ class CreateIncidenceAction
                         ' | Descripción: ' . ($incidence->description ?? 'Sin descripción') .
                         ' | Fecha límite: ' . $incidence->due_date,
                     'read' => false,
-                    'link' => '/project-management/projects/kanban/'. $incidence->project_id .'/task-details/'. $incidence->id
+                    'link' => '/project-management/projects/kanban/'. $incidence->project_id .'/task-details/'. $incidence->id,
+                    'link_web' => config('app.frontend_url') . '/project-management/projects/kanban/' . $incidence->project_id . '/task-details/' . $incidence->id
                 ]);
             }
 
