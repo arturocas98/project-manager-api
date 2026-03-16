@@ -16,6 +16,7 @@ class NotificationResource extends JsonResource
             'message' => $this->message,
             'read' => $this->read,
             'link' => $this->link,
+            'link_web' => $this->link_web,
             'created_at' => $this->created_at?->format(config('resources.date_time_format')),
         ];
     }
