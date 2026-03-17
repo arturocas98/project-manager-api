@@ -18,6 +18,7 @@ class TeamResource extends JsonResource
                 'id' => $this->id,
                 'name' => $this->name,
                 'type' => $this->type,
+                'members_count' => $this->whenLoaded('users', fn() => $this->users->count()),
                 'members' => $this->whenLoaded('users', function () {
                     return $this->users->map(function ($user) {
                         return [
@@ -33,6 +34,7 @@ class TeamResource extends JsonResource
                     'name' => $this->createdBy->name,
                     'email' => $this->createdBy->email,
                 ]),
+                'created_at' => $this->created_at?->toDateTimeLocalString(),
             ],
             'meta' => [
                 'created_at' => $this->created_at?->toDateTimeLocalString(),

@@ -16,6 +16,9 @@ class TeamQuery
             'createdBy' => function ($query) {
                 $query->select('id', 'name', 'email');
             },
+            'users' => function ($query) {
+                $query->select('users.id', 'users.name', 'users.email'); // Eres libre de quitar lo del select si da problemas y dejar solo 'users'
+            },
         ]);
     }
 
