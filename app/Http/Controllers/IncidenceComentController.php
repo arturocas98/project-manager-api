@@ -51,6 +51,15 @@ class IncidenceComentController extends Controller
             $incidence
         );
 
+        $comment->project_id = $project;
+        $comment->load([
+            'createdBy',
+            'createdBy.projectRoles' => function ($query) use ($project) {
+                $query->where('project_id', $project)
+                    ->select('project_roles.*');
+            }
+        ]);
+
         return response()->json([
             'success' => true,
             'data' => new CommentResource($comment),
@@ -68,6 +77,15 @@ class IncidenceComentController extends Controller
             $request->validated()['description'],
             $incidence
         );
+
+        $comment->project_id = $project;
+        $comment->load([
+            'createdBy',
+            'createdBy.projectRoles' => function ($query) use ($project) {
+                $query->where('project_id', $project)
+                    ->select('project_roles.*');
+            }
+        ]);
 
         return response()->json([
             'success' => true,

@@ -28,14 +28,22 @@ class CommentResource extends JsonResource
                 'createdBy' => $this->whenLoaded('createdBy', function () use ($projectId) {
                     $user = $this->createdBy;
 
-                    $userRole = $user->projectRoles->firstWhere('project_id', $projectId);
+                    if (!$user) {
+                        return null;
+                    }
+
+                    // projectRoles ya debería venir cargado con el filtro del proyecto específico
+                    // Pero debemos asegurarnos de filtrar solo el rol de este proyecto
+                    $projectRole = $user->projectRoles->first();
 
                     return [
                         'id' => $user->id,
                         'name' => $user->name,
-                        'user_role' => $userRole ? [
-                            'id' => $userRole->id,
-                            'type' => $userRole->type,
+                        'user_role' => $projectRole ? [
+                            'id' => $projectRole->id,
+                            'type' => $projectRole->type,
+                            // Si necesitas el código del rol
+                            'code' => $projectRole->code,
                         ] : null,
                     ];
                 }),

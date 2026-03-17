@@ -18,6 +18,7 @@
         "livewire/livewire": "^3.5",
         "spatie/laravel-data": "^4.7",
         "spatie/laravel-health": "^1.30",
+        "spatie/laravel-medialibrary": "^11.21",
         "spatie/laravel-permission": "^6.9",
         "spatie/laravel-query-builder": "^6.0",
         "teamq/laravel-datatables": "^1.0"
@@ -79,8 +80,16 @@
         "allow-plugins": {
             "pestphp/pest-plugin": true,
             "php-http/discovery": true
-        }
+        },
+        "disable-tls": false,
+        "secure-http": true
     },
     "minimum-stability": "stable",
-    "prefer-stable": true
+    "prefer-stable": true,
+    "repositories": {
+        "packagist": {
+            "type": "composer",
+            "url": "https://repo.packagist.org"
+        }
+    }
 }

@@ -15,7 +15,8 @@ class IncidenceCommentService
 
         return TaskComent::create([
             'description' => $description,
-            'incidence_id' => $incidenceId
+            'incidence_id' => $incidenceId,
+            'created_by' => auth()->id()
         ]);
     }
 
