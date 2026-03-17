@@ -42,10 +42,8 @@ class ProjectMemberController extends Controller
         ProjectUser::class,
         collection: true
     )]
-    public function index(Request $request, int $projectId)
+    public function index(Request $request, Project $project)
     {
-        $project = Project::findOrFail($projectId);
-
         $result = $this->indexProjectMemberService->getMembers($project, $request);
 
         return ProjectMemberResource::collection($result['members'])
@@ -70,10 +68,8 @@ class ProjectMemberController extends Controller
         description: 'User already a member'
     )]
     #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function store(AddProjectMemberRequest $request, int $projectId)
+    public function store(AddProjectMemberRequest $request, Project $project)
     {
-        $project = Project::findOrFail($projectId);
-
         $result = $this->projectMemberService->addMember(
             $project,
             $request->user_id,
@@ -91,10 +87,8 @@ class ProjectMemberController extends Controller
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
-    public function destroy(int $projectId, int $memberId)
+    public function destroy(Project $project, int $memberId)
     {
-        $project = Project::findOrFail($projectId);
-
         $result = $this->deletProjectMemberService->removeMember($project, $memberId);
 
         return new ProjectMemberRemovedResource($result);
@@ -105,10 +99,8 @@ class ProjectMemberController extends Controller
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
     #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function updateRole(UpdateMemberRoleRequest $request, int $projectId, int $memberId)
+    public function updateRole(UpdateMemberRoleRequest $request, Project $project, int $memberId)
     {
-        $project = Project::findOrFail($projectId);
-
         $result = $this->updateProjectMemberService->updateRole(
             $project,
             $memberId,

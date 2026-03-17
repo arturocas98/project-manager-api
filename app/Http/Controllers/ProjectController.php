@@ -90,10 +90,8 @@ class ProjectController extends Controller
         'error_code' => 'PROJECT_NOT_FOUND'
     ], status: JsonResponse::HTTP_NOT_FOUND, description: 'Project not found')]
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
-    public function show(ProjectQuery $query, int $id)
+    public function show(ProjectQuery $query, Project $project)
     {
-        $project = $query->findForShow($id);
-
         if (! $project) {
             return response()->json([
                 'success' => false,

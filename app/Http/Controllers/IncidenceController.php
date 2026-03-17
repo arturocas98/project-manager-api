@@ -34,11 +34,9 @@ class IncidenceController extends Controller
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
-    public function index(int $projectId): IncidenceCollection
+    public function index(Project $project): IncidenceCollection
     {
-        $project = Project::findOrFail($projectId);
-
-        $incidences = $this->incidenceService->getProjectIncidences($projectId);
+        $incidences = $this->incidenceService->getProjectIncidences($project->id);
 
         return new IncidenceCollection($incidences, $project->id, $project->name);
     }
@@ -48,14 +46,13 @@ class IncidenceController extends Controller
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
     #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function store(StoreIncidenceRequest $request, int $projectId): IncidenceResource
+    public function store(StoreIncidenceRequest $request, Project $project): IncidenceResource
     {
-        $project = Project::findOrFail($projectId);
 
         $this->createIndiceService->validateProjectAccess($project);
 
         $incidence = $this->createIndiceService->createIncidence(
-            $projectId,
+            $project->id,
             $request->validated(),
             auth()->id()
         );
@@ -64,21 +61,19 @@ class IncidenceController extends Controller
 
         return new IncidenceResource($incidence);
     }
-    public function show(int $project, int $incidence): IncidenceResource
+    public function show(Project $project, Incidence $incidence): IncidenceResource
     {
-        $projectModel = Project::findOrFail($project);
 
-        $this->incidenceService->validateProjectAccess($projectModel);
+        $this->incidenceService->validateProjectAccess($project);
 
-        $incidenceModel = Incidence::where('project_id', $project)
-            ->where('id', $incidence)
+        $incidenceModel = Incidence::where('project_id', $project->id)
+            ->where('id', $incidence->id)
             ->firstOrFail();
 
         return new IncidenceResource($incidenceModel);
     }
-    public function update(UpdateIncidenceRequest $request, int $projectId, int $incidenceId): IncidenceResource
+    public function update(UpdateIncidenceRequest $request, Project $project, int $incidenceId): IncidenceResource
     {
-        $project = Project::findOrFail($projectId);
 
         $this->createIndiceService->validateProjectAccess($project);
 

@@ -4,22 +4,17 @@ namespace App\Actions\App\Incidence;
 
 use App\Exceptions\IncidenceException;
 use App\Models\Incidence;
+use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 
 class CreateIncidenceAction
 {
-    /**
-     * Create a new incidence
-     *
-     * @throws IncidenceException
-     */
     public function execute(int $projectId, array $data, int $createdById): Incidence
     {
         try {
             DB::beginTransaction();
 
-            // Preparar datos base
             $incidenceData = [
                 'title' => $data['title'],
                 'description' => $data['description'] ?? null,
@@ -31,17 +26,30 @@ class CreateIncidenceAction
                 'created_by_id' => $createdById,
                 'start_date' => $data['start_date'],
                 'due_date' => $data['due_date'],
-                'assigned_user_id' => $data['assigned_user_id']??null, // Siempre nulo al crear
+                'assigned_user_id' => $data['assigned_user_id']??null,
                 'parent_incidence_id' => $data['parent_incidence_id'] ?? null,
             ];
 
-            // Validación adicional de negocio
             $this->validateBusinessRules($incidenceData);
 
-            // Crear la incidencia
             $incidence = Incidence::create($incidenceData);
 
-            // Log de la creación
+            if ($incidence->incidence_type_id == 3 && $incidence->assigned_user_id) {
+
+                $incidence->load('project');
+
+                Notification::create([
+                    'user_id' => $incidence->assigned_user_id,
+                    'title' => 'Tarea ' . $incidence->title,
+                    'message' => 'Proyecto: ' . $incidence->project->project_type .
+                        ' | Descripción: ' . ($incidence->description ?? 'Sin descripción') .
+                        ' | Fecha límite: ' . $incidence->due_date,
+                    'read' => false,
+                    'link' => '/project-management/projects/kanban/'. $incidence->project_id .'/task-details/'. $incidence->id,
+                    'link_web' => config('app.frontend_url') . '/project-management/projects/kanban/' . $incidence->project_id . '/task-details/' . $incidence->id
+                ]);
+            }
+
             Log::info('Incidencia creada', [
                 'incidence_id' => $incidence->id,
                 'project_id' => $projectId,
@@ -76,7 +84,6 @@ class CreateIncidenceAction
      */
     private function validateBusinessRules(array $data): void
     {
-        // Si es Epic (tipo 1), no puede tener padre
         if ($data['incidence_type_id'] == 1 && ! is_null($data['parent_incidence_id'])) {
             throw new IncidenceException(
                 'Una incidencia de tipo Epic no puede tener una incidencia padre',
@@ -84,7 +91,6 @@ class CreateIncidenceAction
             );
         }
 
-        // Si no es Epic, debe tener padre
         if ($data['incidence_type_id'] != 1 && is_null($data['parent_incidence_id'])) {
             throw new IncidenceException(
                 'Las incidencias que no son de tipo Epic deben tener una incidencia padre',
@@ -92,7 +98,6 @@ class CreateIncidenceAction
             );
         }
 
-        // Validar que la incidencia padre exista y pertenezca al mismo proyecto
         if (! is_null($data['parent_incidence_id'])) {
             $parentIncidence = Incidence::find($data['parent_incidence_id']);
 
@@ -110,8 +115,7 @@ class CreateIncidenceAction
                 );
             }
 
-            // Validar que la incidencia padre no sea del mismo tipo que la hija?
-            // Esta validación podría ser opcional según tus reglas de negocio
         }
+
     }
 }
