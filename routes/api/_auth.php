@@ -30,7 +30,7 @@ Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(functio
 
     // Gestión de miembros
     Route::post('/team/{team}/members', [TeamController::class, 'addMember']);    // Agregar miembro
-    Route::delete('/team/{team}/members', [TeamController::class, 'removeMember']);
+    Route::delete('/team/{team}/members/{userId}', [TeamController::class, 'removeMember']);
 
     Route::get('/users', [UserController::class, 'index']);
 

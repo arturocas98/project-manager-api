@@ -138,9 +138,9 @@ class TeamController extends Controller
     /**
      * Remove member del equipo
      */
-    public function removeMember(Team $team, TeamMemberRequest $request): JsonResponse
+    public function removeMember(Team $team, int $userId): JsonResponse
     {
-        if ($team->created_by_id === $request->user_id) {
+        if ($team->created_by_id === $userId) {
             return response()->json([
                 'message' => 'No se puede eliminar al creador del equipo',
             ], 400);
@@ -148,7 +148,7 @@ class TeamController extends Controller
 
         $deleted = $this->removeTeamMemberAction->execute(
             $team->id,
-            $request->user_id
+            $userId
         );
 
         if ($deleted) {
