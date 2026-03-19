@@ -16,6 +16,12 @@ class TeamUser extends Model
         'user_id',
     ];
 
+    protected $casts = [
+        'created_at' => 'datetime',
+        'updated_at' => 'datetime'
+    ];
+
+
     public function user(): BelongsTo
     {
         return $this->belongsTo(User::class, 'user_id');

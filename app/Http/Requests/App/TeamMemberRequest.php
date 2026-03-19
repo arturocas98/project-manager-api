@@ -3,7 +3,6 @@
 namespace App\Http\Requests\App;
 
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rule;
 
 class TeamMemberRequest extends FormRequest
 {
