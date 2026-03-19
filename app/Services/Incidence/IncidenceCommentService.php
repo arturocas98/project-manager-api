@@ -9,15 +9,21 @@ use Illuminate\Database\Eloquent\ModelNotFoundException;
 
 class IncidenceCommentService
 {
-    public function createComment(string $description, int $incidenceId): TaskComent
+    public function createComment(string $description, int $incidenceId, ?\Illuminate\Http\UploadedFile $file = null): TaskComent
     {
         $incidence = Incidence::findOrFail($incidenceId);
 
-        return TaskComent::create([
+        $comment = TaskComent::create([
             'description' => $description,
             'incidence_id' => $incidenceId,
             'created_by' => auth()->id()
         ]);
+
+        if ($file) {
+            $comment->addMedia($file)->toMediaCollection('documents');
+        }
+
+        return $comment;
     }
 
     public function updateComment(int $commentId, string $description): TaskComent
@@ -31,7 +37,7 @@ class IncidenceCommentService
         return $comment->fresh();
     }
 
-    public function deleteComment(int $commentId, int $incidenceId): void
+    public function deleteComment(int $commentId, int $incidenceId, int $projectId): void
     {
         // Verificar que el comentario pertenezca a la incidencia
         $comment = TaskComent::where('id', $commentId)
@@ -41,6 +47,18 @@ class IncidenceCommentService
 
         if (!$comment) {
             throw new ModelNotFoundException('Comment not found or does not belong to this incidence');
+        }
+
+        // Permisos para eliminar el comentario
+        $user = auth()->user();
+        if ($user) {
+            $role = $user->getProjectRole($projectId);
+            $isCreator = $comment->created_by === $user->id;
+            $isAuthorizedRole = $role && in_array($role->code, ['ADM', 'LDR']);
+            
+            if (!$isCreator && !$isAuthorizedRole) {
+                throw new \App\Exceptions\IncidenceException('No tienes permisos para eliminar este comentario', 422);
+            }
         }
 
         // Verificar si la incidencia está en estado "Finalizada" (state_id = 7)

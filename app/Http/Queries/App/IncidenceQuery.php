@@ -28,6 +28,18 @@ class IncidenceQuery
         return $this;
     }
 
+    public function byStateIds(array $stateIds): self
+    {
+        $this->query->whereIn('incidence_state_id', $stateIds);
+        return $this;
+    }
+
+    public function byAssignee(int $userId): self
+    {
+        $this->query->where('assigned_user_id', $userId);
+        return $this;
+    }
+
     public function byDateRange(?string $startDate, ?string $endDate): self
     {
         if ($startDate) {

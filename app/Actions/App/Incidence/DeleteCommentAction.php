@@ -10,8 +10,8 @@ class DeleteCommentAction
         private readonly IncidenceCommentService $commentService
     ) {}
 
-    public function execute(int $commentId, int $incidenceId): void
+    public function execute(int $commentId, int $incidenceId, int $projectId): void
     {
-        $this->commentService->deleteComment($commentId, $incidenceId);
+        $this->commentService->deleteComment($commentId, $incidenceId, $projectId);
     }
 }

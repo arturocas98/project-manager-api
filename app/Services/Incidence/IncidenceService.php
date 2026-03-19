@@ -15,6 +15,20 @@ class IncidenceService
             ->byProject($projectId)
             ->withDefaultRelations();
 
+        $user = auth()->user();
+        if ($user) {
+            $role = $user->getProjectRole($projectId);
+            if ($role) {
+                if ($role->code === 'TST') {
+                    $query->byStateIds([4, 5, 6]); // Terminada, Terminada (fuera de plazo), En Revisión
+                } elseif ($role->code === 'DOC') {
+                    $query->byStateIds([4]); // Terminada
+                } elseif ($role->code === 'DEV') {
+                    $query->byAssignee($user->id); // Asignado a sí mismo
+                }
+            }
+        }
+
         // Aplicar filtros de fecha si existen
         if (isset($filters['start_date']) || isset($filters['due_date'])) {
             $query->byDateRange(

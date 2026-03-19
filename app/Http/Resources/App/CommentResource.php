@@ -55,6 +55,15 @@ class CommentResource extends JsonResource
                     'created' => $this->created_at?->toIso8601String(),
                     'updated' => $this->updated_at?->toIso8601String(),
                 ],
+                'attachments' => $this->getMedia('documents')->map(function ($media) {
+                    return [
+                        'id' => $media->id,
+                        'name' => $media->file_name,
+                        'url' => $media->getUrl(),
+                        'size' => $media->size,
+                        'mime_type' => $media->mime_type,
+                    ];
+                }),
             ],
             'links' => [
             ],

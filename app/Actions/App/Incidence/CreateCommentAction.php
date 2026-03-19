@@ -10,8 +10,8 @@ class CreateCommentAction
         private readonly IncidenceCommentService $commentService
     ) {}
 
-    public function execute(string $description, int $incidenceId): TaskComent
+    public function execute(string $description, int $incidenceId, ?\Illuminate\Http\UploadedFile $file = null): TaskComent
     {
-        return $this->commentService->createComment($description, $incidenceId);
+        return $this->commentService->createComment($description, $incidenceId, $file);
     }
 }

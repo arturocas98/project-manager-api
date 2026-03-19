@@ -19,6 +19,7 @@ class CommentRequest extends FormRequest
     {
         return [
             'description' => 'required|string',
+            'file' => 'nullable|file',
         ];
     }
 
@@ -27,6 +28,7 @@ class CommentRequest extends FormRequest
         return [
             'description.required' => 'El el contenido del comentario es obligatorio',
             'description.string' => 'La descripción debe ser un texto válido',
+            'file.file' => 'El archivo adjunto no es válido',
         ];
     }
 

@@ -69,6 +69,7 @@ class SchemePermissionSeeder extends Seeder
                 'view_files',
                 'upload_files',
                 'download_files',
+                'edit_tasks'
             ];
 
             $count = 0;
@@ -92,6 +93,7 @@ class SchemePermissionSeeder extends Seeder
                 'view_files',
                 'download_files',
                 'view_comments',
+                'edit_tasks',
                 'generate_comments',
             ];
 

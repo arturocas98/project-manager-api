@@ -48,7 +48,8 @@ class IncidenceComentController extends Controller
     {
         $comment = $this->createAction->execute(
             $request->validated()['description'],
-            $incidence
+            $incidence,
+            $request->file('file')
         );
 
         $comment->project_id = $project;
@@ -101,7 +102,8 @@ class IncidenceComentController extends Controller
     {
         $this->deleteAction->execute(
             $comentId,
-            $incidence
+            $incidence,
+            $project
         );
 
         return response()->json([
