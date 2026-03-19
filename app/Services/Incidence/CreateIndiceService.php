@@ -70,7 +70,16 @@ class CreateIndiceService
             $this->validateAssignedUser($projectId, $data['assigned_user_id'], $data['incidence_type_id']);
         }
 
-        return $this->createIncidenceAction->execute($projectId, $data, $createdById);
+        $incidence = $this->createIncidenceAction->execute($projectId, $data, $createdById);
+
+        // Cambiar el estado del proyecto a 2 si se encuentra en estado 1
+        $project = Project::find($projectId);
+        if ($project && $project->project_state_id == 1) {
+            $project->project_state_id = 2;
+            $project->save();
+        }
+
+        return $incidence;
     }
 
     /**

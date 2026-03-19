@@ -72,20 +72,19 @@ class IncidenceController extends Controller
 
         return new IncidenceResource($incidenceModel);
     }
-    public function update(UpdateIncidenceRequest $request, Project $project, int $incidenceId): IncidenceResource
+    public function update(UpdateIncidenceRequest $request, Project $project, Incidence $incidence): IncidenceResource
     {
-
         $this->createIndiceService->validateProjectAccess($project);
 
-        $incidence = $this->updateIncidenceService->update(
-            $incidenceId,
+        $updatedIncidence = $this->updateIncidenceService->update(
+            $incidence->id,
             $request->validated(),
-            auth()->id()
+            auth()->id()    
         );
 
-        $incidence = $this->createIndiceService->loadIncidenceRelations($incidence);
+        $updatedIncidence = $this->createIndiceService->loadIncidenceRelations($updatedIncidence);
 
-        return new IncidenceResource($incidence);
+        return new IncidenceResource($updatedIncidence);
     }
     public function destroy($id) {}
 

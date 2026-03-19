@@ -27,6 +27,7 @@ class OneProjectResource extends JsonResource
             'last_phase' => $this->last_phase,
 
             'administrator' => $this->whenLoaded('admin', function () {
+                if (! $this->admin) return null;
                 return [
                     'id' => $this->admin->id,
                     'name' => $this->admin->name,
@@ -36,6 +37,7 @@ class OneProjectResource extends JsonResource
 
             // Estado del proyecto
             'state' => $this->whenLoaded('projectState', function () {
+                if (! $this->projectState) return null;
                 return [
                     'id' => $this->projectState->id,
                     'name' => $this->projectState->name

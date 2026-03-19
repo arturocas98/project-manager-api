@@ -16,13 +16,13 @@ class UpdateIncidenceService
     public const TYPE_SUBTASK = 5;
 
     // Constantes para los estados
-    private const STATE_NEW = 1;           // Nueva
-    private const STATE_ASSIGNED = 2;       // Asignado
-    private const STATE_IN_PROGRESS = 3;    // Ejecutando
-    private const STATE_SUSPENDED = 4;      // Suspendido
-    private const STATE_FINISHED = 5;        // Terminada
-    private const STATE_REVIEW = 6;          // En Revisión
-    private const STATE_COMPLETED = 7;       // Finalizada
+    private const STATE_ASSIGNED = 1;       // Asignado
+    private const STATE_IN_PROGRESS = 2;    // Ejecutando
+    private const STATE_SUSPENDED = 3;      // Suspendido
+    private const STATE_FINISHED = 4;       // Terminada
+    private const STATE_FINISHED_LATE = 5;  // Terminada (fuera de plazo)
+    private const STATE_REVIEW = 6;         // En Revisión
+    private const STATE_COMPLETED = 7;      // Finalizada
 
     // Mapa de jerarquía: [tipo_hijo => tipo_padre_requerido]
     private const HIERARCHY_RULES = [
@@ -39,9 +39,6 @@ class UpdateIncidenceService
 
     // Mapa de transiciones con roles permitidos
     private const STATE_FLOW_RULES = [
-        self::STATE_NEW => [
-            self::STATE_ASSIGNED => ['ADM', 'LDR'], // Líder o Administrador
-        ],
         self::STATE_ASSIGNED => [
             self::STATE_IN_PROGRESS => ['DEV'], // Solo el colaborador asignado
             self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
@@ -49,16 +46,20 @@ class UpdateIncidenceService
         self::STATE_IN_PROGRESS => [
             self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
             self::STATE_FINISHED => ['DEV'], // Colaborador cuando completa
+            self::STATE_FINISHED_LATE => ['DEV'], // Considerado igual a terminada para el flujo
         ],
         self::STATE_SUSPENDED => [
             self::STATE_IN_PROGRESS => ['ADM', 'LDR'], // Líder/Admin cuando se resuelve
         ],
         self::STATE_FINISHED => [
-            self::STATE_REVIEW => ['TST'], // Tester inicia validación
+            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'], // Tester inicia validación
+        ],
+        self::STATE_FINISHED_LATE => [
+            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'], // Igual que terminada
         ],
         self::STATE_REVIEW => [
-            self::STATE_IN_PROGRESS => ['TST'], // Tester rechaza (requiere corrección)
-            self::STATE_COMPLETED => ['TST'], // Tester aprueba
+            self::STATE_IN_PROGRESS => ['TST', 'ADM', 'LDR'], // Tester rechaza (requiere corrección)
+            self::STATE_COMPLETED => ['TST', 'ADM', 'LDR'], // Tester aprueba
         ],
         self::STATE_COMPLETED => [], // Estado final, no más transiciones
     ];
@@ -512,8 +513,8 @@ class UpdateIncidenceService
      */
     private function validateCanMoveToReview(Incidence $incidence): void
     {
-        // Verificar que la tarea esté en estado "Terminada"
-        if ($incidence->incidence_state_id !== self::STATE_FINISHED) {
+        // Verificar que la tarea esté en estado "Terminada" o "Terminada (fuera de plazo)"
+        if (!in_array($incidence->incidence_state_id, [self::STATE_FINISHED, self::STATE_FINISHED_LATE])) {
             throw new IncidenceException(
                 'Solo las tareas en estado "Terminada" pueden pasar a revisión',
                 422
@@ -537,7 +538,7 @@ class UpdateIncidenceService
         // Verificar que todas las subtareas estén completadas si existen
         if ($incidence->childIncidences()->count() > 0) {
             $openChildren = $incidence->childIncidences()
-                ->whereNotIn('incidence_state_id', [self::STATE_COMPLETED, self::STATE_FINISHED])
+                ->whereNotIn('incidence_state_id', [self::STATE_COMPLETED, self::STATE_FINISHED, self::STATE_FINISHED_LATE])
                 ->count();
 
             if ($openChildren > 0) {
@@ -725,11 +726,11 @@ class UpdateIncidenceService
     private function getStateName(int $stateId): string
     {
         return match($stateId) {
-            self::STATE_NEW => 'Nueva',
             self::STATE_ASSIGNED => 'Asignado',
             self::STATE_IN_PROGRESS => 'Ejecutando',
             self::STATE_SUSPENDED => 'Suspendido',
             self::STATE_FINISHED => 'Terminada',
+            self::STATE_FINISHED_LATE => 'Terminada (fuera de plazo)',
             self::STATE_REVIEW => 'En Revisión',
             self::STATE_COMPLETED => 'Finalizada',
             default => 'Desconocido',

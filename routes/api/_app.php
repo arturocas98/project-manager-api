@@ -7,6 +7,7 @@ use App\Http\Controllers\MenuController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\NotificationController;
+use App\Http\Controllers\MediaController;
 use App\Http\Middleware\CheckRole;
 
 Route::middleware(['auth:api', CheckRole::class])->group(function () {
@@ -24,6 +25,8 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.store');
     Route::get('projects/{project}/summary', [ProjectController::class, 'summary'])
         ->name('projects.summary');
+    Route::get('projects/{project}/my-role', [ProjectController::class, 'myRole'])
+        ->name('projects.my-role');
     Route::get('projects/{project}/unassigned-users', [ProjectController::class, 'getUnassignedUsers'])
         ->name('projects.unassigned-users');
     Route::put('projects/{project}', [ProjectController::class, 'update'])
@@ -44,17 +47,14 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.index');
     Route::get('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'show'])
         ->name('projects.incidences.show');
-
-    Route::get('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'index']);
-
-
-    Route::post('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'store']);
-
-
-    Route::put('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'update']);
-
-
-    Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy']);
+    Route::get('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'index'])
+        ->name('projects.incidences.coments.index');
+    Route::post('projects/{project}/incidences/{incidence}/comments', [IncidenceComentController::class, 'store'])
+        ->name('projects.incidences.coments.store');
+    Route::put('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'update'])
+        ->name('projects.incidences.coments.update');
+    Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy'])
+        ->name('projects.incidences.coments.delete');
     Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
         ->name('projects.incidences.store');
     Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])
@@ -70,5 +70,13 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::delete('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'destroy'])
         ->name('incidences.assignment.destroy');
     Route::apiResource('menus', MenuController::class);
-
+    
+    Route::get('media', [MediaController::class, 'index'])
+        ->name('media.index');
+    Route::post('media', [MediaController::class, 'store'])
+        ->name('media.store');
+    Route::get('media/{media}', [MediaController::class, 'show'])
+        ->name('media.show')->whereNumber('media');
+    Route::delete('media/{media}', [MediaController::class, 'destroy'])
+        ->name('media.destroy')->whereNumber('media');
 });

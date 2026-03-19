@@ -81,9 +81,18 @@ class UpdateIncidenceRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validator) {
-            // Validación personalizada: Si se envía parent_incidence_id,
-            // verificar que no sea la misma incidencia
-            if ($this->has('parent_incidence_id') && $this->parent_incidence_id == $this->route('incidenceId')) {
+            $incidence = $this->route('incidence') ?? $this->route('incidenceId');
+            
+            $incidenceId = null;
+            if (is_object($incidence)) {
+                $incidenceId = $incidence->id ?? null;
+            } else {
+                $incidenceId = $incidence;
+            }
+
+            $parentId = $this->input('parent_incidence_id');
+
+            if ($this->has('parent_incidence_id') && $parentId !== null && $parentId == $incidenceId) {
                 $validator->errors()->add(
                     'parent_incidence_id',
                     'Una incidencia no puede ser padre de sí misma'

@@ -129,12 +129,13 @@ class UpdateIncidenceAction
     private function validateStateTransition(int $oldStateId, int $newStateId): void
     {
         $allowedTransitions = [
-            1 => [2, 4],       // Open -> In Progress, Closed
-            2 => [1, 3, 4],    // In Progress -> Open, Review, Closed
-            3 => [2, 4, 5],    // Review -> In Progress, Closed, Locked
-            4 => [5],          // Closed -> Locked
-            5 => [6],          // Locked -> Finished
-            6 => [],           // Finished -> (final)
+            1 => [2, 3],       // Asignado -> Ejecutando, Suspendido
+            2 => [3, 4, 5],    // Ejecutando -> Suspendido, Terminada, Terminada_Late
+            3 => [2],          // Suspendido -> Ejecutando
+            4 => [6],          // Terminada -> En Revisión
+            5 => [6],          // Terminada LATE -> En Revisión
+            6 => [2, 7],       // En Revisión -> Ejecutando, Finalizada
+            7 => [],           // Finalizada -> nada
         ];
 
         if (!isset($allowedTransitions[$oldStateId]) ||

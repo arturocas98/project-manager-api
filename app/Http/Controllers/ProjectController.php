@@ -76,6 +76,16 @@ class ProjectController extends Controller
         return new UserProyectCollection($users);
     }
 
+    public function myRole(Project $project, Request $request)
+    {
+        $userId = $request->user()->id;
+        $roles = $project->getUserRoles($userId);
+
+        return response()->json([
+            'role_type' => $roles->first()?->type,
+        ]);
+    }
+
     /**
      * Display the specified resource.
      */
@@ -92,7 +102,11 @@ class ProjectController extends Controller
     #[ResponseFromFile(file: 'responses/401.json', status: JsonResponse::HTTP_UNAUTHORIZED)]
     public function show(ProjectQuery $query, Project $project)
     {
-        if (! $project) {
+        // El route model binding trae un modelo, pero necesitamos cargar las relaciones
+        // correctas usando ProjectQuery para que OneProjectResource pueda accederlas.
+        $loadedProject = $query->findForShow($project->id);
+
+        if (! $loadedProject) {
             return response()->json([
                 'success' => false,
                 'message' => 'Proyecto no encontrado o no tienes acceso',
@@ -100,7 +114,7 @@ class ProjectController extends Controller
             ], 404);
         }
 
-        return new OneProjectResource($project);
+        return new OneProjectResource($loadedProject);
     }
 
     /**
@@ -136,7 +150,7 @@ class ProjectController extends Controller
     #[ResponseFromFile(file: 'responses/403.json', status: JsonResponse::HTTP_FORBIDDEN)]
     #[ResponseFromFile(file: 'responses/404.json', status: JsonResponse::HTTP_NOT_FOUND)]
     #[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
-    public function update(UpdateProjectRequest $request, int $id)
+    public function update(UpdateProjectRequest $request, int $id, ProjectQuery $query)
     {
         $project = Project::findOrFail($id);
 
@@ -144,6 +158,16 @@ class ProjectController extends Controller
             $project,
             $request->validated()
         );
+
+        // Cargar las relaciones del update usando el Query object para consistencia
+        $updatedProject->load([
+            'admin',
+            'projectState',
+            'roles' => function ($q) {
+                $q->whereHas('users', fn ($q) => $q->where('user_id', auth()->id()))
+                  ->with(['permissionScheme.scheme.permissions']);
+            }
+        ]);
 
         return new ProjectResource($updatedProject);
     }
