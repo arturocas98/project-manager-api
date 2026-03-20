@@ -12,7 +12,7 @@ class CreateTeamAction
         return DB::transaction(function () use ($data, $createdById) {
             return Team::create([
                 'name' => $data['name'],
-                'type' => $data['type'] ?? 'default',
+                'type_code' => $data['type'] ?? 'DEV',
                 'created_by_id' => $createdById,
             ]);
         });

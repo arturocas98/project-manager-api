@@ -15,7 +15,7 @@ class TeamRequest extends FormRequest
     {
         return [
             'name' => ['required', 'string', 'max:255', 'unique:teams,name'],
-            'type' => ['nullable', 'string', 'in:default,premium,enterprise'],
+            'type' => ['nullable', 'string'],
         ];
     }
 }

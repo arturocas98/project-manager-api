@@ -26,6 +26,11 @@ class UserRequest extends FormRequest
                 'email',
                 'max:255',
             ],
+            'id_card' => [
+                'required',
+                'digits:10',
+                'unique:users,id_card'
+            ],
             'role_id' => [
                 'nullable',
                 'exists:roles,id'
@@ -58,6 +63,7 @@ class UserRequest extends FormRequest
         ];
         if ($this->isMethod(FormRequest::METHOD_POST)) {
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();
+            $rules['id_card'][] = Rule::unique(User::class, 'id_card')->withoutTrashed();
             $rules = array_merge($rules, $this->passwordRules());
         }
 

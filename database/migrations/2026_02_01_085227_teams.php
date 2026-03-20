@@ -16,7 +16,7 @@ return new class extends Migration
             $table->string('name');
             $table->unsignedBigInteger('created_by_id');
             $table->foreign('created_by_id')->references('id')->on('users')->onDelete('cascade');
-            $table->string('type');
+            $table->string('type_code');
             $table->timestamps();
         });
     }

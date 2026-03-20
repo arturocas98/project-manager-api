@@ -10,7 +10,7 @@ class Team extends Model
     protected $fillable = [
         'name',
         'created_by_id',
-        'type',
+        'type_code',
     ];
 
     // En app/Models/Team.php

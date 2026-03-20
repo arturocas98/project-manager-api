@@ -12,6 +12,7 @@ final class UserCreateAction
         'name',
         'email',
         'password',
+        'id_card',
     ];
 
     public function execute(array $data): User
