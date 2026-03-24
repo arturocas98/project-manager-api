@@ -8,6 +8,7 @@ use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\ClientController;
 use App\Http\Middleware\CheckRole;
 
 Route::middleware(['auth:api', CheckRole::class])->group(function () {
@@ -70,7 +71,6 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::delete('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'destroy'])
         ->name('incidences.assignment.destroy');
     Route::apiResource('menus', MenuController::class);
-    
     Route::get('media', [MediaController::class, 'index'])
         ->name('media.index');
     Route::post('media', [MediaController::class, 'store'])

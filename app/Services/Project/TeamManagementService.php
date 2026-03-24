@@ -117,7 +117,10 @@ class TeamManagementService
 
         return [
             'contract_number' => $project->ContractNo,
-            'client' => $project->client,
+            'client' => $team->client ? [
+                'id' => $team->client->id,
+                'Nombre' => $team->client->Nombre,
+            ] : null,
             'object_contract' => $project->objectContract,
             'team_name' => $team->name,
             'members_count' => count($memberIds),

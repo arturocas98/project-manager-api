@@ -18,6 +18,13 @@ class TeamResource extends JsonResource
                 'id' => $this->id,
                 'name' => $this->name,
                 'type' => $this->type_code,
+                'client' => clone($this)->whenLoaded('client', function () {
+                    return [
+                        'id' => $this->client->id,
+                        'Ruc' => $this->client->Ruc,
+                        'Nombre' => $this->client->Nombre,
+                    ];
+                }),
                 ' ' => $this->whenLoaded('users', fn() => $this->users->count()),
                 'members' => $this->whenLoaded('users', function () {
                     return $this->users->map(function ($user) {

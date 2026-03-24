@@ -14,6 +14,7 @@ class CreateTeamAction
                 'name' => $data['name'],
                 'type_code' => $data['type'] ?? 'DEV',
                 'created_by_id' => $createdById,
+                'client_id' => $data['client_id'],
             ]);
         });
     }

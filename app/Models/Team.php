@@ -9,6 +9,7 @@ class Team extends Model
 {
     protected $fillable = [
         'name',
+        'client_id',
         'created_by_id',
         'type_code',
     ];
@@ -23,5 +24,10 @@ class Team extends Model
     public function createdBy(): BelongsTo
     {
         return $this->belongsTo(User::class, 'created_by_id');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class, 'client_id');
     }
 }

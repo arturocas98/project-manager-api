@@ -102,6 +102,7 @@ class TeamController extends Controller
         $team->update([
             'name' => $request->name,
             'type' => $request->type ?? $team->type,
+            'client_id' => $request->client_id ?? $team->client_id,
         ]);
 
         // Refrescar con relaciones
