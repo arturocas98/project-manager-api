@@ -32,8 +32,6 @@ class CommentResource extends JsonResource
                         return null;
                     }
 
-                    // projectRoles ya debería venir cargado con el filtro del proyecto específico
-                    // Pero debemos asegurarnos de filtrar solo el rol de este proyecto
                     $projectRole = $user->projectRoles->first();
 
                     return [
@@ -42,7 +40,6 @@ class CommentResource extends JsonResource
                         'user_role' => $projectRole ? [
                             'id' => $projectRole->id,
                             'type' => $projectRole->type,
-                            // Si necesitas el código del rol
                             'code' => $projectRole->code,
                         ] : null,
                     ];

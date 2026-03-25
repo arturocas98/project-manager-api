@@ -4,6 +4,7 @@ use App\Http\Controllers\IncidenceAssignedController;
 use App\Http\Controllers\IncidenceComentController;
 use App\Http\Controllers\IncidenceController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\NotificationController;
@@ -56,6 +57,17 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.coments.update');
     Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy'])
         ->name('projects.incidences.coments.delete');
+        
+    Route::get('projects/{project}/messages', [MessageController::class, 'index'])
+        ->name('projects.messages.index');
+    Route::post('projects/{project}/messages', [MessageController::class, 'store'])
+        ->name('projects.messages.store');
+    Route::put('projects/{project}/messages/{message}', [MessageController::class, 'update'])
+        ->name('projects.messages.update');
+    Route::delete('messages/{message}', [MessageController::class, 'destroy'])
+        ->name('projects.messages.delete');
+
+
     Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
         ->name('projects.incidences.store');
     Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])

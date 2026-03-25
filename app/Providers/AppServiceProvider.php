@@ -5,6 +5,7 @@ namespace App\Providers;
 use App\Enums\QueueName;
 use App\Models\User;
 use App\Models\TaskComent;
+use App\Models\Message;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -92,6 +93,7 @@ class AppServiceProvider extends ServiceProvider
         Relation::enforceMorphMap([
             User::class,
             TaskComent::class,
+            Message::class,
         ]);
     }
 
