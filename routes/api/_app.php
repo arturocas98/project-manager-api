@@ -12,6 +12,9 @@ use App\Http\Controllers\MediaController;
 use App\Http\Controllers\ClientController;
 use App\Http\Middleware\CheckRole;
 
+Route::get('projects/{project}/files', [ProjectController::class, 'files'])
+    ->name('projects.files.public');
+
 Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::get('notification', [NotificationController::class, 'index']);
     Route::get('notifications', [NotificationController::class, 'notifications']);

@@ -203,4 +203,36 @@ class ProjectController extends Controller
             ],
         ]);
     }
+
+    /**
+     * Get all files associated with a project without user authentication.
+     */
+    public function files(Project $project)
+    {
+        $messagesIds = \App\Models\Message::where('project_id', $project->id)->pluck('id');
+        
+        $incidencesIds = \App\Models\Incidence::where('project_id', $project->id)->pluck('id');
+        // Archivos asociados a los comentarios de las tareas
+        $taskComentIds = \App\Models\TaskComent::whereIn('incidence_id', $incidencesIds)->pluck('id');
+
+        $messageMorphs = ['messages', \App\Models\Message::class, '2'];
+        $taskComentMorphs = ['task_coments', \App\Models\TaskComent::class, '1'];
+        $projectMorphs = ['projects', \App\Models\Project::class];
+
+        $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where(function($query) use ($messagesIds, $messageMorphs) {
+            $query->whereIn('model_type', $messageMorphs)
+                  ->whereIn('model_id', $messagesIds);
+        })->orWhere(function($query) use ($taskComentIds, $incidencesIds, $taskComentMorphs) {
+            $query->whereIn('model_type', $taskComentMorphs)
+                  ->where(function($q) use ($taskComentIds, $incidencesIds) {
+                      $q->whereIn('model_id', $taskComentIds)
+                        ->orWhereIn('model_id', $incidencesIds);
+                  });
+        })->orWhere(function($query) use ($project, $projectMorphs) {
+            $query->whereIn('model_type', $projectMorphs)
+                  ->where('model_id', $project->id);
+        })->latest()->get();
+
+        return \App\Http\Resources\App\MediaResource::collection($media);
+    }
 }
