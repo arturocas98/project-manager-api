@@ -14,7 +14,7 @@ class CreateProjectAction
 
             $project = Project::create([
                 'ContractNo' => $data['ContractNo'],
-                'client' => $data['client'],
+                'client_id' => $data['client_id'],
                 'project_type' => $data['project_type'],
                 'start_date' => $data['start_date'],
 

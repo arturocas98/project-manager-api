@@ -14,7 +14,7 @@ return new class extends Migration
         Schema::create('projects', function (Blueprint $table) {
             $table->id();
             $table->string('ContractNo')->unique();
-            $table->string('client');
+            $table->foreignId('client_id')->constrained('clients')->onDelete('cascade');
             $table->string('project_type');
             $table->date('start_date');
             $table->integer('duration_days')->nullable();

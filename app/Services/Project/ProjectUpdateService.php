@@ -87,7 +87,19 @@ class ProjectUpdateService
             );
         }
 
-        $allowedFields = ['project_type', 'description', 'ContractNo'];
+        $allowedFields = [
+            'ContractNo',
+            'client_id',
+            'project_type',
+            'start_date',
+            'duration_days',
+            'end_date',
+            'administrator_email',
+            'contracted_company',
+            'last_phase',
+            'project_state_id',
+            'objectContract',
+        ];
         $receivedFields = array_keys($data);
         $validFields = array_intersect($receivedFields, $allowedFields);
 

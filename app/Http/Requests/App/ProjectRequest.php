@@ -18,7 +18,7 @@ class ProjectRequest extends FormRequest
         $this->merge([
             'ContractNo' => $this->ContractNo ? trim($this->ContractNo) : null,
             'objectContract' => $this->objectContract ? trim($this->objectContract) : null,
-            'client' => $this->client ? trim($this->client) : null,
+            'client_id' => $this->client_id,
             'project_type' => $this->project_type ? trim($this->project_type) : null,
             'administrator_email' => $this->administrator_email ? trim($this->administrator_email) : null,
             'contracted_company' => $this->contracted_company ? trim($this->contracted_company) : null,
@@ -35,10 +35,10 @@ class ProjectRequest extends FormRequest
                 'string',
             ],
 
-            'client' => [
+            'client_id' => [
                 'required',
-                'string',
-                'max:255'
+                'integer',
+                'exists:clients,id'
             ],
 
             'project_type' => [
@@ -102,7 +102,8 @@ class ProjectRequest extends FormRequest
         return [
             'ContractNo.required' => 'El numero de contrato es obligatorio',
 
-            'client.required' => 'El cliente es obligatorio',
+            'client_id.required' => 'El cliente es obligatorio',
+            'client_id.exists' => 'El cliente seleccionado no es válido',
 
             'project_type.required' => 'El tipo de proyecto es obligatorio',
 
@@ -121,7 +122,7 @@ class ProjectRequest extends FormRequest
     {
         return [
             'ContractNo' => 'numero de contrato',
-            'client' => 'cliente',
+            'client_id' => 'cliente',
             'project_type' => 'tipo de proyecto',
             'start_date' => 'fecha de inicio',
             'duration_days' => 'plazo',

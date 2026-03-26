@@ -14,7 +14,7 @@ class Project extends Model
 
     protected $fillable = [
         'ContractNo',
-        'client',
+        'client_id',
         'project_type',
         'start_date',
         'duration_days',
@@ -50,6 +50,11 @@ class Project extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'administrator');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function projectState(): BelongsTo

@@ -17,4 +17,9 @@ class Client extends Model
         'Canton',
         'Telefono',
     ];
+
+    public function projects()
+    {
+        return $this->hasMany(Project::class);
+    }
 }
