@@ -10,12 +10,12 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'Ruc',
-        'Nombre',
-        'Correo',
-        'Provincia',
-        'Canton',
-        'Telefono',
+        'ruc',
+        'name',
+        'email',
+        'province',
+        'canton',
+        'phone',
     ];
 
     public function projects()

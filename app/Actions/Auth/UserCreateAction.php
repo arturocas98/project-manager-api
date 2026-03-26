@@ -26,6 +26,7 @@ final class UserCreateAction
         'administrative_unit',
         'entity_ruc',
         'entity_name',
+        'modality_id',
     ];
 
     public function execute(array $data): User

@@ -21,8 +21,8 @@ class TeamResource extends JsonResource
                 'client' => clone($this)->whenLoaded('client', function () {
                     return [
                         'id' => $this->client->id,
-                        'Ruc' => $this->client->Ruc,
-                        'Nombre' => $this->client->Nombre,
+                        'ruc' => $this->client->ruc,
+                        'name' => $this->client->name,
                     ];
                 }),
                 ' ' => $this->whenLoaded('users', fn() => $this->users->count()),

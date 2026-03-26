@@ -83,6 +83,12 @@ class CsvUserSeeder extends Seeder
                 default => null
             };
 
+            $modalityId = match(strtoupper(trim($employeeType))) {
+                'INTERNO' => 1,
+                'EXTERNO' => 2,
+                default => null
+            };
+
             try {
                 $user = $createUserAction->execute([
                     'name' => trim($name),
@@ -93,6 +99,7 @@ class CsvUserSeeder extends Seeder
                     'address' => $address,
                     'birthdate' => $birthdate ?: null,
                     'employee_type' => $employeeType,
+                    'modality_id' => $modalityId,
                     'title' => $title !== 'No hay dato' ? $title : null,
                     'senescyt_record' => $senescytRecord !== 'No hay dato' ? $senescytRecord : null,
                     'province' => $province,

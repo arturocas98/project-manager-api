@@ -32,7 +32,7 @@ class UpdateProjectMemberService
         'DOC'  // Documenter
     ];
 
-    public function updateRole(Project $project, int $assignmentId, string $newRoleCode): ProjectUser
+    public function updateRole(Project $project, int $userId, string $newRoleCode): ProjectUser
     {
         $this->validateProject($project);
         $this->validateAdminPermissions($project);
@@ -42,7 +42,7 @@ class UpdateProjectMemberService
 
         $permissionScheme = $this->validateRoleExistsInCatalog($newRoleCode);
 
-        $assignment = $this->getAssignment($project, $assignmentId);
+        $assignment = $this->getAssignment($project, $userId);
 
         $this->validateNotSameRole($assignment, $newRoleCode);
 
@@ -223,10 +223,10 @@ class UpdateProjectMemberService
     /**
      * Obtener la asignación y verificar que pertenece al proyecto
      */
-    private function getAssignment(Project $project, int $assignmentId): ProjectUser
+    private function getAssignment(Project $project, int $userId): ProjectUser
     {
         $assignment = ProjectUser::with(['role', 'user'])
-            ->where('id', $assignmentId)
+            ->where('user_id', $userId)
             ->whereHas('role', fn($q) => $q->where('project_id', $project->id))
             ->whereNull('deleted_at')
             ->first();
@@ -236,7 +236,7 @@ class UpdateProjectMemberService
                 json_encode([
                     'error' => 'Miembro no encontrado',
                     'reason' => 'El miembro no existe en este proyecto',
-                    'assignment_id' => $assignmentId,
+                    'user_id' => $userId,
                     'project_id' => $project->id,
                 ]),
                 404

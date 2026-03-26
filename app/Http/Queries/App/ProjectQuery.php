@@ -44,7 +44,7 @@ class ProjectQuery
             $this->query->where(function ($q) use ($search) {
                 $q->where('project_type', 'like', "%{$search}%")
                     ->orWhere('ContractNo', 'like', "%{$search}%")
-                    ->orWhereHas('client', fn($q) => $q->where('Nombre', 'like', "%{$search}%"))
+                    ->orWhereHas('client', fn($q) => $q->where('name', 'like', "%{$search}%"))
                     ->orWhere('objectContract', 'like', "%{$search}%");
             });
         }
