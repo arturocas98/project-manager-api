@@ -27,7 +27,7 @@ class UserRequest extends FormRequest
                 'max:255',
             ],
             'id_card' => [
-                'required',
+                'nullable',
                 'digits:10',
                 'unique:users,id_card'
             ],
