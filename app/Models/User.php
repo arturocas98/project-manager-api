@@ -40,7 +40,18 @@ class User extends Authenticatable implements MustVerifyEmail
         'password',
         'modality_id',
         'telephone',
-        'address'
+        'address',
+        'birthdate',
+        'employee_type',
+        'title',
+        'senescyt_record',
+        'province',
+        'canton',
+        'has_electronic_signature',
+        'administrative_direction',
+        'administrative_unit',
+        'entity_ruc',
+        'entity_name',
     ];
 
     /**
@@ -75,6 +86,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'modality_id' => UserModality::class,
+            'birthdate' => 'date',
+            'has_electronic_signature' => 'boolean',
         ];
     }
 

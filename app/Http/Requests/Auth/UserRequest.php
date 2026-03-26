@@ -60,6 +60,50 @@ class UserRequest extends FormRequest
                 'nullable',
                 'string'
             ],
+            'birthdate' => [
+                'nullable',
+                'date'
+            ],
+            'employee_type' => [
+                'nullable',
+                'string'
+            ],
+            'title' => [
+                'nullable',
+                'string'
+            ],
+            'senescyt_record' => [
+                'nullable',
+                'string'
+            ],
+            'province' => [
+                'nullable',
+                'string'
+            ],
+            'canton' => [
+                'nullable',
+                'string'
+            ],
+            'has_electronic_signature' => [
+                'nullable',
+                'boolean'
+            ],
+            'administrative_direction' => [
+                'nullable',
+                'string'
+            ],
+            'administrative_unit' => [
+                'nullable',
+                'string'
+            ],
+            'entity_ruc' => [
+                'nullable',
+                'string'
+            ],
+            'entity_name' => [
+                'nullable',
+                'string'
+            ],
         ];
         if ($this->isMethod(FormRequest::METHOD_POST)) {
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();

@@ -24,6 +24,20 @@ return new class extends Migration
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->string('profile_photo_path', 2048)->nullable();
+
+            // Nuevos campos del CSV
+            $table->date('birthdate')->nullable();
+            $table->string('employee_type')->nullable();
+            $table->string('title')->nullable();
+            $table->string('senescyt_record')->nullable();
+            $table->string('province')->nullable();
+            $table->string('canton')->nullable();
+            $table->boolean('has_electronic_signature')->default(false)->nullable();
+            $table->string('administrative_direction')->nullable();
+            $table->string('administrative_unit')->nullable();
+            $table->string('entity_ruc')->nullable();
+            $table->string('entity_name')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });

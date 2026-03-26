@@ -15,6 +15,17 @@ final class UserCreateAction
         'id_card',
         'telephone',
         'address',
+        'birthdate',
+        'employee_type',
+        'title',
+        'senescyt_record',
+        'province',
+        'canton',
+        'has_electronic_signature',
+        'administrative_direction',
+        'administrative_unit',
+        'entity_ruc',
+        'entity_name',
     ];
 
     public function execute(array $data): User
