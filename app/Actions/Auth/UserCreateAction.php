@@ -13,6 +13,8 @@ final class UserCreateAction
         'email',
         'password',
         'id_card',
+        'telephone',
+        'address',
     ];
 
     public function execute(array $data): User
