@@ -13,10 +13,14 @@ class Client extends Model
         'ruc',
         'name',
         'email',
-        'province',
-        'canton',
+        'locate_id',
         'phone',
     ];
+
+    public function locate()
+    {
+        return $this->belongsTo(Locate::class);
+    }
 
     public function projects()
     {

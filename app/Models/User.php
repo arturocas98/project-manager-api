@@ -45,8 +45,7 @@ class User extends Authenticatable implements MustVerifyEmail
         'employee_type',
         'title',
         'senescyt_record',
-        'province',
-        'canton',
+        'locate_id',
         'has_electronic_signature',
         'administrative_direction',
         'administrative_unit',
@@ -104,6 +103,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(ProjectRole::class, 'project_users')
             ->withTimestamps()
             ->withPivot('deleted_at');
+    }
+
+    public function locate()
+    {
+        return $this->belongsTo(Locate::class);
     }
 
     public function projects()

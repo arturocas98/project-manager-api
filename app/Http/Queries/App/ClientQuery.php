@@ -14,7 +14,7 @@ class ClientQuery
     public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->query = Client::query();
+        $this->query = Client::with('locate');
     }
 
     public function applyFilters(): self

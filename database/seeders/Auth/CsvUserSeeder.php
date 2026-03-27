@@ -90,6 +90,14 @@ class CsvUserSeeder extends Seeder
             };
 
             try {
+                $locateId = null;
+                if ($province && $canton) {
+                    $locate = \App\Models\Locate::whereRaw('LOWER(name_provinces) = LOWER(?)', [trim($province)])
+                                              ->whereRaw('LOWER(name_canton) = LOWER(?)', [trim($canton)])
+                                              ->first();
+                    $locateId = $locate ? $locate->id : null;
+                }
+
                 $user = $createUserAction->execute([
                     'name' => trim($name),
                     'email' => trim($email),
@@ -102,8 +110,7 @@ class CsvUserSeeder extends Seeder
                     'modality_id' => $modalityId,
                     'title' => $title !== 'No hay dato' ? $title : null,
                     'senescyt_record' => $senescytRecord !== 'No hay dato' ? $senescytRecord : null,
-                    'province' => $province,
-                    'canton' => $canton,
+                    'locate_id' => $locateId,
                     'has_electronic_signature' => $hasElectronicSignature,
                     'administrative_direction' => $adminDirection,
                     'administrative_unit' => $adminUnit,

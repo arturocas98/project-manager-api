@@ -27,8 +27,7 @@ class ClientController extends Controller
             'ruc' => 'required|string|unique:clients,ruc',
             'name' => 'required|string',
             'email' => 'nullable|email|string',
-            'province' => 'nullable|string',
-            'canton' => 'nullable|string',
+            'locate_id' => 'nullable|exists:locates,id',
             'phone' => 'nullable|string',
         ]);
 
@@ -48,8 +47,7 @@ class ClientController extends Controller
             'ruc' => 'sometimes|required|string|unique:clients,ruc,' . $client->id,
             'name' => 'sometimes|required|string',
             'email' => 'nullable|email|string',
-            'province' => 'nullable|string',
-            'canton' => 'nullable|string',
+            'locate_id' => 'nullable|exists:locates,id',
             'phone' => 'nullable|string',
         ]);
 

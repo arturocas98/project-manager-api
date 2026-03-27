@@ -76,13 +76,9 @@ class UserRequest extends FormRequest
                 'nullable',
                 'string'
             ],
-            'province' => [
+            'locate_id' => [
                 'nullable',
-                'string'
-            ],
-            'canton' => [
-                'nullable',
-                'string'
+                'exists:locates,id'
             ],
             'has_electronic_signature' => [
                 'nullable',

@@ -16,8 +16,7 @@ return new class extends Migration
             $table->string('ruc');
             $table->string('name');
             $table->string('email')->nullable();
-            $table->string('province')->nullable();
-            $table->string('canton')->nullable();
+            $table->foreignId('locate_id')->nullable()->constrained('locates')->nullOnDelete();
             $table->string('phone')->nullable();
             $table->timestamps();
         });
