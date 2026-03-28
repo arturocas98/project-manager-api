@@ -101,7 +101,7 @@ class TeamController extends Controller
 
         $team->update([
             'name' => $request->name,
-            'type' => $request->type ?? $team->type,
+            'type_code' => $request->type ?? $team->type_code,
             'client_id' => $request->client_id ?? $team->client_id,
         ]);
 
