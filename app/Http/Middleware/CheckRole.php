@@ -73,7 +73,7 @@ class CheckRole
 
 
         if (!$project->hasUserAccess($user->id)) {
-            abort(403, 'No tienes acceso a este proyecto');
+            abort(422, 'No tienes acceso a este proyecto');
         }
 
 
@@ -86,7 +86,7 @@ class CheckRole
 
 
         if (!$this->userHasPermission($user, $project, $requiredPermission)) {
-            abort(403, 'No tienes permiso para realizar esta acción');
+            abort(422, 'No tienes permiso para realizar esta acción');
         }
 
 
@@ -167,8 +167,8 @@ class CheckRole
             if ($routeName === 'projects.store') {
 
                 if (!$user->hasRole('Admin')) {
-                    abort(403, 'Solo usuarios con rol Admin pueden crear proyectos');
-                }
+            abort(422, 'Solo usuarios con rol Admin pueden crear proyectos');
+        }
 
 
                 return $next($request);
