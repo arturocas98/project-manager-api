@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\CantonController;
 use App\Http\Controllers\IncidenceAssignedController;
 use App\Http\Controllers\IncidenceComentController;
 use App\Http\Controllers\IncidenceController;
@@ -10,6 +11,7 @@ use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MediaController;
 use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Middleware\CheckRole;
 
 Route::get('projects/{project}/files', [ProjectController::class, 'files'])
@@ -60,7 +62,7 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.coments.update');
     Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy'])
         ->name('projects.incidences.coments.delete');
-        
+
     Route::get('projects/{project}/messages', [MessageController::class, 'index'])
         ->name('projects.messages.index');
     Route::post('projects/{project}/messages', [MessageController::class, 'store'])
@@ -94,4 +96,7 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('media.show')->whereNumber('media');
     Route::delete('media/{media}', [MediaController::class, 'destroy'])
         ->name('media.destroy')->whereNumber('media');
+
+    Route::get('provinces', [ProvinceController::class, 'index']);
+    Route::get('cantons', [CantonController::class, 'index']);
 });
