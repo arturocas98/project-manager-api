@@ -10,12 +10,12 @@ class ClientResource extends JsonResource
     {
         return [
             'id' => $this->id,
-            'Ruc' => $this->Ruc,
-            'Nombre' => $this->Nombre,
-            'Correo' => $this->Correo,
-            'Provincia' => $this->Provincia,
-            'Canton' => $this->Canton,
-            'Telefono' => $this->Telefono,
+            'ruc' => $this->ruc,
+            'name' => $this->name,
+            'email' => $this->email,
+            'locate_id' => $this->locate_id,
+            'locate' => new LocateResource($this->whenLoaded('locate')),
+            'phone' => $this->phone,
             'created_at' => $this->created_at?->toIso8601String(),
             'updated_at' => $this->updated_at?->toIso8601String(),
         ];

@@ -19,13 +19,13 @@ final class UserCreateAction
         'employee_type',
         'title',
         'senescyt_record',
-        'province',
-        'canton',
+        'locate_id',
         'has_electronic_signature',
         'administrative_direction',
         'administrative_unit',
         'entity_ruc',
         'entity_name',
+        'modality_id',
     ];
 
     public function execute(array $data): User

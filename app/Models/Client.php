@@ -10,13 +10,17 @@ class Client extends Model
     use HasFactory;
 
     protected $fillable = [
-        'Ruc',
-        'Nombre',
-        'Correo',
-        'Provincia',
-        'Canton',
-        'Telefono',
+        'ruc',
+        'name',
+        'email',
+        'locate_id',
+        'phone',
     ];
+
+    public function locate()
+    {
+        return $this->belongsTo(Locate::class);
+    }
 
     public function projects()
     {

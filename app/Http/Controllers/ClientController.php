@@ -24,12 +24,11 @@ class ClientController extends Controller
     public function store(Request $request)
     {
         $data = $request->validate([
-            'Ruc' => 'required|string|unique:clients,Ruc',
-            'Nombre' => 'required|string',
-            'Correo' => 'nullable|email|string',
-            'Provincia' => 'nullable|string',
-            'Canton' => 'nullable|string',
-            'Telefono' => 'nullable|string',
+            'ruc' => 'required|string|unique:clients,ruc',
+            'name' => 'required|string',
+            'email' => 'nullable|email|string',
+            'locate_id' => 'nullable|exists:locates,id',
+            'phone' => 'nullable|string',
         ]);
 
         $client = $this->clientService->createClient($data);
@@ -45,12 +44,11 @@ class ClientController extends Controller
     public function update(Request $request, Client $client)
     {
         $data = $request->validate([
-            'Ruc' => 'sometimes|required|string|unique:clients,Ruc,' . $client->id,
-            'Nombre' => 'sometimes|required|string',
-            'Correo' => 'nullable|email|string',
-            'Provincia' => 'nullable|string',
-            'Canton' => 'nullable|string',
-            'Telefono' => 'nullable|string',
+            'ruc' => 'sometimes|required|string|unique:clients,ruc,' . $client->id,
+            'name' => 'sometimes|required|string',
+            'email' => 'nullable|email|string',
+            'locate_id' => 'nullable|exists:locates,id',
+            'phone' => 'nullable|string',
         ]);
 
         $updatedClient = $this->clientService->updateClient($client, $data);

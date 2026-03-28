@@ -40,28 +40,30 @@ class UpdateIncidenceService
     // Mapa de transiciones con roles permitidos
     private const STATE_FLOW_RULES = [
         self::STATE_ASSIGNED => [
-            self::STATE_IN_PROGRESS => ['DEV'], // Solo el colaborador asignado
-            self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
+            self::STATE_IN_PROGRESS => ['DEV', 'LDR', 'ADM'], // Añadido LDR y ADM
+            self::STATE_SUSPENDED => ['ADM', 'LDR'],
         ],
         self::STATE_IN_PROGRESS => [
-            self::STATE_SUSPENDED => ['ADM', 'LDR'], // Líder/Admin por inconvenientes
-            self::STATE_FINISHED => ['DEV'], // Colaborador cuando completa
-            self::STATE_FINISHED_LATE => ['DEV'], // Considerado igual a terminada para el flujo
+            self::STATE_ASSIGNED => ['ADM', 'LDR'], // Añadido retorno a asignado
+            self::STATE_SUSPENDED => ['ADM', 'LDR'],
+            self::STATE_FINISHED => ['DEV', 'LDR', 'ADM'], // Añadido LDR y ADM
+            self::STATE_FINISHED_LATE => ['DEV', 'LDR', 'ADM'],
         ],
         self::STATE_SUSPENDED => [
-            self::STATE_IN_PROGRESS => ['ADM', 'LDR'], // Líder/Admin cuando se resuelve
+            self::STATE_ASSIGNED => ['ADM', 'LDR'], // Añadido retorno a asignado
+            self::STATE_IN_PROGRESS => ['ADM', 'LDR'],
         ],
         self::STATE_FINISHED => [
-            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'], // Tester inicia validación
+            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'],
         ],
         self::STATE_FINISHED_LATE => [
-            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'], // Igual que terminada
+            self::STATE_REVIEW => ['TST', 'ADM', 'LDR'],
         ],
         self::STATE_REVIEW => [
-            self::STATE_IN_PROGRESS => ['TST', 'ADM', 'LDR'], // Tester rechaza (requiere corrección)
-            self::STATE_COMPLETED => ['TST', 'ADM', 'LDR'], // Tester aprueba
+            self::STATE_IN_PROGRESS => ['TST', 'ADM', 'LDR'],
+            self::STATE_COMPLETED => ['TST', 'ADM', 'LDR'],
         ],
-        self::STATE_COMPLETED => [], // Estado final, no más transiciones
+        self::STATE_COMPLETED => [],
     ];
 
     // Mapeo de códigos de rol a nombres (para mensajes)
@@ -417,7 +419,7 @@ class UpdateIncidenceService
         if (empty($userRoles)) {
             throw new IncidenceException(
                 'El usuario no tiene roles asignados en este proyecto',
-                403
+                422
             );
         }
 
@@ -435,7 +437,7 @@ class UpdateIncidenceService
             throw new IncidenceException(
                 "No tienes permisos para cambiar de {$currentStateName} a {$newStateName}. " .
                 "Esta acción solo puede ser realizada por: " . implode(', ', $allowedRolesNames),
-                403
+                422
             );
         }
 
@@ -488,7 +490,7 @@ class UpdateIncidenceService
                 if (!$isAdminOrLeader) {
                     throw new IncidenceException(
                         'Solo el usuario asignado a la tarea puede cambiar el estado a Ejecutando',
-                        403
+                        422
                     );
                 }
             }
@@ -502,7 +504,7 @@ class UpdateIncidenceService
             if ($isDev && $incidence->assigned_user_id !== $userId) {
                 throw new IncidenceException(
                     'Un desarrollador solo puede marcar como terminada una tarea asignada a él',
-                    403
+                    422
                 );
             }
         }

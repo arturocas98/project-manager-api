@@ -30,8 +30,7 @@ return new class extends Migration
             $table->string('employee_type')->nullable();
             $table->string('title')->nullable();
             $table->string('senescyt_record')->nullable();
-            $table->string('province')->nullable();
-            $table->string('canton')->nullable();
+            $table->foreignId('locate_id')->nullable()->constrained('locates')->nullOnDelete();
             $table->boolean('has_electronic_signature')->default(false)->nullable();
             $table->string('administrative_direction')->nullable();
             $table->string('administrative_unit')->nullable();

@@ -14,7 +14,7 @@ class ClientQuery
     public function __construct(Request $request)
     {
         $this->request = $request;
-        $this->query = Client::query();
+        $this->query = Client::with('locate');
     }
 
     public function applyFilters(): self
@@ -22,9 +22,9 @@ class ClientQuery
         if ($this->request->has('search')) {
             $search = $this->request->search;
             $this->query->where(function ($q) use ($search) {
-                $q->where('Nombre', 'like', "%{$search}%")
-                    ->orWhere('Ruc', 'like', "%{$search}%")
-                    ->orWhere('Correo', 'like', "%{$search}%");
+                $q->where('name', 'like', "%{$search}%")
+                    ->orWhere('ruc', 'like', "%{$search}%")
+                    ->orWhere('email', 'like', "%{$search}%");
             });
         }
 
@@ -36,7 +36,7 @@ class ClientQuery
         $sortField = $this->request->get('sort_by', 'created_at');
         $sortDirection = $this->request->get('sort_direction', 'desc');
 
-        $allowedFields = ['Nombre', 'Ruc', 'created_at', 'updated_at'];
+        $allowedFields = ['name', 'ruc', 'created_at', 'updated_at'];
 
         if (in_array($sortField, $allowedFields)) {
             $this->query->orderBy($sortField, $sortDirection);

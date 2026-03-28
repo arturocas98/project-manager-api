@@ -13,9 +13,9 @@ class DatabaseSeeder extends Seeder
     {
         $this->call([
             Auth\RoleSeeder::class,
+            Auth\LocationSeeder::class,
             Auth\UserSeeder::class,
             Auth\CsvUserSeeder::class,
-            Auth\LocationSeeder::class,
             ProjectPermissionSeeder::class,
             ProjectPermissionSchemeSeeder::class,
             SchemePermissionSeeder::class,
