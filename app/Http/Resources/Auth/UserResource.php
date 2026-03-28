@@ -32,6 +32,7 @@ class UserResource extends JsonResource
                 'canton' => $this->locate?->name_canton,
             ],
             'locate_id' => $this->locate_id,
+            'id_card' => $this->id_card,
             'has_electronic_signature' => $this->has_electronic_signature,
             'administrative_direction' => $this->administrative_direction,
             'administrative_unit' => $this->administrative_unit,
