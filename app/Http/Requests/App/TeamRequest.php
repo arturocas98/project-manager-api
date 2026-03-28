@@ -14,9 +14,9 @@ class TeamRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'name' => ['required', 'string', 'max:255'],
+            'name' => ['required', 'string', 'max:255', 'unique:teams,name'],
             'type' => ['nullable', 'string'],
-            'client_id' => ['nullable', 'integer', 'exists:clients,id'],
+            'client_id' => ['required', 'integer', 'exists:clients,id'],
         ];
     }
 }
