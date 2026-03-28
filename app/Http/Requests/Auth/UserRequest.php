@@ -26,11 +26,6 @@ class UserRequest extends FormRequest
                 'email',
                 'max:255',
             ],
-            'id_card' => [
-                'nullable',
-                'digits:10',
-                'unique:users,id_card'
-            ],
             'role_id' => [
                 'nullable',
                 'exists:roles,id'
