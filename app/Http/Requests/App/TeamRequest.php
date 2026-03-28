@@ -16,6 +16,7 @@ class TeamRequest extends FormRequest
         return [
             'name' => ['required', 'string', 'max:255'],
             'client_id' => ['nullable', 'integer', 'exists:clients,id'],
+            'type' => ['nullable', 'string'],
         ];
 
         if ($this->isMethod(FormRequest::METHOD_POST)) {
