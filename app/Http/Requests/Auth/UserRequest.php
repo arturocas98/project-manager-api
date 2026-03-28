@@ -10,7 +10,7 @@ use Illuminate\Validation\Rule;
 
 class UserRequest extends FormRequest
 {
-    use PasswordRules;
+    //use PasswordRules;
 
     public function rules(): array
     {
@@ -95,12 +95,15 @@ class UserRequest extends FormRequest
                 'nullable',
                 'string'
             ],
+            'password' => [
+                'nullable',
+                'string'
+            ],
         ];
         if ($this->isMethod(FormRequest::METHOD_POST)) {
             $rules['email'][] = Rule::unique(User::class, 'email')->withoutTrashed();
             $rules['id_card'][] = Rule::unique(User::class, 'id_card')->withoutTrashed();
-        } else
-            $rules['password'][] = 'nullable';
+        }
         return $rules;
     }
 }
