@@ -23,6 +23,7 @@ class UserQuery extends QueryBuilder
                     'university_id',
                     'email',
                     'roles.name',
+                    'id_card',
                 ])),
                 'name',
                 'agreement_id',
@@ -32,6 +33,7 @@ class UserQuery extends QueryBuilder
                 'roles.name',
                 AllowedFilter::exact('id'),
                 'email',
+                'id_card',
             ])
             ->allowedSorts([
                 'name',

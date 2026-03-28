@@ -29,6 +29,7 @@ class UserResource extends JsonResource
             'senescyt_record' => $this->senescyt_record,
             'province' => $this->province,
             'canton' => $this->canton,
+            'id_card' => $this->id_card,
             'has_electronic_signature' => $this->has_electronic_signature,
             'administrative_direction' => $this->administrative_direction,
             'administrative_unit' => $this->administrative_unit,
