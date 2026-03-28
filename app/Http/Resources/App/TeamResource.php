@@ -4,6 +4,7 @@ namespace App\Http\Resources\App;
 
 use Illuminate\Http\Request;
 use Illuminate\Http\Resources\Json\JsonResource;
+
 class TeamResource extends JsonResource
 {
     /**
@@ -18,13 +19,7 @@ class TeamResource extends JsonResource
                 'id' => $this->id,
                 'name' => $this->name,
                 'type' => $this->type_code,
-                'client' => clone($this)->whenLoaded('client', function () {
-                    return [
-                        'id' => $this->client->id,
-                        'ruc' => $this->client->ruc,
-                        'name' => $this->client->name,
-                    ];
-                }),
+                'client' => new ClientResource($this->whenLoaded('client')),
                 ' ' => $this->whenLoaded('users', fn() => $this->users->count()),
                 'members' => $this->whenLoaded('users', function () {
                     return $this->users->map(function ($user) {
@@ -47,8 +42,7 @@ class TeamResource extends JsonResource
                 'created_at' => $this->created_at?->toDateTimeLocalString(),
                 'updated_at' => $this->updated_at?->toDateTimeLocalString(),
             ],
-            'links' => [
-            ],
+            'links' => [],
         ];
     }
 }
