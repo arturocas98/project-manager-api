@@ -21,11 +21,11 @@ class ProjectUserQuery
     public function getUnassignedUsers(
         int $projectId,
         int $authenticatedUserId,
-        int $perPage = 15
+        int $perPage = 1000
     ): LengthAwarePaginator {
         // Get IDs of users already assigned to the project usando la relación del modelo User
-        $assignedUserIds = User::whereHas('projectRoles', function($query) use ($projectId) {
-            $query->whereHas('project', function($q) use ($projectId) {
+        $assignedUserIds = User::whereHas('projectRoles', function ($query) use ($projectId) {
+            $query->whereHas('project', function ($q) use ($projectId) {
                 $q->where('id', $projectId);
             });
         })
@@ -55,8 +55,8 @@ class ProjectUserQuery
         int $perPage = 15
     ): LengthAwarePaginator {
         // Get IDs of users already assigned to the project
-        $assignedUserIds = User::whereHas('projectRoles', function($query) use ($projectId) {
-            $query->whereHas('project', function($q) use ($projectId) {
+        $assignedUserIds = User::whereHas('projectRoles', function ($query) use ($projectId) {
+            $query->whereHas('project', function ($q) use ($projectId) {
                 $q->where('id', $projectId);
             });
         })
@@ -69,7 +69,7 @@ class ProjectUserQuery
 
         // Apply search if provided
         if ($search) {
-            $query->where(function(Builder $q) use ($search) {
+            $query->where(function (Builder $q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
                 // Nota: User no tiene campo 'username' en el fillable actual
@@ -99,8 +99,8 @@ class ProjectUserQuery
         $role = $options['role'] ?? null;
 
         // Get assigned user IDs
-        $assignedUserIds = User::whereHas('projectRoles', function($query) use ($projectId) {
-            $query->whereHas('project', function($q) use ($projectId) {
+        $assignedUserIds = User::whereHas('projectRoles', function ($query) use ($projectId) {
+            $query->whereHas('project', function ($q) use ($projectId) {
                 $q->where('id', $projectId);
             });
         })
@@ -113,7 +113,7 @@ class ProjectUserQuery
 
         // Apply search
         if ($search) {
-            $query->where(function(Builder $q) use ($search) {
+            $query->where(function (Builder $q) use ($search) {
                 $q->where('name', 'like', "%{$search}%")
                     ->orWhere('email', 'like', "%{$search}%");
             });
@@ -126,7 +126,7 @@ class ProjectUserQuery
 
         // Filter by specific role in other projects (opcional)
         if ($role) {
-            $query->whereHas('projectRoles', function($q) use ($role) {
+            $query->whereHas('projectRoles', function ($q) use ($role) {
                 $q->where('type', $role);
             });
         }
@@ -144,8 +144,8 @@ class ProjectUserQuery
      */
     public function countUnassignedUsers(int $projectId, int $authenticatedUserId): int
     {
-        $assignedUserIds = User::whereHas('projectRoles', function($query) use ($projectId) {
-            $query->whereHas('project', function($q) use ($projectId) {
+        $assignedUserIds = User::whereHas('projectRoles', function ($query) use ($projectId) {
+            $query->whereHas('project', function ($q) use ($projectId) {
                 $q->where('id', $projectId);
             });
         })
@@ -169,15 +169,15 @@ class ProjectUserQuery
         int $projectId,
         int $authenticatedUserId
     ): LengthAwarePaginator {
-        $assignedUserIds = User::whereHas('projectRoles', function($query) use ($projectId) {
-            $query->whereHas('project', function($q) use ($projectId) {
+        $assignedUserIds = User::whereHas('projectRoles', function ($query) use ($projectId) {
+            $query->whereHas('project', function ($q) use ($projectId) {
                 $q->where('id', $projectId);
             });
         })
             ->pluck('id')
             ->toArray();
 
-        return User::with(['projectRoles' => function($query) {
+        return User::with(['projectRoles' => function ($query) {
             $query->with('project')
                 ->whereHas('project'); // Solo roles que tengan proyecto
         }])
