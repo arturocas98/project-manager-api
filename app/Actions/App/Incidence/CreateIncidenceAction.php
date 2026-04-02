@@ -7,6 +7,7 @@ use App\Models\Incidence;
 use App\Models\Notification;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
+use Illuminate\Support\Str;
 
 class CreateIncidenceAction
 {
@@ -42,7 +43,7 @@ class CreateIncidenceAction
                     'user_id' => $incidence->assigned_user_id,
                     'title' => 'Tarea ' . $incidence->title,
                     'message' => 'Proyecto: ' . $incidence->project->project_type .
-                        ' | Descripción: ' . ($incidence->description ?? 'Sin descripción') .
+                        ' | Descripción: ' . Str::limit($incidence->description ?? 'Sin descripción', 50) .
                         ' | Fecha límite: ' . $incidence->due_date,
                     'read' => false,
                     'link' => '/project-management/projects/kanban/'. $incidence->project_id .'/task-details/'. $incidence->id,
