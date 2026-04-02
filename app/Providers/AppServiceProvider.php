@@ -3,8 +3,11 @@
 namespace App\Providers;
 
 use App\Enums\QueueName;
+use App\Models\Project;
 use App\Models\User;
 use App\Models\TaskComent;
+use App\Models\Message;
+use App\Models\Incidence;
 use Illuminate\Cache\RateLimiting\Limit;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\Relation;
@@ -90,8 +93,11 @@ class AppServiceProvider extends ServiceProvider
     protected function morphMapping(): void
     {
         Relation::enforceMorphMap([
-            User::class,
-            TaskComent::class,
+            'user' => User::class,
+            'task_comment' => TaskComent::class,
+            'message' => Message::class,
+            'project' => Project::class,
+            'incidence' => Incidence::class,
         ]);
     }
 

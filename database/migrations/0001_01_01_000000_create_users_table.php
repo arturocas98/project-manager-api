@@ -16,6 +16,7 @@ return new class extends Migration
             $table->foreignId('current_team_id')->nullable();
             $table->string('name');
             $table->string('email')->unique();
+            $table->string('id_card', 10)->unique();
             $table->timestamp('email_verified_at')->nullable();
             $table->string('password');
             $table->text('two_factor_secret')->nullable();
@@ -23,6 +24,19 @@ return new class extends Migration
             $table->timestamp('two_factor_confirmed_at')->nullable();
             $table->rememberToken();
             $table->string('profile_photo_path', 2048)->nullable();
+
+            // Nuevos campos del CSV
+            $table->date('birthdate')->nullable();
+            $table->string('employee_type')->nullable();
+            $table->string('title')->nullable();
+            $table->string('senescyt_record')->nullable();
+            $table->foreignId('locate_id')->nullable()->constrained('locates')->nullOnDelete();
+            $table->boolean('has_electronic_signature')->default(false)->nullable();
+            $table->string('administrative_direction')->nullable();
+            $table->string('administrative_unit')->nullable();
+            $table->string('entity_ruc')->nullable();
+            $table->string('entity_name')->nullable();
+
             $table->timestamps();
             $table->softDeletes();
         });

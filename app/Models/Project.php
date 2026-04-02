@@ -7,14 +7,16 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 use Illuminate\Database\Eloquent\SoftDeletes;
+use Spatie\MediaLibrary\HasMedia;
+use Spatie\MediaLibrary\InteractsWithMedia;
 
-class Project extends Model
+class Project extends Model implements HasMedia
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, SoftDeletes, InteractsWithMedia;
 
     protected $fillable = [
         'ContractNo',
-        'client',
+        'client_id',
         'project_type',
         'start_date',
         'duration_days',
@@ -50,6 +52,11 @@ class Project extends Model
     public function admin(): BelongsTo
     {
         return $this->belongsTo(User::class, 'administrator');
+    }
+
+    public function client(): BelongsTo
+    {
+        return $this->belongsTo(Client::class);
     }
 
     public function projectState(): BelongsTo

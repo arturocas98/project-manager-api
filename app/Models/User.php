@@ -35,11 +35,22 @@ class User extends Authenticatable implements MustVerifyEmail
      */
     protected $fillable = [
         'name',
+        'id_card',
         'email',
         'password',
         'modality_id',
         'telephone',
-        'address'
+        'address',
+        'birthdate',
+        'employee_type',
+        'title',
+        'senescyt_record',
+        'locate_id',
+        'has_electronic_signature',
+        'administrative_direction',
+        'administrative_unit',
+        'entity_ruc',
+        'entity_name',
     ];
 
     /**
@@ -74,6 +85,8 @@ class User extends Authenticatable implements MustVerifyEmail
             'email_verified_at' => 'datetime',
             'password' => 'hashed',
             'modality_id' => UserModality::class,
+            'birthdate' => 'date',
+            'has_electronic_signature' => 'boolean',
         ];
     }
 
@@ -90,6 +103,11 @@ class User extends Authenticatable implements MustVerifyEmail
         return $this->belongsToMany(ProjectRole::class, 'project_users')
             ->withTimestamps()
             ->withPivot('deleted_at');
+    }
+
+    public function locate()
+    {
+        return $this->belongsTo(Locate::class);
     }
 
     public function projects()

@@ -16,7 +16,7 @@ class UpdateProjectAction
 
             $fillable = array_intersect_key($data, array_flip([
                 'ContractNo',
-                'client',
+                'client_id',
                 'project_type',
                 'start_date',
                 'duration_days',

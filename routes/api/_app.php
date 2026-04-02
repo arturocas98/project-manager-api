@@ -1,14 +1,21 @@
 <?php
 
+use App\Http\Controllers\CantonController;
 use App\Http\Controllers\IncidenceAssignedController;
 use App\Http\Controllers\IncidenceComentController;
 use App\Http\Controllers\IncidenceController;
 use App\Http\Controllers\MenuController;
+use App\Http\Controllers\MessageController;
 use App\Http\Controllers\ProjectController;
 use App\Http\Controllers\ProjectMemberController;
 use App\Http\Controllers\NotificationController;
 use App\Http\Controllers\MediaController;
+use App\Http\Controllers\ClientController;
+use App\Http\Controllers\ProvinceController;
 use App\Http\Middleware\CheckRole;
+
+Route::get('projects/{project}/files', [ProjectController::class, 'files'])
+    ->name('projects.files.public');
 
 Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::get('notification', [NotificationController::class, 'index']);
@@ -55,6 +62,17 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('projects.incidences.coments.update');
     Route::delete('projects/{project}/incidences/{incidence}/comments/{comment}', [IncidenceComentController::class, 'destroy'])
         ->name('projects.incidences.coments.delete');
+
+    Route::get('projects/{project}/messages', [MessageController::class, 'index'])
+        ->name('projects.messages.index');
+    Route::post('projects/{project}/messages', [MessageController::class, 'store'])
+        ->name('projects.messages.store');
+    Route::put('projects/{project}/messages/{message}', [MessageController::class, 'update'])
+        ->name('projects.messages.update');
+    Route::delete('messages/{message}', [MessageController::class, 'destroy'])
+        ->name('projects.messages.delete');
+
+
     Route::post('projects/{project}/incidences', [IncidenceController::class, 'store'])
         ->name('projects.incidences.store');
     Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])
@@ -70,7 +88,6 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::delete('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'destroy'])
         ->name('incidences.assignment.destroy');
     Route::apiResource('menus', MenuController::class);
-    
     Route::get('media', [MediaController::class, 'index'])
         ->name('media.index');
     Route::post('media', [MediaController::class, 'store'])
@@ -79,4 +96,7 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
         ->name('media.show')->whereNumber('media');
     Route::delete('media/{media}', [MediaController::class, 'destroy'])
         ->name('media.destroy')->whereNumber('media');
+
+    Route::get('provinces', [ProvinceController::class, 'index']);
+    Route::get('cantons', [CantonController::class, 'index']);
 });

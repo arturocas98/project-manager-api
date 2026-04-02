@@ -30,7 +30,7 @@ class LoginRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'email' => ['required', 'string', 'email'],
+            'id_card' => ['required', 'digits:10'],
             'password' => ['required', 'string'],
         ];
     }
@@ -38,8 +38,7 @@ class LoginRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'email.required' => 'El campo Email es obligatorio',
-            'email.email' => 'El campo Email debe ser un email',
+            'id_card.required' => 'El campo cedula es obligatorio',
             'password.required' => 'El campo Password es obligatorio',
             'password.min' => 'La contraseña debe tener al menos 6 caracteres',
         ];
@@ -48,10 +47,10 @@ class LoginRequest extends FormRequest
     public function withValidator($validator): void
     {
         $validator->after(function ($validators) {
-            if ($this->email) {
-                $user = User::where('email', $this->email)->first();
+            if ($this->id_card) {
+                $user = User::where('id_card', $this->id_card)->first();
                 if (! $user) {
-                    $validators->errors()->add('email', 'El email ingresado no existe');
+                    $validators->errors()->add('id_card', 'La cedula ingresada no existe');
                 } elseif (! Hash::check($this->password, $user->password)) {
                     $validators->errors()->add('password', 'El password ingresado es incorrecto');
                 }
@@ -78,13 +77,13 @@ class LoginRequest extends FormRequest
     {
         $this->ensureIsNotRateLimited();
 
-        $user = User::query()->where('email', $this->input('email'))->first();
+        $user = User::query()->where('id_card', $this->input('id_card'))->first();
 
         if (! $user || ! Hash::check($this->input('password'), $user->password)) {
             RateLimiter::hit($this->throttleKey());
 
             throw ValidationException::withMessages([
-                'email' => trans('auth.failed'),
+                'id_card' => trans('auth.failed'),
             ]);
         }
 
@@ -109,7 +108,7 @@ class LoginRequest extends FormRequest
         $seconds = RateLimiter::availableIn($this->throttleKey());
 
         throw ValidationException::withMessages([
-            'email' => trans('auth.throttle', [
+            'id_card' => trans('auth.throttle', [
                 'seconds' => $seconds,
                 'minutes' => ceil($seconds / 60),
             ]),
@@ -121,7 +120,7 @@ class LoginRequest extends FormRequest
      */
     public function throttleKey(): string
     {
-        return Str::transliterate(Str::lower($this->input('email')).'|'.$this->ip());
+        return Str::transliterate(Str::lower($this->input('id_card')).'|'.$this->ip());
     }
 
     public function bodyParameters()
@@ -133,9 +132,9 @@ class LoginRequest extends FormRequest
                 'required' => true,
                 'type' => 'string',
             ],
-            'email' => [
-                'description' => 'Correo electrónico del usuario',
-                'example' => 'usuario@ejemplo.com',
+            'id_card' => [
+                'description' => 'cedula del usuario',
+                'example' => '0956325427',
                 'required' => true,
                 'type' => 'string',
             ],

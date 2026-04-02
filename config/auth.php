@@ -128,8 +128,8 @@ return [
     */
 
     'admin' => [
-        'email' => env('ADMIN_EMAIL', 'manager@teamq.biz'),
-        'password' => env('ADMIN_PASSWORD', 'password'),
+        'email' => env('ADMIN_EMAIL', 'gtapia@gmail.com'),
+        'password' => env('ADMIN_PASSWORD', '0917013674'),
     ],
 
     /*

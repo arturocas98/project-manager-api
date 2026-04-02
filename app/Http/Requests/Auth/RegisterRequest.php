@@ -30,6 +30,7 @@ class RegisterRequest extends FormRequest
             'name' => 'required|string|max:255|unique:users,name',
             'email' => 'required|email|unique:users,email',
             'password' => 'required|min:6',
+            'id_card' => 'required|digits:10|unique:users,id_card',
         ];
     }
 
@@ -45,6 +46,10 @@ class RegisterRequest extends FormRequest
 
             'password.required' => 'El campo Password es obligatorio',
             'password.min' => 'La contraseña debe tener al menos 6 caracteres',
+
+            'id_card.max' => 'La cedula debe tener solo 10 caracteres',
+            'id_card.min' => 'La cedula debe tener solo 10 caracteres',
+            'id_card.unique' => 'Esa cedula ya esta registrada',
         ];
     }
 
@@ -60,7 +65,7 @@ class RegisterRequest extends FormRequest
 
     public function ValidatedUser(): User
     {
-        $user = User::where('email', $this->email)->first();
+        $user = User::where('id_card', $this->id_card)->first();
         if (! $user || ! Hash::check($this->password, $user->password)) {
             throw ValidationException::withMessages([
                 'user' => 'Credenciales incorrectas',

@@ -44,7 +44,7 @@ class ProjectQuery
             $this->query->where(function ($q) use ($search) {
                 $q->where('project_type', 'like', "%{$search}%")
                     ->orWhere('ContractNo', 'like', "%{$search}%")
-                    ->orWhere('client', 'like', "%{$search}%")
+                    ->orWhereHas('client', fn($q) => $q->where('name', 'like', "%{$search}%"))
                     ->orWhere('objectContract', 'like', "%{$search}%");
             });
         }
@@ -79,7 +79,6 @@ class ProjectQuery
 
         $allowedFields = [
             'ContractNo',
-            'client',
             'project_type',
             'created_at',
             'updated_at'
@@ -106,6 +105,7 @@ class ProjectQuery
                     ->with(['permissionScheme.scheme.permissions']);
             },
             'admin',
+            'client',
             'projectState'
         ]);
 
@@ -180,6 +180,7 @@ class ProjectQuery
             },
             // Creador del proyecto
             'admin',
+            'client',
             'projectState',
             'roles.users' => function ($q) {
                 $q->select('users.id', 'users.name', 'users.email');

@@ -203,4 +203,45 @@ class ProjectController extends Controller
             ],
         ]);
     }
+
+    public function files(Project $project)
+    {
+        $messagesIds = \App\Models\Message::where('project_id', $project->id)->pluck('id');
+        $incidencesIds = \App\Models\Incidence::where('project_id', $project->id)->pluck('id');
+        $taskComentIds = \App\Models\TaskComent::whereIn('incidence_id', $incidencesIds)->pluck('id');
+
+        $media = \Spatie\MediaLibrary\MediaCollections\Models\Media::where(function($query) use ($project, $messagesIds, $incidencesIds, $taskComentIds) {
+            // Project
+            $query->orWhere(function($q) use ($project) {
+                $q->whereIn('model_type', ['project', 'projects', \App\Models\Project::class])
+                  ->where('model_id', $project->id);
+            });
+
+            // Messages
+            if ($messagesIds->isNotEmpty()) {
+                $query->orWhere(function($q) use ($messagesIds) {
+                    $q->whereIn('model_type', ['message', 'messages', \App\Models\Message::class, '2'])
+                      ->whereIn('model_id', $messagesIds);
+                });
+            }
+
+            // Incidences
+            if ($incidencesIds->isNotEmpty()) {
+                $query->orWhere(function($q) use ($incidencesIds) {
+                    $q->whereIn('model_type', ['incidence', 'incidences', \App\Models\Incidence::class])
+                      ->whereIn('model_id', $incidencesIds);
+                });
+            }
+
+            // Task Comments
+            if ($taskComentIds->isNotEmpty()) {
+                $query->orWhere(function($q) use ($taskComentIds) {
+                    $q->whereIn('model_type', ['task_comment', 'task_comments', 'task_coments', \App\Models\TaskComent::class, '1'])
+                      ->whereIn('model_id', $taskComentIds);
+                });
+            }
+        })->latest()->get();
+
+        return \App\Http\Resources\App\MediaResource::collection($media);
+    }
 }

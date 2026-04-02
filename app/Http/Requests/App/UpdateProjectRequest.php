@@ -18,7 +18,7 @@ class UpdateProjectRequest extends FormRequest
     {
         return [
             'ContractNo' => 'sometimes|string',
-            'client' => 'sometimes|string|max:255',
+            'client_id' => 'sometimes|integer|exists:clients,id',
             'project_type' => 'sometimes|string|max:255',
             'objectContract' => 'nullable|string|max:1000',
 
@@ -44,7 +44,7 @@ class UpdateProjectRequest extends FormRequest
     public function messages(): array
     {
         return [
-            'client.max' => 'El cliente no puede exceder los 255 caracteres',
+            'client_id.exists' => 'El cliente seleccionado no es válido',
             'project_type.max' => 'El tipo de proyecto no puede exceder los 255 caracteres',
 
             'duration_days.required_without' => 'Debe proporcionar duration_days si no existe end_date',
@@ -66,11 +66,11 @@ class UpdateProjectRequest extends FormRequest
                 'required' => false,
                 'type' => 'string',
             ],
-            'client' => [
-                'description' => 'Project client',
-                'example' => 'Empresa XYZ',
+            'client_id' => [
+                'description' => 'Project client ID',
+                'example' => 1,
                 'required' => false,
-                'type' => 'string',
+                'type' => 'integer',
             ],
             'project_type' => [
                 'description' => 'Type of project',

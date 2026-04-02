@@ -8,6 +8,7 @@ use Spatie\QueryBuilder\AllowedFilter;
 use Spatie\QueryBuilder\AllowedSort;
 use TeamQ\Datatables\QueryBuilder;
 use Illuminate\Database\Eloquent\Builder;
+
 class TeamQuery
 {
     public function withAllRelations(): Builder
@@ -18,6 +19,9 @@ class TeamQuery
             },
             'users' => function ($query) {
                 $query->select('users.id', 'users.name', 'users.email'); // Eres libre de quitar lo del select si da problemas y dejar solo 'users'
+            },
+            'client' => function ($query) {
+                $query->select('id', 'ruc', 'name');
             },
         ]);
     }

@@ -27,7 +27,8 @@ Route::middleware(['auth:api', 'role:' . RoleName::Admin->value])->group(functio
     Route::get('/team/{team}', [TeamController::class, 'show']);     // Ver equipo
     Route::put('/team/{team}', [TeamController::class, 'update']);   // Actualizar equipo
     Route::delete('/team/{team}', [TeamController::class, 'destroy']);// Eliminar equipo
-
+    Route::apiResource('clients', \App\Http\Controllers\ClientController::class);
+    Route::get('/locations', [\App\Http\Controllers\LocateController::class, 'index']);
     // Gestión de miembros
     Route::post('/team/{team}/members', [TeamController::class, 'addMember']);    // Agregar miembro
     Route::delete('/team/{team}/members/{userId}', [TeamController::class, 'removeMember']);

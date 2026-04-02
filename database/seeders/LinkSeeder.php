@@ -20,14 +20,13 @@ class LinkSeeder extends Seeder
         }
 
         $now = now()->toDateTimeString();
-
         DB::table('links')->upsert([
             [
                 'id' => 1,
                 'type' => MenuType::Link->value,
                 'name' => 'Roles',
                 'route' => 'account-management/roles/list',
-                'icon' => 'pi pi-eye',
+                'icon' => 'ph ph-lock-simple',
                 'created_at' => $now,
                 'updated_at' => $now,
                 'deleted_at' => null
@@ -47,7 +46,7 @@ class LinkSeeder extends Seeder
                 'type' => MenuType::Link->value,
                 'name' => 'Menu',
                 'route' => 'configuration/menu',
-                'icon' => 'pi pi-inbox',
+                'icon' => 'ph ph-list',
                 'created_at' => $now,
                 'updated_at' => $now,
                 'deleted_at' => null
@@ -57,7 +56,7 @@ class LinkSeeder extends Seeder
                 'type' => MenuType::Link->value,
                 'name' => 'Inicio',
                 'route' => 'pages/dashboard',
-                'icon' => 'pi pi-inbox',
+                'icon' => 'ph ph-house',
                 'created_at' => $now,
                 'updated_at' => $now,
                 'deleted_at' => null
@@ -73,15 +72,25 @@ class LinkSeeder extends Seeder
                 'deleted_at' => null
             ],
             [
-            'id' => 6,
-            'type' => MenuType::Link->value,
-            'name' => 'Equipos',
-            'route' => 'account-management/teams',
-            'icon' => 'pi pi-eye',
-            'created_at' => $now,
-            'updated_at' => $now,
-            'deleted_at' => null
-        ],
-        ], 'id');
+                'id' => 6,
+                'type' => MenuType::Link->value,
+                'name' => 'Equipos',
+                'route' => 'account-management/teams',
+                'icon' => 'ph ph-users-three',
+                'created_at' => $now,
+                'updated_at' => $now,
+                'deleted_at' => null
+            ],
+            [
+                'id' => 7,
+                'type' => MenuType::Link->value,
+                'name' => 'Clientes',
+                'route' => 'account-management/client',
+                'icon' => 'ph ph-buildings',
+                'created_at' => $now,
+                'updated_at' => $now,
+                'deleted_at' => null
+            ],
+        ], ['id']);
     }
 }

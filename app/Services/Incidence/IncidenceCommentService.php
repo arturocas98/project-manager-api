@@ -20,7 +20,10 @@ class IncidenceCommentService
         ]);
 
         if ($file) {
-            $comment->addMedia($file)->toMediaCollection('documents');
+            $media = $comment->addMedia($file)->toMediaCollection('documents');
+            // Cambiar el model_id para guardar el ID de la incidencia en lugar del ID del comentario
+            $media->model_id = $incidenceId;
+            $media->save();
         }
 
         return $comment;

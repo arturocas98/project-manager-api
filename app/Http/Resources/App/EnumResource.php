@@ -15,7 +15,7 @@ class EnumResource extends JsonResource
             'name' => $this->name,
             'description' => $this->when(
                 method_exists($this->resource, 'description'),
-                fn() => $this->resource->description(auth()->user()->lang?->value ?? 'es')
+                fn() => $this->resource->description()
             ),
             'data' => $this->when(
                 method_exists($this->resource, 'data'),

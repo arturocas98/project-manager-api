@@ -30,7 +30,8 @@ class UserSeeder extends Seeder
     {
         return [
             User::withTrashed()->firstOrCreate(['email' => config('auth.admin.email')], [
-                'name' => 'TeamQ',
+                'name' => 'Geovani Tapia',
+                'id_card' => '0917013674',
                 'password' => bcrypt(config('auth.admin.password')),
             ]),
         ];

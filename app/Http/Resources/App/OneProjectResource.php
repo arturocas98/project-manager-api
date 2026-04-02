@@ -14,7 +14,7 @@ class OneProjectResource extends JsonResource
         $data = [
             'id' => $this->id,
             'ContractNo' => $this->ContractNo,
-            'client' => $this->client,
+            'client' => new ClientResource($this->whenLoaded('client')),
             'project_type' => $this->project_type,
             'objectContract' => $this->objectContract,
 
