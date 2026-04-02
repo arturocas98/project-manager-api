@@ -258,16 +258,16 @@ class CreateIndiceService
 
             case self::TYPE_TASK:
                 // Las Tasks deben verificar que su padre (History User) no tenga ya muchas tareas
-                $taskCount = Incidence::where('parent_incidence_id', $parentIncidence->id)
-                    ->whereIn('incidence_type_id', [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])
-                    ->count();
+                // $taskCount = Incidence::where('parent_incidence_id', $parentIncidence->id)
+                //     ->whereIn('incidence_type_id', [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])
+                //     ->count();
 
-                if ($taskCount > 10) {
-                    throw new IncidenceException(
-                        "El History User ya tiene muchas tareas hijas (máximo 10)",
-                        422
-                    );
-                }
+                // if ($taskCount > 10) {
+                //     throw new IncidenceException(
+                //         "El History User ya tiene muchas tareas hijas (máximo 10)",
+                //         422
+                //     );
+                // }
                 break;
         }
     }
