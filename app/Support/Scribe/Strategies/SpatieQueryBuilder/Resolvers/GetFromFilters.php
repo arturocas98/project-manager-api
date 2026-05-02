@@ -23,7 +23,7 @@ use Spatie\QueryBuilder\Sorts\Sort;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromFilters extends GetFromBase
 {
@@ -78,7 +78,7 @@ class GetFromFilters extends GetFromBase
             ],
             FiltersExact::class => [
                 'description' => 'Exact Filter. It is evaluated as: The field is exactly equal to this value.',
-                'example' => $value ?: 'laa@teamq.biz',
+                'example' => $value ?: 'gtapia@gmail.com',
             ],
             FiltersTrashed::class => [
                 'description' => 'Trashed Filter. For soft deleted records. The accepted values are:
@@ -132,7 +132,7 @@ class GetFromFilters extends GetFromBase
                     'datetime' => fake()->dateTimeBetween('-5 years'),
                 };
             }
-        } catch (Exception|Error) {
+        } catch (Exception | Error) {
             $value = null;
         }
 

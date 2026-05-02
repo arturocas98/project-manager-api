@@ -26,7 +26,7 @@ test('profile information is displayed with permissions assigned', function () {
     Role::findOrCreate('Creator Role', 'api')
         ->givePermissionTo(['edit', 'create']);
 
-    $user = user(['name' => 'Luis Arce', 'email' => 'laa@teamq.biz', 'email_verified_at' => '2023-10-10T10:10:00'])
+    $user = user(['name' => 'Geovani Tapia', 'email' => 'gtapia@gmail.com', 'email_verified_at' => '2023-10-10T10:10:00'])
         ->givePermissionTo(['view'])
         ->assignRole(['Eliminator Role'])
         ->assignRole(['Creator Role']);
@@ -37,8 +37,8 @@ test('profile information is displayed with permissions assigned', function () {
         ->assertExactJson([
             'data' => [
                 'id' => $user->getKey(),
-                'name' => 'Luis Arce',
-                'email' => 'laa@teamq.biz',
+                'name' => 'Geovani Tapia',
+                'email' => 'gtapia@gmail.com',
                 'email_verified_at' => '2023-10-10T10:10:00',
                 'two_factor_confirmed_at' => null,
                 'profile_photo_url' => 'https://ui-avatars.com/api/?name=L+A&color=7F9CF5&background=EBF4FF',
@@ -62,7 +62,7 @@ test('profile information is displayed with permissions assigned', function () {
 
 test('profile is updated', function () {
     $user = user([
-        'email' => 'laa@teamq.biz',
+        'email' => 'gtapia@gmail.com',
         'password' => bcrypt('Laravel1234**'),
     ]);
 
@@ -75,7 +75,7 @@ test('profile is updated', function () {
         ->assertOk();
 
     assertCredentials([
-        'email' => 'laa@teamq.biz',
+        'email' => 'gtapia@gmail.com',
         'password' => 'NewPass12**',
     ]);
 });

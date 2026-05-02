@@ -14,7 +14,7 @@ use Spatie\QueryBuilder\Sorts\Sort;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromIncludes extends GetFromBase
 {
@@ -23,7 +23,7 @@ class GetFromIncludes extends GetFromBase
      */
     public function __invoke(Collection $properties, QueryBuilder $queryBuilder): Collection
     {
-        $allowedIncludes = $properties->map(fn (AllowedInclude $allowedInclude) => $allowedInclude->getName());
+        $allowedIncludes = $properties->map(fn(AllowedInclude $allowedInclude) => $allowedInclude->getName());
 
         $parameterName = $this->getParameterName();
 
@@ -44,7 +44,7 @@ class GetFromIncludes extends GetFromBase
     protected function getDocumentation(Filter|Sort|Collection|string $param, mixed $value = null): array
     {
         $values = $param
-            ->map(fn ($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
+            ->map(fn($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
             ->join(', ');
 
         return [

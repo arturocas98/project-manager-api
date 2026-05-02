@@ -13,7 +13,7 @@ use ReflectionAttribute;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromSpatieQueryBuilderParamAttribute extends GetFromSpatieQueryBuilder
 {

@@ -12,7 +12,7 @@ use Knuckles\Scribe\Extracting\Strategies\Strategy;
  *
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromAuthorizeMiddlewareStrategy extends Strategy
 {
@@ -61,7 +61,7 @@ class GetFromAuthorizeMiddlewareStrategy extends Strategy
         }
 
         return collect($middlewares)
-            ->filter(fn ($middleware) => str($middleware)->startsWith('can'))
+            ->filter(fn($middleware) => str($middleware)->startsWith('can'))
             ->map(function ($permission) {
                 $permission = str($permission)
                     ->replace('can:', '')

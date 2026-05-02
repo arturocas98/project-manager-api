@@ -1,4 +1,4 @@
-# TeamQ StarterKIT For Laravel
+# StarterKIT For Laravel
 
 ## Development
 
@@ -14,7 +14,7 @@ Once you have set your `.env` environment variables, you can run the application
 ### 1. Set up your environment **(Run this only the first time)**
 
 Run the `copy` command to copy the environment variables from the example files
-to the development files  (`.env`).
+to the development files (`.env`).
 
 ```shell
 bin/app copy

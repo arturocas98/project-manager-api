@@ -14,7 +14,7 @@ use Spatie\QueryBuilder\Sorts\Sort;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromSorts extends GetFromBase
 {
@@ -23,7 +23,7 @@ class GetFromSorts extends GetFromBase
      */
     public function __invoke(Collection $properties, QueryBuilder $queryBuilder): Collection
     {
-        $allowedSorts = $properties->map(fn (AllowedSort $allowedSort) => $allowedSort->getName());
+        $allowedSorts = $properties->map(fn(AllowedSort $allowedSort) => $allowedSort->getName());
 
         $parameterName = $this->getParameterName();
 
@@ -44,13 +44,13 @@ class GetFromSorts extends GetFromBase
     protected function getDocumentation(Filter|Sort|Collection|string $param, mixed $value = null): array
     {
         $values = $param
-            ->map(fn ($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
+            ->map(fn($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
             ->join(', ');
 
         return [
             'description' => "Each value separated by a comma. To indicate descending order, add \"-\" before the field to sort. <div>Allowed values: {$values}</div>",
             'example' => $param->random(3)
-                ->map(fn ($value, $key) => $key % 2 == 0 ? '-'.$value : $value)
+                ->map(fn($value, $key) => $key % 2 == 0 ? '-' . $value : $value)
                 ->join(','),
         ];
     }

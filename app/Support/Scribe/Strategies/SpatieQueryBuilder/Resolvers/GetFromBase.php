@@ -16,7 +16,7 @@ use Spatie\QueryBuilder\Sorts\Sort;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 abstract class GetFromBase
 {

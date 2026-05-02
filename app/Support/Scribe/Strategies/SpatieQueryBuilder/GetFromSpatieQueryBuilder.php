@@ -23,7 +23,7 @@ use Spatie\QueryBuilder\QueryBuilder as SpatieQueryBuilder;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromSpatieQueryBuilder extends Strategy
 {

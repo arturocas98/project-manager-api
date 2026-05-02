@@ -14,7 +14,7 @@ use Str;
  * @link https://spatie.be/docs/laravel-query-builder
  * @link https://scribe.knuckles.wtf/laravel
  *
- * @author Luis Arce
+ * @author Geovani Tapia
  */
 class GetFromFields extends GetFromBase
 {
@@ -25,12 +25,12 @@ class GetFromFields extends GetFromBase
     {
         $parameterName = $this->getParameterName();
 
-        return $properties->groupBy(fn ($field) => Str::of($field)->beforeLast('.')->toString())
+        return $properties->groupBy(fn($field) => Str::of($field)->beforeLast('.')->toString())
             ->reduce(function (Collection $queryParams, Collection $fields, string $key) use ($parameterName) {
                 $name = sprintf('%s[%s]', $parameterName, $key);
 
                 $param = $fields
-                    ->map(fn ($field) => Str::of($field)->afterLast('.')->toString());
+                    ->map(fn($field) => Str::of($field)->afterLast('.')->toString());
 
                 return $queryParams->put(
                     $name,
@@ -50,7 +50,7 @@ class GetFromFields extends GetFromBase
     protected function getDocumentation(Filter|Sort|Collection|string $param, mixed $value = null): array
     {
         $values = $param
-            ->map(fn ($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
+            ->map(fn($value) => "<span style='font-weight: bolder; font-style: italic'>$value</span>")
             ->join(', ');
 
         return [
