@@ -127,7 +127,7 @@ class CreateIndiceService
                 );
             }
         } else if (in_array($incidenceTypeId, [self::TYPE_TASK, self::TYPE_BUG, self::TYPE_SUBTASK])) {
-            $forbiddenRolesCode = ['DOC', 'LDR'];
+            $forbiddenRolesCode = ['DOC'];
 
             if (in_array($userRoleCode, $forbiddenRolesCode)) {
                 throw new IncidenceException(
