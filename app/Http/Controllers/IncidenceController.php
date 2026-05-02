@@ -79,13 +79,17 @@ class IncidenceController extends Controller
         $updatedIncidence = $this->updateIncidenceService->update(
             $incidence->id,
             $request->validated(),
-            auth()->id()    
+            auth()->id()
         );
 
         $updatedIncidence = $this->createIndiceService->loadIncidenceRelations($updatedIncidence);
 
         return new IncidenceResource($updatedIncidence);
     }
-    public function destroy($id) {}
 
+    public function destroy(Project $project, Incidence $incidence): JsonResponse
+    {
+        $incidence->delete();
+        return new JsonResponse(status: JsonResponse::HTTP_NO_CONTENT);
+    }
 }

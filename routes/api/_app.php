@@ -78,7 +78,7 @@ Route::middleware(['auth:api', CheckRole::class])->group(function () {
     Route::put('projects/{project}/incidences/{incidence}/update', [IncidenceController::class, 'update'])
         ->name('projects.incidences.update');
     Route::delete('projects/{project}/incidences/{incidence}', [IncidenceController::class, 'destroy'])
-        ->name('projects.incidences.destroy');
+        ->name('projects.incidences.destroy')->whereNumber(['incidence', 'project']);
     Route::get('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'show'])
         ->name('incidences.assignment.show');
     Route::post('incidences/{incidence}/assignment', [IncidenceAssignedController::class, 'store'])
