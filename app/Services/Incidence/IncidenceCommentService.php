@@ -11,7 +11,7 @@ class IncidenceCommentService
 {
     public function createComment(string $description, int $incidenceId, ?\Illuminate\Http\UploadedFile $file = null): TaskComent
     {
-        $incidence = Incidence::findOrFail($incidenceId);
+        Incidence::findOrFail($incidenceId);
 
         $comment = TaskComent::create([
             'description' => $description,
@@ -20,10 +20,7 @@ class IncidenceCommentService
         ]);
 
         if ($file) {
-            $media = $comment->addMedia($file)->toMediaCollection('documents');
-            // Cambiar el model_id para guardar el ID de la incidencia en lugar del ID del comentario
-            $media->model_id = $incidenceId;
-            $media->save();
+            $comment->addMedia($file)->toMediaCollection('documents');
         }
 
         return $comment;
