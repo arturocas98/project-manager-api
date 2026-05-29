@@ -1,141 +1,234 @@
-# TeamQ StarterKIT For Laravel
+# Project Manager API
 
-## Development
+A RESTful API for managing projects, teams, and task tracking. Built with **Laravel 11** and **PHP 8.3**, it provides role-based access control, OAuth2 authentication, and hierarchical incidence management.
 
----
+## Features
 
-Use the "app" `./bin/app` command interface, where you can execute commands for the containers in your
-`docker-compose.yml`.
+- **Project management** — create projects, manage members, and track summaries
+- **Incidence tracking** — tasks with types, priorities, states, and parent/child hierarchy
+- **Role-based access control** — per-project roles (Administrator, Project Gestor, Developer, User) with granular permission schemes
+- **OAuth2 authentication** — via Laravel Passport with personal access tokens
+- **Two-factor authentication** — TOTP with QR code setup and recovery codes
+- **Email verification & password reset**
+- **Teams & boards** — group users and organize projects
+- **API documentation** — auto-generated via Scribe
 
-If you need to make changes in your `docker-compose.yml`, please use `docker-compose.override.yml`.
+## Tech Stack
 
-Once you have set your `.env` environment variables, you can run the application.
+| Layer | Technology |
+|---|---|
+| Framework | Laravel 11.9 |
+| Language | PHP 8.3 |
+| Authentication | Laravel Passport (OAuth2) |
+| Authorization | Spatie Laravel Permission |
+| Database | MySQL 8.0 |
+| Cache / Queue | Redis |
+| Web server | Nginx (Alpine) |
+| Containers | Docker + Docker Compose |
+| Testing | Pest PHP |
+| API Docs | Scribe |
+| Code style | Laravel Pint |
 
-### 1. Set up your environment **(Run this only the first time)**
+## Requirements
 
-Run the `copy` command to copy the environment variables from the example files
-to the development files  (`.env`).
+- Docker & Docker Compose
+- Git
+
+## Getting Started
+
+### 1. Clone and configure environment
 
 ```shell
-bin/app copy
+git clone <repository-url>
+cd project-manager-api
+bin/app copy      # copies .env.example → .env
+bin/app install   # installs Composer and npm dependencies
 ```
 
-Run the `install` command to install the necessary dependencies for `composer` and for `npm`.
-
-```shell
-bin/app install
-```
-
-### 2. Run application
-
-Run and up the docker containers.
+### 2. Start containers
 
 ```shell
 bin/app build
 bin/app up -d
 ```
 
-### 3. Set up application
+### 3. Initialize the application
 
-Once your container is up you can run the artisan command `app:install`, this command will run the
-`migrations` and `seeders`, as well as set the `APP_KEY` if it has not been set and create the `passport keys`,
-it also compiles the assets from the `scribe documentation` of your API.
+Runs migrations, seeders, sets `APP_KEY`, and generates Passport keys:
 
 ```shell
 bin/app artisan app:install
 ```
 
-It is not mandatory to use it, but if you don't, you will have to configure everything yourself, manually.
+The API will be available at `http://localhost` (or the port set in `APP_PORT`).
 
-### 4. Stop application
+### 4. Stop containers
 
 ```shell
 bin/app stop
 ```
 
-### 5. Installing packages
+## Development Commands
 
-```shell
-bin/app composer require laravel/telescope
+All commands run inside the Docker container via the `bin/app` CLI.
+
+| Task | Command |
+|---|---|
+| Start containers | `bin/app up -d` |
+| Stop containers | `bin/app stop` |
+| Run Artisan | `bin/app artisan <command>` |
+| Install Composer package | `bin/app composer require <package>` |
+| Install npm package | `bin/app npm install <package>` |
+| Format code | `bin/app pint` |
+| Run tests | `bin/app test` |
+| Regenerate API docs | `bin/app artisan scribe:generate` |
+| See all commands | `bin/app -h` |
+
+## API Overview
+
+All routes are prefixed with `/api`. Authenticated routes require a `Bearer` token obtained via `POST /api/auth/login`.
+
+### Authentication — `/api/auth`
+
+| Method | Endpoint | Description | Auth |
+|---|---|---|---|
+| POST | `/auth/register` | Register a new user | — |
+| POST | `/auth/login` | Obtain access token | — |
+| POST | `/auth/logout` | Revoke token | Required |
+| POST | `/auth/forgot-password` | Send reset email | — |
+| POST | `/auth/reset-password` | Reset password | — |
+| POST | `/auth/two-factor-challenge` | Complete 2FA challenge | — |
+| GET | `/auth/email/verify/{id}/{hash}` | Verify email address | — |
+| POST | `/auth/email/verification-notification` | Resend verification email | Required |
+
+### User Profile — `/api/user`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/user/profile` | Get authenticated user profile |
+| PATCH | `/user/profile` | Update profile |
+| POST | `/user/two-factor/authentication` | Enable 2FA |
+| DELETE | `/user/two-factor/authentication` | Disable 2FA |
+| GET | `/user/two-factor/qr-code` | Get 2FA QR code |
+| GET | `/user/two-factor/recovery-codes` | List recovery codes |
+| POST | `/user/two-factor/recovery-codes` | Regenerate recovery codes |
+
+### Projects — `/api/projects`
+
+| Method | Endpoint | Description | Role required |
+|---|---|---|---|
+| GET | `/projects` | List user's projects | — |
+| POST | `/projects` | Create project | — |
+| GET | `/projects/{project}` | Get project details | — |
+| PUT/PATCH | `/projects/{project}` | Update project | Admin |
+| DELETE | `/projects/{project}` | Delete project | Admin |
+| GET | `/projects/{project}/summary` | Project statistics | — |
+| GET | `/projects/{project}/unassigned-users` | Users not yet in project | — |
+
+### Project Members — `/api/projects/{project}/members`
+
+| Method | Endpoint | Description | Role required |
+|---|---|---|---|
+| GET | `/members` | List members | Admin |
+| GET | `/members/{member}` | Get member details | Admin |
+| POST | `/members` | Add member | Admin |
+| PATCH | `/members/{member}/role` | Change member role | Admin |
+| DELETE | `/members/{member}` | Remove member | Admin |
+
+### Incidences (Tasks) — `/api/projects/{project}/incidences`
+
+| Method | Endpoint | Description |
+|---|---|---|
+| GET | `/incidences` | List project incidences |
+| POST | `/incidences` | Create incidence |
+| GET | `/incidences/{incidence}` | Get incidence details |
+| PUT | `/incidences/{incidence}/update` | Update incidence |
+| DELETE | `/incidences/{incidence}` | Delete incidence |
+| GET | `/incidences/{incidence}/assignment` | Get assignment |
+| POST | `/incidences/{incidence}/assignment` | Assign incidence |
+| PUT | `/incidences/{incidence}/assignment` | Update assignment |
+| DELETE | `/incidences/{incidence}/assignment` | Remove assignment |
+
+### Teams — `/api/teams`
+
+Standard resource routes: `GET`, `POST`, `GET /{team}`, `PUT /{team}`, `DELETE /{team}`.
+
+### Admin — `/api/auth/users`
+
+User CRUD available only to users with the **Admin** role.
+
+## Project Structure
+
+```
+project-manager-api/
+├── app/
+│   ├── Http/
+│   │   ├── Controllers/       # Request handlers, organized by domain
+│   │   ├── Middleware/        # CheckProjectAdmin, CheckRole, etc.
+│   │   ├── Requests/          # Validated request DTOs
+│   │   └── Resources/         # API response transformers
+│   ├── Models/                # Eloquent models
+│   ├── Services/              # Business logic
+│   ├── Actions/               # Single-responsibility action classes
+│   └── Enums/                 # PHP enums for types, states, priorities
+├── routes/
+│   └── api/
+│       ├── api.php            # Route aggregator
+│       ├── _auth.php          # Auth routes
+│       ├── _user.php          # Profile routes
+│       └── _app.php           # Project / incidence routes
+├── database/
+│   ├── migrations/
+│   └── seeders/
+├── infrastructure/
+│   ├── app/                   # PHP-FPM Dockerfile & config
+│   ├── nginx/                 # Nginx config
+│   └── queues/                # Supervisor config for workers
+├── tests/                     # Pest test suites
+├── docker-compose.yml
+└── bin/app                    # Docker CLI helper
 ```
 
-```shell
-bin/app npm install axios
-```
+## Writing Code
 
-### 6. Run laravel commands
+### Code Style
 
-```shell
-bin/app artisan migrate
-```
-
-### 7. Format code
+Follow the [Spatie PHP/Laravel guidelines](https://spatie.be/guidelines/laravel-php). Configure your editor with `.editorconfig` and run Pint before committing:
 
 ```shell
 bin/app pint
 ```
 
-### 8. Run tests
+### Testing
+
+Use **Pest PHP**. Follow a TDD approach:
+
+1. Run existing tests on a fresh branch — all must pass.
+2. Write failing tests for the new behaviour.
+3. Write the minimum code to make them pass.
+4. Run the full suite — all must pass.
+5. Refactor and rerun.
 
 ```shell
 bin/app test
 ```
 
-### 9. Command help
+### API Documentation
 
-To see everything you can do with the app command interface, run the following in your console.
-
-```shell
-bin/app -h
-```
-
-## Writing code
-
-### Code Style ([Laravel Pint](https://laravel.com/docs/pint))
-
-Before writing code please read the following [guidelines](https://spatie.be/guidelines/laravel-php), this will ensure
-that you write readable and easy to understand code. Configure your code editor to use the
-settings [.editorconfig](.editorconfig). Whenever possible, use `bin/app pint` to format your code.
+Routes are grouped using `#[Group]` and `#[Subgroup]` attributes on controllers. After adding an endpoint, regenerate the docs:
 
 ```shell
-bin/app pint
+bin/app artisan scribe:generate
 ```
 
-### Tests ([Pest PHP](https://pestphp.com/))
+Organize routes in domain-specific files under `routes/api/` (e.g. `routes/api/_inventory.php`) and include them in `routes/api/api.php`.
 
-Every time you write a feature, do it together with its respective automated tests. You can be guided by the tests
-established in this starter kit, you can also consult the [Pest PHP](https://pestphp.com/) documentation to
-write your tests.
-
-Follow the following flow to ensure the integrity of the application.
-
-1. Every time you download new changes or create a new working branch, run the `bin/app test` tests.
-2. Start by writing the scenarios and possible use cases in tests.
-3. Run your tests (they should fail).
-4. Write the minimum code that makes your tests pass (your tests must pass).
-5. Run all tests (they should all pass).
-6. Refactor your code, making it readable and maintainable.
-7. Run all tests (they should all pass).
-8. Submit your changes.
-
-```shell
-bin/app test
-```
-
-### API Documentation ([Scribe](https://scribe.knuckles.wtf/))
-
-Every time you write a new endpoint, divide it into segments, for example if you have an "Inventory" work area or
-module, create a routes file `routes/api/_inventory.php` for this module, and include it in your `routes/api.php` file.
-Now this file will only contain the controllers found within `app/Http/Controllers/Inventory`. And each controller must
-have a group and a subgroup associated with it (whenever possible), also indicate whether your endpoint requires
-authentication, this will help the code to be more organized and make the documentation easy to read. E.g.:
+Each controller must declare its group and subgroup so the generated docs stay readable:
 
 ```php
 #[Group('Auth')]
 #[Subgroup('Email Verification')]
 #[Authenticated]
-#[Response(content: ['status' => 'We have sent you a new verification email.'])]
-#[ResponseFromFile(file: 'responses/422.json', status: JsonResponse::HTTP_UNPROCESSABLE_ENTITY)]
 class EmailVerificationController extends Controller
 {
     /**
@@ -143,25 +236,6 @@ class EmailVerificationController extends Controller
      *
      * Send a new email verification notification.
      */
-    public function send(Request $request): JsonResponse
-    {
-        if ($request->user()->hasVerifiedEmail()) {
-            throw ValidationException::withMessages([
-                'email' => [__('email-verification.already-been-verified')],
-            ]);
-        }
-
-        $request->user()->notify(new VerifyEmail);
-
-        return new JsonResponse(['status' => __('email-verification.verification-link-sent')]);
-    }
+    public function send(Request $request): JsonResponse { ... }
 }
 ```
-
-```shell
-bin/app artisan scribe:generate
-```
-
-Please be aware that you will not be the only one to read that code, so write your code with others in mind.
-
-#### Happy code! 😛
